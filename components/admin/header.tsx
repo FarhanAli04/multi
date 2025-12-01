@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Bell, User, Search, Menu } from "lucide-react"
 
 export function AdminHeader() {
