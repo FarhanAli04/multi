@@ -1,0 +1,34 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+
+export default function AdminMiddlewareCheck() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Check if admin token exists
+    const token = localStorage.getItem("admin_token")
+    const email = localStorage.getItem("admin_email")
+
+    if (!token || !email) {
+      router.push("/auth/admin-login")
+    } else {
+      setIsAuthenticated(true)
+    }
+  }, [router])
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}

@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin-panel/categories/page": "app/admin-panel/categories/page.js",
+  "/admin-panel/coupons/page": "app/admin-panel/coupons/page.js",
+  "/admin-panel/orders/page": "app/admin-panel/orders/page.js",
+  "/admin-panel/page": "app/admin-panel/page.js",
+  "/admin-panel/products/page": "app/admin-panel/products/page.js",
+  "/api/auth/admin-login/route": "app/api/auth/admin-login/route.js",
+  "/auth/admin-login/page": "app/auth/admin-login/page.js",
+  "/page": "app/page.js"
+}
