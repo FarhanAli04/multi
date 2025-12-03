@@ -1,11 +1,15 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin-panel/categories/page": "app/admin-panel/categories/page.js",
-  "/admin-panel/coupons/page": "app/admin-panel/coupons/page.js",
-  "/admin-panel/orders/page": "app/admin-panel/orders/page.js",
+  "/admin-panel/deposits/page": "app/admin-panel/deposits/page.js",
   "/admin-panel/page": "app/admin-panel/page.js",
-  "/admin-panel/products/page": "app/admin-panel/products/page.js",
+  "/admin-panel/roles/page": "app/admin-panel/roles/page.js",
+  "/admin-panel/settings/general/page": "app/admin-panel/settings/general/page.js",
+  "/admin-panel/settings/homepage/page": "app/admin-panel/settings/homepage/page.js",
+  "/admin-panel/settings/menu/page": "app/admin-panel/settings/menu/page.js",
+  "/admin-panel/settings/seo/page": "app/admin-panel/settings/seo/page.js",
+  "/admin-panel/staff/page": "app/admin-panel/staff/page.js",
+  "/admin-panel/subscribers/page": "app/admin-panel/subscribers/page.js",
   "/api/auth/admin-login/route": "app/api/auth/admin-login/route.js",
   "/auth/admin-login/page": "app/auth/admin-login/page.js",
+  "/auth/register/page": "app/auth/register/page.js",
   "/page": "app/page.js"
 }

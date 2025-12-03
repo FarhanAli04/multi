@@ -1,18 +1,8 @@
-[00:00:03.419] Server  LOG     
-[00:00:03.420] Server  LOG        We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
-[00:00:03.420] Server  LOG        The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
-
-[00:00:03.421] Server  LOG        	- include was updated to add '.next/dev/types/**/*.ts'
-[00:00:03.422] Server  LOG     
-[00:00:03.422] Server  LOG        The following mandatory changes were made to your tsconfig.json:
-
-[00:00:03.423] Server  LOG        	- jsx was set to react-jsx (next.js uses the React automatic runtime)
-[00:00:03.424] Server  LOG     
-[00:00:03.533] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:04.014] Server  LOG      ✓ Ready in 3s
-[00:00:23.854] Server  LOG      ○ Compiling / ...
-[00:00:27.043] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:27.342] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+[00:00:05.826] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:06.735] Server  LOG      ✓ Ready in 5.2s
+[00:02:39.082] Server  LOG      ○ Compiling / ...
+[00:02:46.802] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:47.089] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
 - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
@@ -48,15 +38,12 @@ It can also happen if the client has a browser extension installed which messes 
                           >
                   ...
 
-[00:00:28.089] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:28.089] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:28.089] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764561493523}
-[00:09:54.509] Server  LOG      ✓ Compiled in 769ms
-[00:10:09.174] Server  LOG      ✓ Compiled in 465ms
-[00:10:51.424] Server  LOG      ✓ Compiled in 424ms
-[00:11:09.524] Server  LOG      ✓ Compiled in 286ms
-[00:11:36.792] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:11:37.134] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+[00:02:47.200] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:47.200] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:02:47.201] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741423279}
+[00:02:56.400] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/auth/register color: rgb(120, 120, 120) color: inherit {"dp":"/auth/register","o":"http://localhost:3000/auth/register","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741432479}
+[00:03:32.473] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:32.761] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
 - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
@@ -74,7 +61,7 @@ It can also happen if the client has a browser extension installed which messes 
         <ReplaySsrOnlyErrors>
         <DevRootHTTPAccessFallbackBoundary>
           <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
-            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+            <HTTPAccessFallbackErrorBoundary pathname="/auth/admi..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
               <RedirectBoundary>
                 <RedirectErrorBoundary router={{...}}>
                   <Head>
@@ -92,153 +79,3763 @@ It can also happen if the client has a browser extension installed which messes 
                           >
                   ...
 
-[00:11:37.278] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:11:37.278] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:11:37.278] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764562162712}
-[00:11:46.303] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:11:46.527] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:11:46.527] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/auth/admin-login","route":"/auth/admin-login"}
-[00:11:46.527] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/auth/admin-login color: rgb(120, 120, 120) color: inherit {"dp":"/auth/admin-login","o":"http://localhost:3000/auth/admin-login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764562171957}
-[00:20:59.948] Server  LOG      ○ Compiling /admin-panel ...
-[00:21:03.181] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:21:04.142] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:21:04.142] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel","route":"/admin-panel"}
-[00:21:04.142] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764562729555}
-[00:21:10.434] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:21:10.434] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel","route":"/admin-panel"}
-[00:21:10.434] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764562735868}
-[00:22:57.620] Server  LOG      ✓ Compiled in 552ms
-[00:22:59.335] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:22:59.357] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:22:59.523] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.523] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.524] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.528] Browser WARN    Warning: Failed to re-render. We will retry on the next Fast Refresh event.
-Error: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
-[00:22:59.530] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:22:59.530] Browser ERROR   unhandledRejection: Error: No link element found for chunk /_next/static/chunks/%5Broot-of-the-server%5D__36b083e1._.css
-[00:22:59.530] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.530] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:22:59.537] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:22:59.538] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:23:00.271] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:23:00.273] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:23:00.369] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:23:00.370] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:23:01.747] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:23:01.748] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:23:01.921] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:23:04.099] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:53:47.987] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:53:47.989] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:53:48.860] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:53:49.542] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:54:07.977] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:54:07.982] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:54:08.741] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:54:08.937] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:54:09.726] Server  ERROR   D:\Clients era\CURRENT\v0-multi-vendor-e-commerce-website-main\v0-multi-vendor-e-commerce-website-main\.next\dev\server\chunks\ssr\components_4270bed4._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:54:09.728] Server  ERROR    ⨯ ReferenceError: handleLogout is not defined
-[00:54:10.901] Browser ERROR   uncaughtError: ReferenceError: handleLogout is not defined
-[00:54:40.284] Server  LOG      ✓ Compiled in 762ms
-[00:54:40.431] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:54:40.467] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:54:42.937] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:54:46.691] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:54:46.691] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel","route":"/admin-panel"}
-[00:54:46.691] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764564751255}
-[00:54:51.485] Server  LOG      ✓ Compiled in 497ms
-[00:55:16.254] Server  LOG      ✓ Compiled in 200ms
-[00:55:21.359] Server  LOG      ✓ Compiled in 730ms
-[00:55:35.582] Server  LOG      ✓ Compiled in 655ms
-[00:55:43.575] Server  LOG      ✓ Compiled in 1158ms
-[00:55:44.491] Browser ERROR   Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead.
-[00:55:45.910] Browser ERROR   uncaughtError: Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+[00:03:32.898] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:32.898] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/auth/admin-login","route":"/auth/admin-login"}
+[00:03:32.898] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/auth/admin-login color: rgb(120, 120, 120) color: inherit {"dp":"/auth/admin-login","o":"http://localhost:3000/auth/admin-login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741468974}
+[00:04:07.599] Server  LOG      ○ Compiling /admin-panel ...
+[00:04:11.665] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
+Import map: aliased to relative './components/ui/badge' inside of [project]/
 
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
 
-https://react.dev/link/hydration-mismatch
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
 
-  ...
-    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
-      <AppDevOverlayErrorBoundary globalError={[...]}>
-        <ReplaySsrOnlyErrors>
-        <DevRootHTTPAccessFallbackBoundary>
-          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
-            <HTTPAccessFallbackErrorBoundary pathname="/admin-panel" notFound={<NotAllowedRootHTTPFallbackError>} ...>
-              <RedirectBoundary>
-                <RedirectErrorBoundary router={{...}}>
-                  <Head headCacheNode={{lazyData:null, ...}}>
-                    <__next_viewport_boundary__>
-                    <Next.Metadata>
-+                     <div hidden={true}>
--                     {"\n        "}
-                    ...
-                  ...
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
 
-[00:55:45.910] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:55:45.911] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-[00:55:45.911] Browser ERROR   uncaughtError: TypeError: Cannot read properties of null (reading 'removeChild')
-[00:56:21.347] Server  LOG      ✓ Compiled in 610ms
-[00:56:21.842] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:56:24.423] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:56:27.647] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:11.884] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:11.884] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:11.884] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:11.884] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:12.000] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:12.001] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:12.001] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:12.001] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:13.852] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.016] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.016] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.016] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.016] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.241] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.241] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.241] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.241] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.721] Server  LOG      ○ Compiling /_error ...
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:14.851] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.996] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.996] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.996] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.996] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.996] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.997] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.997] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:15.997] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:16.751] Browser ERROR   uncaughtError: Error: ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:17.028] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.028] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.028] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.028] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.177] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.177] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.177] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.177] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.845] Browser ERROR   ./components/chat/chat-widget.tsx:7:1
+Module not found: Can't resolve '@/components/ui/badge'
+   5 | import { Button } from "@/components/ui/button"
+   6 | import { Input } from "@/components/ui/input"
+>  7 | import { Badge } from "@/components/ui/badge"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { ScrollArea } from "@/components/ui/scroll-area"
+   9 | import { Separator } from "@/components/ui/separator"
+  10 | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+Import map: aliased to relative './components/ui/badge' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.845] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.845] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:17.845] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:44.659] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.674] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.696] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.723] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.751] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.764] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.787] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.809] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.830] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:44.860] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.094] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.300] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.501] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.578] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.729] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.775] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.798] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.823] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.862] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.896] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.954] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:45.985] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.049] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.113] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.194] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.285] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.335] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.365] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.386] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.404] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.435] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.475] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.495] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.515] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.528] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:46.600] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.848] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:47.849] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:28.910] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:28.958] Server  LOG      ✓ Compiled in 137ms
+[00:05:29.726] Browser ERROR   uncaughtError: Error: ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:29.970] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:5:1
+Module not found: Can't resolve '@/components/ui/button'
+  3 | import { useState, useEffect, useRef } from "react"
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+> 5 | import { Button } from "@/components/ui/button"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+
+Import map: aliased to relative './components/ui/button' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:30.850] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:53.373] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.390] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.406] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.421] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.438] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.453] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.466] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.478] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.491] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.504] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.516] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.532] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.557] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:53.576] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:05:54.797] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:54.797] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:54.873] Browser ERROR   ./components/chat/chat-widget.tsx:4:1
+Module not found: Can't resolve '@/components/ui/card'
+  2 |
+  3 | import { useState, useEffect, useRef } from "react"
+> 4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Button } from "@/components/ui/button"
+  6 | import { Input } from "@/components/ui/input"
+  7 | import { Badge } from "@/components/ui/badge"
+
+Import map: aliased to relative './components/ui/card' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:05:54.873] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:06:12.890] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:06:12.907] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:06:12.952] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:06:13.039] Server  ERROR    ⨯ ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:06:13.163] Server  LOG      ✓ Compiled in 795ms
+[00:06:14.855] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:06:14.855] Browser ERROR   ./components/chat/chat-widget.tsx:6:1
+Module not found: Can't resolve '@/components/ui/input'
+  4 | import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+  5 | import { Button } from "@/components/ui/button"
+> 6 | import { Input } from "@/components/ui/input"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Badge } from "@/components/ui/badge"
+  8 | import { ScrollArea } from "@/components/ui/scroll-area"
+  9 | import { Separator } from "@/components/ui/separator"
+
+Import map: aliased to relative './components/ui/input' inside of [project]/
+
+Import traces:
+  Client Component Browser:
+    ./components/chat/chat-widget.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Client Component Browser]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/chat/chat-widget.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Client Component SSR]
+    ./app/admin-panel/layout.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:06:33.861] Server  LOG      ✓ Compiled in 693ms
+[00:06:33.928] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:06:37.324] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:39.844] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
 - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
@@ -274,14 +3871,17 @@ It can also happen if the client has a browser extension installed which messes 
                           >
                   ...
 
-[00:56:28.667] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:56:28.667] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel","route":"/admin-panel"}
-[00:56:28.668] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764564854072}
-[00:59:20.766] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/orders color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/orders","o":"http://localhost:3000/admin-panel/orders","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565026178}
-[00:59:33.171] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/categories color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/categories","o":"http://localhost:3000/admin-panel/categories","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565038602}
-[00:59:37.119] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/products color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/products","o":"http://localhost:3000/admin-panel/products","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565042527}
-[00:59:51.607] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/coupons color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/coupons","o":"http://localhost:3000/admin-panel/coupons","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565057029}
-[01:00:03.210] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565068342}
-[01:00:15.797] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[01:00:15.797] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel/settings","route":"/admin-panel/settings"}
-[01:00:15.797] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings","o":"http://localhost:3000/admin-panel/settings","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764565081221}
+[00:06:39.844] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:06:39.844] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/admin-panel","route":"/admin-panel"}
+[00:06:39.844] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel","o":"http://localhost:3000/admin-panel","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741654995}
+[00:06:53.619] Server  LOG      ✓ Compiled in 730ms
+[00:07:03.933] Server  LOG      ✓ Compiled in 302ms
+[00:11:00.193] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings/general color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings/general","o":"http://localhost:3000/admin-panel/settings/general","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741916262}
+[00:11:08.361] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings/homepage color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings/homepage","o":"http://localhost:3000/admin-panel/settings/homepage","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741924448}
+[00:11:14.324] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings/menu color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings/menu","o":"http://localhost:3000/admin-panel/settings/menu","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741930377}
+[00:11:21.213] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/staff color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/staff","o":"http://localhost:3000/admin-panel/staff","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741937291}
+[00:11:24.216] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/roles color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/roles","o":"http://localhost:3000/admin-panel/roles","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741940298}
+[00:11:31.612] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/subscribers color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/subscribers","o":"http://localhost:3000/admin-panel/subscribers","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741947674}
+[00:11:34.073] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/deposits color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/deposits","o":"http://localhost:3000/admin-panel/deposits","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741950157}
+[00:11:38.824] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings/seo color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings/seo","o":"http://localhost:3000/admin-panel/settings/seo","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741954883}
+[00:11:52.149] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/admin-panel/settings/general color: rgb(120, 120, 120) color: inherit {"dp":"/admin-panel/settings/general","o":"http://localhost:3000/admin-panel/settings/general","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764741968223}

@@ -27,8 +27,10 @@ export default function RegisterPage() {
     promoCode: "",
     password: "",
     confirmPassword: "",
+    documentType: "identity-card" as "identity-card" | "driving-license" | "passport",
     idFrontImage: null as File | null,
     idBackImage: null as File | null,
+    passportImage: null as File | null,
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,11 +38,21 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "idFrontImage" | "idBackImage") => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "idFrontImage" | "idBackImage" | "passportImage") => {
     const file = e.target.files?.[0]
     if (file) {
       setFormData((prev) => ({ ...prev, [field]: file }))
     }
+  }
+
+  const handleDocumentTypeChange = (value: "identity-card" | "driving-license" | "passport") => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      documentType: value,
+      idFrontImage: null,
+      idBackImage: null,
+      passportImage: null
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -71,9 +83,17 @@ export default function RegisterPage() {
           setError("Promo code must be exactly 4 digits")
           return
         }
-        if (!formData.idFrontImage || !formData.idBackImage) {
-          setError("Both ID front and back images are required")
-          return
+        // Validate document uploads based on type
+        if (formData.documentType === "passport") {
+          if (!formData.passportImage) {
+            setError("Passport image is required")
+            return
+          }
+        } else {
+          if (!formData.idFrontImage || !formData.idBackImage) {
+            setError("Both ID front and back images are required")
+            return
+          }
         }
       }
 
@@ -99,8 +119,13 @@ export default function RegisterPage() {
         submitData.append("mobileNumber", formData.mobileNumber)
         submitData.append("storeName", formData.storeName)
         submitData.append("promoCode", formData.promoCode)
-        if (formData.idFrontImage) submitData.append("idFrontImage", formData.idFrontImage)
-        if (formData.idBackImage) submitData.append("idBackImage", formData.idBackImage)
+        submitData.append("documentType", formData.documentType)
+        if (formData.documentType === "passport") {
+          if (formData.passportImage) submitData.append("passportImage", formData.passportImage)
+        } else {
+          if (formData.idFrontImage) submitData.append("idFrontImage", formData.idFrontImage)
+          if (formData.idBackImage) submitData.append("idBackImage", formData.idBackImage)
+        }
       }
 
       const response = await fetch("/api/auth/register", {
@@ -259,45 +284,84 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">ID Front Image</label>
-                  <div className="relative border-2 border-dashed border-border rounded-lg p-3 hover:border-primary transition-colors cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      required
-                      onChange={(e) => handleFileChange(e, "idFrontImage")}
-                    />
-                    <div className="text-center">
-                      <FileText size={24} className="mx-auto text-muted-foreground mb-1" />
-                      <p className="text-xs text-muted-foreground">
-                        {formData.idFrontImage ? formData.idFrontImage.name : "Click to upload"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">ID Back Image</label>
-                  <div className="relative border-2 border-dashed border-border rounded-lg p-3 hover:border-primary transition-colors cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      required
-                      onChange={(e) => handleFileChange(e, "idBackImage")}
-                    />
-                    <div className="text-center">
-                      <FileText size={24} className="mx-auto text-muted-foreground mb-1" />
-                      <p className="text-xs text-muted-foreground">
-                        {formData.idBackImage ? formData.idBackImage.name : "Click to upload"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Document Type</label>
+                <select
+                  value={formData.documentType}
+                  onChange={(e) => handleDocumentTypeChange(e.target.value as "identity-card" | "driving-license" | "passport")}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  required
+                >
+                  <option value="identity-card">Identity Card</option>
+                  <option value="driving-license">Driving License</option>
+                  <option value="passport">Passport</option>
+                </select>
               </div>
+
+              {formData.documentType === "passport" ? (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Passport Image</label>
+                  <div className="relative border-2 border-dashed border-border rounded-lg p-3 hover:border-primary transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      required
+                      onChange={(e) => handleFileChange(e, "passportImage")}
+                    />
+                    <div className="text-center">
+                      <FileText size={24} className="mx-auto text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.passportImage ? formData.passportImage.name : "Click to upload passport"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {formData.documentType === "identity-card" ? "ID Front Image" : "License Front Image"}
+                    </label>
+                    <div className="relative border-2 border-dashed border-border rounded-lg p-3 hover:border-primary transition-colors cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        required
+                        onChange={(e) => handleFileChange(e, "idFrontImage")}
+                      />
+                      <div className="text-center">
+                        <FileText size={24} className="mx-auto text-muted-foreground mb-1" />
+                        <p className="text-xs text-muted-foreground">
+                          {formData.idFrontImage ? formData.idFrontImage.name : "Click to upload front"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {formData.documentType === "identity-card" ? "ID Back Image" : "License Back Image"}
+                    </label>
+                    <div className="relative border-2 border-dashed border-border rounded-lg p-3 hover:border-primary transition-colors cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        required
+                        onChange={(e) => handleFileChange(e, "idBackImage")}
+                      />
+                      <div className="text-center">
+                        <FileText size={24} className="mx-auto text-muted-foreground mb-1" />
+                        <p className="text-xs text-muted-foreground">
+                          {formData.idBackImage ? formData.idBackImage.name : "Click to upload back"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium mb-2">Promo Code (4 digits)</label>

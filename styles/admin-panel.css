@@ -42,11 +42,17 @@
   transition: transform 0.3s ease-in-out;
 }
 
+.admin-panel-sidebar.open {
+  transform: translateX(0);
+}
+
 @media (min-width: 1024px) {
   .admin-panel-sidebar {
     position: static;
     transform: translateX(0);
     box-shadow: none;
+    height: auto;
+    min-height: 100vh;
   }
 }
 

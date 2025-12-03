@@ -50,14 +50,22 @@ export function AdminPanelSidebar() {
       }
     }
 
-    // Set initial state
     handleResize()
-    
+
     // Add event listener
     window.addEventListener('resize', handleResize)
     
+    // Add event listener for custom toggle event
+    const handleToggleSidebar = () => {
+      setSidebarOpen(prev => !prev)
+    }
+    window.addEventListener('toggleSidebar', handleToggleSidebar)
+    
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('toggleSidebar', handleToggleSidebar)
+    }
   }, [])
 
   const toggleSidebar = () => {
@@ -144,16 +152,14 @@ export function AdminPanelSidebar() {
       )}
 
       <aside 
-        className={`fixed lg:static z-50 w-72 bg-card border-r border-border min-h-screen flex flex-col transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`admin-panel-sidebar ${sidebarOpen ? 'open' : ''}`}
       >
         <div className="admin-panel-sidebar-header">
           <h1 className="admin-panel-title">SAR Admin</h1>
           <p className="admin-panel-subtitle">Admin Dashboard</p>
         </div>
 
-      <nav className="admin-panel-nav">
+      <nav className="admin-panel-nav flex-1 overflow-y-auto">
         {menuGroups.map((group) => (
           <div key={group.label} className="admin-panel-menu-group">
           <h3 className="admin-panel-menu-group-title">{group.label}</h3>
