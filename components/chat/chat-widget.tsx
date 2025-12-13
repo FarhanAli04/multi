@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +35,7 @@ interface Message {
 
 interface ChatUser {
   id: string
+  conversationId?: number
   name: string
   avatar?: string
   role: 'admin' | 'vendor' | 'customer'
@@ -43,44 +44,43 @@ interface ChatUser {
   unreadCount?: number
 }
 
+interface BackendConversation {
+  conversation_id: number
+  other_user_id: number
+  other_user_name: string
+  other_user_avatar?: string | null
+  other_user_online?: number | boolean | null
+  other_user_last_seen?: string | null
+  last_message?: string | null
+  last_message_at?: string | null
+  unread_count?: number | string | null
+}
+
+interface BackendMessage {
+  id: number
+  conversation_id: number
+  sender_id: number
+  content: string
+  message_type?: string
+  created_at: string
+  sender_name?: string
+  sender_avatar?: string | null
+  is_read?: number | boolean | string
+}
+
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null)
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
-  const [chatUsers, setChatUsers] = useState<ChatUser[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      role: "customer",
-      isOnline: true,
-      lastMessage: "Hi, I need help with my order",
-      unreadCount: 2
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      role: "vendor",
-      isOnline: false,
-      lastMessage: "Thank you for your support",
-      unreadCount: 0
-    },
-    {
-      id: "3",
-      name: "Admin Support",
-      role: "admin",
-      isOnline: true,
-      lastMessage: "How can I assist you today?",
-      unreadCount: 0
-    }
-  ])
-  const [currentUser, setCurrentUser] = useState<ChatUser>({
-    id: "current-user",
-    name: "Admin",
-    role: "admin",
-    isOnline: true
-  })
+  const [chatUsers, setChatUsers] = useState<ChatUser[]>([])
+  const [currentUser, setCurrentUser] = useState<ChatUser | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [wsStatus, setWsStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
+  const wsRef = useRef<WebSocket | null>(null)
+  const selectedConversationIdRef = useRef<number | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -93,40 +93,254 @@ export function ChatWidget() {
     scrollToBottom()
   }, [messages])
 
-  const sendMessage = () => {
-    if (!message.trim() || !selectedUser) return
+  const totalUnread = useMemo(() => {
+    return chatUsers.reduce((acc, user) => acc + (user.unreadCount || 0), 0)
+  }, [chatUsers])
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
+  const loadCurrentUser = useCallback(async () => {
+    try {
+      const res = await fetch("/api/backend/auth/me")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load current user")
+      }
+
+      const role = (data?.user?.role || "customer") as ChatUser["role"]
+      setCurrentUser({
+        id: String(data?.user?.id || ""),
+        name: data?.user?.full_name || data?.user?.name || "User",
+        role,
+        isOnline: true,
+      })
+    } catch (e: any) {
+      setError(e?.message || "Failed to load current user")
+    }
+  }, [])
+
+  const loadConversations = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch("/api/backend/conversations")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load conversations")
+      }
+
+      const convs: BackendConversation[] = data?.conversations || []
+      const mappedUsers: ChatUser[] = convs.map((c) => ({
+        id: String(c.other_user_id),
+        conversationId: Number(c.conversation_id),
+        name: c.other_user_name || "User",
+        avatar: c.other_user_avatar || undefined,
+        role: "customer",
+        isOnline: Boolean(c.other_user_online),
+        lastMessage: c.last_message || "",
+        unreadCount: Number(c.unread_count || 0),
+      }))
+
+      setChatUsers(mappedUsers)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load conversations")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const loadMessages = useCallback(async (conversationId: number) => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/conversations/${conversationId}/messages`)
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load messages")
+      }
+
+      const list: BackendMessage[] = data?.messages || []
+      const mapped: Message[] = list.map((m) => ({
+        id: String(m.id),
+        text: m.content || "",
+        sender: m.sender_name || "",
+        senderId: String(m.sender_id),
+        timestamp: m.created_at ? new Date(m.created_at) : new Date(),
+        type: (m.message_type || "text") === "file" ? "file" : "text",
+        isRead: Boolean(m.is_read),
+      }))
+
+      setMessages(mapped)
+
+      setChatUsers((prev) =>
+        prev.map((u) =>
+          u.conversationId === conversationId
+            ? { ...u, unreadCount: 0 }
+            : u
+        )
+      )
+    } catch (e: any) {
+      setError(e?.message || "Failed to load messages")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const connectWebSocket = useCallback(async () => {
+    if (wsRef.current) return
+    try {
+      setWsStatus('connecting')
+      const tokenRes = await fetch("/api/ws-token")
+      const tokenData = await tokenRes.json().catch(() => null)
+      if (!tokenRes.ok || !tokenData?.token) {
+        throw new Error(tokenData?.error || "Failed to get ws token")
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080"
+      const wsUrl = `${baseUrl}?token=${encodeURIComponent(tokenData.token)}`
+      const ws = new WebSocket(wsUrl)
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        setWsStatus('connected')
+      }
+
+      ws.onclose = () => {
+        wsRef.current = null
+        setWsStatus('disconnected')
+      }
+
+      ws.onerror = () => {
+        // onclose will clean up
+      }
+
+      ws.onmessage = (ev) => {
+        const data = JSON.parse(ev.data || "{}")
+        if (!data) return
+
+        if (data.type === 'user_status') {
+          const userId = String(data.user_id)
+          setChatUsers((prev) =>
+            prev.map((u) => (u.id === userId ? { ...u, isOnline: Boolean(data.is_online) } : u))
+          )
+          return
+        }
+
+        if (data.type === 'read_receipt') {
+          const messageId = String(data.message_id)
+          setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, isRead: true } : m)))
+          return
+        }
+
+        // message broadcast doesn't include a `type` in current WS server
+        if (data.conversation_id && data.sender_id && data.content) {
+          const incomingConversationId = Number(data.conversation_id)
+          const incoming: Message = {
+            id: String(data.id || Date.now()),
+            text: String(data.content || ""),
+            sender: String(data.sender_name || ""),
+            senderId: String(data.sender_id),
+            timestamp: data.created_at ? new Date(data.created_at) : new Date(),
+            type: (data.message_type || "text") === "file" ? "file" : "text",
+            isRead: false,
+          }
+
+          setChatUsers((prev) =>
+            prev.map((u) => {
+              if (u.conversationId !== incomingConversationId) return u
+              const shouldCountUnread = selectedConversationIdRef.current !== incomingConversationId
+              return {
+                ...u,
+                lastMessage: incoming.text,
+                unreadCount: shouldCountUnread ? (u.unreadCount || 0) + 1 : 0,
+              }
+            })
+          )
+
+          if (selectedConversationIdRef.current === incomingConversationId) {
+            setMessages((prev) => [...prev, incoming])
+          }
+          return
+        }
+      }
+    } catch (e: any) {
+      setWsStatus('disconnected')
+      setError(e?.message || "WebSocket connection failed")
+      wsRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    loadCurrentUser()
+    loadConversations()
+    connectWebSocket()
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
+      setWsStatus('disconnected')
+    }
+  }, [connectWebSocket, isOpen, loadConversations, loadCurrentUser])
+
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedUser?.conversationId ?? null
+  }, [selectedUser?.conversationId])
+
+  const sendMessage = async () => {
+    if (!message.trim() || !selectedUser?.conversationId || !currentUser) return
+
+    const optimistic: Message = {
+      id: `tmp-${Date.now()}`,
       text: message,
       sender: currentUser.name,
       senderId: currentUser.id,
       timestamp: new Date(),
       type: 'text',
-      isRead: false
+      isRead: false,
     }
 
-    setMessages([...messages, newMessage])
+    const content = message
+    setMessages((prev) => [...prev, optimistic])
     setMessage("")
 
-    // Simulate response
-    setTimeout(() => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Thank you for your message. I'll get back to you soon!",
-        sender: selectedUser.name,
-        senderId: selectedUser.id,
-        timestamp: new Date(),
-        type: 'text',
-        isRead: false
+    const payload = {
+      type: 'message',
+      conversation_id: selectedUser.conversationId,
+      content,
+    }
+
+    try {
+      if (wsRef.current && wsStatus === 'connected') {
+        wsRef.current.send(JSON.stringify(payload))
+      } else {
+        const res = await fetch("/api/backend/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: selectedUser.conversationId,
+            content,
+            message_type: "text",
+          }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to send message")
+        }
       }
-      setMessages(prev => [...prev, responseMessage])
-    }, 1000)
+
+      setChatUsers((prev) =>
+        prev.map((u) =>
+          u.conversationId === selectedUser.conversationId ? { ...u, lastMessage: content } : u
+        )
+      )
+    } catch (e: any) {
+      setError(e?.message || "Failed to send message")
+    }
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file && selectedUser) {
+    if (file && selectedUser && currentUser) {
       const newMessage: Message = {
         id: Date.now().toString(),
         text: "",
@@ -154,8 +368,6 @@ export function ChatWidget() {
       default: return 'bg-gray-100 text-gray-800'
     }
   }
-
-  const totalUnread = chatUsers.reduce((acc, user) => acc + (user.unreadCount || 0), 0)
 
   if (!isOpen) {
     return (
@@ -216,6 +428,7 @@ export function ChatWidget() {
         {!isMinimized && (
           <>
             <CardContent className="flex-1 p-0">
+              {error && <div className="px-3 py-2 text-sm text-red-600">{error}</div>}
               <div className="flex h-full">
                 {/* Users List */}
                 <div className={cn(
@@ -227,7 +440,12 @@ export function ChatWidget() {
                       {chatUsers.map((user) => (
                         <div
                           key={user.id}
-                          onClick={() => setSelectedUser(user)}
+                          onClick={() => {
+                            setSelectedUser(user)
+                            if (user.conversationId) {
+                              loadMessages(user.conversationId)
+                            }
+                          }}
                           className={cn(
                             "flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors",
                             selectedUser?.id === user.id && "bg-muted"
@@ -301,12 +519,12 @@ export function ChatWidget() {
                             key={msg.id}
                             className={cn(
                               "flex",
-                              msg.senderId === currentUser.id ? "justify-end" : "justify-start"
+                              msg.senderId === currentUser?.id ? "justify-end" : "justify-start"
                             )}
                           >
                             <div className={cn(
                               "max-w-[70%] rounded-lg p-2",
-                              msg.senderId === currentUser.id
+                              msg.senderId === currentUser?.id
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
                             )}>

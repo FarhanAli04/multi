@@ -1,23 +1,29 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server"
-import { getCurrentUser } from "@/lib/auth-utils"
+import { cookies } from "next/headers"
 
 export async function GET(request: Request) {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get("auth_token")?.value
+    if (!token) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const supabase = await getSupabaseServerClient()
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+    const apiResponse = await fetch(`${apiBaseUrl}/api/conversations`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
 
-    const { data: conversations, error } = await supabase
-      .from("conversations")
-      .select("*")
-      .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`)
-
-    if (error) throw error
-
-    return Response.json(conversations)
+    const data = await apiResponse.text()
+    return new Response(data, {
+      status: apiResponse.status,
+      headers: {
+        "content-type": apiResponse.headers.get("content-type") || "application/json",
+      },
+    })
   } catch (error) {
     return Response.json({ error: "Failed to fetch conversations" }, { status: 500 })
   }
@@ -25,56 +31,56 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get("auth_token")?.value
+    if (!token) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { receiverId, content } = await request.json()
-    const supabase = await getSupabaseServerClient()
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
 
-    // Find or create conversation
-    const { data: existingConv } = await supabase
-      .from("conversations")
-      .select("*")
-      .or(
-        `and(participant_1_id.eq.${user.id},participant_2_id.eq.${receiverId}),and(participant_1_id.eq.${receiverId},participant_2_id.eq.${user.id})`,
-      )
-      .single()
+    const bodyJson = await request.json().catch(() => ({} as any))
+    const receiverId = bodyJson.receiverId ?? bodyJson.recipient_id ?? bodyJson.recipientId
+    const conversationId = bodyJson.conversationId ?? bodyJson.conversation_id
+    const content = bodyJson.content
 
-    let conversationId: string
+    // If conversationId provided, send message directly.
+    if (conversationId && content) {
+      const apiResponse = await fetch(`${apiBaseUrl}/api/messages`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ conversation_id: conversationId, content, message_type: "text" }),
+      })
 
-    if (existingConv) {
-      conversationId = existingConv.id
-    } else {
-      const { data: newConv, error: convError } = await supabase
-        .from("conversations")
-        .insert({
-          participant_1_id: user.id,
-          participant_2_id: receiverId,
-        })
-        .select()
-        .single()
-
-      if (convError) throw convError
-      conversationId = newConv.id
+      const data = await apiResponse.text()
+      return new Response(data, {
+        status: apiResponse.status,
+        headers: { "content-type": apiResponse.headers.get("content-type") || "application/json" },
+      })
     }
 
-    // Insert message
-    const { data: message, error: msgError } = await supabase
-      .from("messages")
-      .insert({
-        sender_id: user.id,
-        receiver_id: receiverId,
-        content,
-        message_type: "text",
+    // Otherwise create/find conversation using /api/conversations (PHP will return conversation_id).
+    if (receiverId) {
+      const apiResponse = await fetch(`${apiBaseUrl}/api/conversations`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recipient_id: receiverId }),
       })
-      .select()
-      .single()
 
-    if (msgError) throw msgError
+      const data = await apiResponse.text()
+      return new Response(data, {
+        status: apiResponse.status,
+        headers: { "content-type": apiResponse.headers.get("content-type") || "application/json" },
+      })
+    }
 
-    return Response.json(message)
+    return Response.json({ error: "Invalid request" }, { status: 400 })
   } catch (error) {
     return Response.json({ error: "Failed to send message" }, { status: 500 })
   }

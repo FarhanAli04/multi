@@ -1,7 +1,7 @@
 "use client"
 
 import { Plus, Search, Star, Edit2, Trash2, Eye, RefreshCw, Download, Package } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -21,57 +21,119 @@ interface Product {
   category: string;
   description: string;
   image: string;
+  is_active?: number;
+  category_id?: number | null;
 }
 
 export default function ProductsManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      sku: "WH-2024-001",
-      vendor: "Tech Store",
-      price: "$89.99",
-      stock: 245,
-      rating: 4.5,
-      status: "Active",
-      category: "Electronics",
-      description: "High-quality wireless headphones with noise cancellation",
-      image: "/api/placeholder/200/200"
-    },
-    {
-      id: 2,
-      name: "USB-C Cable",
-      sku: "USB-2024-002",
-      vendor: "Electronics Pro",
-      price: "$12.99",
-      stock: 1203,
-      rating: 4.2,
-      status: "Active",
-      category: "Electronics",
-      description: "Fast charging USB-C cable, 2m length",
-      image: "/api/placeholder/200/200"
-    },
-    {
-      id: 3,
-      name: "Phone Case",
-      sku: "PC-2024-003",
-      vendor: "Fashion Hub",
-      price: "$24.99",
-      stock: 89,
-      rating: 3.8,
-      status: "Inactive",
-      category: "Fashion",
-      description: "Protective phone case with modern design",
-      image: "/api/placeholder/200/200"
-    },
-  ])
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    price: "",
+    stock: 0,
+    description: "",
+    image_url: "",
+  })
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch("/api/backend/admin/products")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load products")
+      }
+      const mapped: Product[] = (data?.products || []).map((p: any) => {
+        const priceNumber = Number(p.price ?? 0)
+        const imageUrl = p.image_url || "/placeholder.svg"
+        const vendorName = p.store_name || p.seller_name || ""
+        const status = Number(p.is_active) === 1 ? "Active" : "Inactive"
+
+        return {
+          id: Number(p.id),
+          name: p.name || "",
+          sku: p.sku || `SKU-${p.id}`,
+          vendor: vendorName,
+          price: `$${priceNumber.toFixed(2)}`,
+          stock: Number(p.stock ?? 0),
+          rating: Number(p.rating ?? 0),
+          status,
+          category: p.category_name || "",
+          description: p.description || "",
+          image: imageUrl,
+          is_active: Number(p.is_active ?? 0),
+          category_id: p.category_id != null ? Number(p.category_id) : null,
+        }
+      })
+
+      setProducts(mapped)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load products")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCreateProduct = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+
+      const priceNumber = Number(String(newProduct.price || "").replace(/[^0-9.]/g, ""))
+
+      const body: any = {
+        name: newProduct.name,
+        description: newProduct.description,
+        price: Number.isFinite(priceNumber) ? priceNumber : 0,
+        stock: Number(newProduct.stock ?? 0),
+      }
+
+      if (newProduct.image_url && newProduct.image_url.trim() !== "") {
+        body.image_url = newProduct.image_url.trim()
+      }
+
+      const res = await fetch("/api/backend/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to create product")
+      }
+
+      setIsAddDialogOpen(false)
+      setNewProduct({ name: "", price: "", stock: 0, description: "", image_url: "" })
+      await loadProducts()
+    } catch (e: any) {
+      setError(e?.message || "Failed to create product")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const categoryOptions = useMemo(() => {
+    const set = new Set<string>()
+    for (const p of products) {
+      if (p.category) set.add(p.category)
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [products])
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,22 +152,51 @@ export default function ProductsManagement() {
     setIsEditDialogOpen(true)
   }
 
-  const handleDelete = (productId: number) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter(product => product.id !== productId))
+  const handleDelete = async (productId: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/admin/products/${productId}`, { method: "DELETE" })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete product")
+      }
+      await loadProducts()
+    } catch (e: any) {
+      setError(e?.message || "Failed to delete product")
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleToggleStatus = (productId: number) => {
-    setProducts(products.map(product =>
-      product.id === productId
-        ? { ...product, status: product.status === "Active" ? "Inactive" : "Active" }
-        : product
-    ))
+  const handleToggleStatus = async (productId: number) => {
+    const current = products.find((p) => p.id === productId)
+    if (!current) return
+    const nextIsActive = current.status !== "Active"
+
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/admin/products/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: nextIsActive ? 1 : 0 }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update status")
+      }
+      await loadProducts()
+    } catch (e: any) {
+      setError(e?.message || "Failed to update status")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleRefresh = () => {
-    alert("Products data refreshed!")
+    loadProducts()
   }
 
   const handleExport = () => {
@@ -124,13 +215,38 @@ export default function ProductsManagement() {
     document.body.removeChild(link)
   }
 
-  const handleSaveEdit = () => {
-    if (editingProduct) {
-      setProducts(products.map(product => 
-        product.id === editingProduct.id ? editingProduct : product
-      ))
+  const handleSaveEdit = async () => {
+    if (!editingProduct) return
+    try {
+      setIsLoading(true)
+      setError("")
+      const priceNumber = Number(String(editingProduct.price || "").replace(/[^0-9.]/g, ""))
+      const body: any = {
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: Number.isFinite(priceNumber) ? priceNumber : 0,
+        stock: Number(editingProduct.stock ?? 0),
+      }
+      if (editingProduct.image && editingProduct.image !== "/placeholder.svg") {
+        body.image_url = editingProduct.image
+      }
+
+      const res = await fetch(`/api/backend/admin/products/${editingProduct.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update product")
+      }
       setIsEditDialogOpen(false)
       setEditingProduct(null)
+      await loadProducts()
+    } catch (e: any) {
+      setError(e?.message || "Failed to update product")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -187,15 +303,17 @@ export default function ProductsManagement() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="Electronics">Electronics</SelectItem>
-            <SelectItem value="Fashion">Fashion</SelectItem>
-            <SelectItem value="Home & Garden">Home & Garden</SelectItem>
+            {categoryOptions.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={() => {setSearchTerm(""); setCategoryFilter("all")}}>
           Clear Filters
         </Button>
       </div>
+
+      {error && <div className="text-red-600">{error}</div>}
 
       {/* Products Table */}
       <Card>
@@ -265,7 +383,7 @@ export default function ProductsManagement() {
                 ))}
               </tbody>
             </table>
-            {filteredProducts.length === 0 && (
+            {!isLoading && filteredProducts.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No products found matching your criteria
               </div>
@@ -411,6 +529,53 @@ export default function ProductsManagement() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Product Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Product</DialogTitle>
+            <DialogDescription>Create a new product</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Product Name</label>
+                <Input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Price</label>
+                <Input value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Stock</label>
+                <Input
+                  type="number"
+                  value={newProduct.stock}
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Image URL</label>
+                <Input value={newProduct.image_url} onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })} />
+              </div>
+              <div className="col-span-2">
+                <label className="text-sm font-medium text-muted-foreground">Description</label>
+                <Input value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateProduct} disabled={isLoading}>
+                {isLoading ? "Saving..." : "Create"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

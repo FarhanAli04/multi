@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["file:///D:/Clients%20era/CURRENT/v0-multi-vendor-e-commerce-website-main/v0-multi-vendor-e-commerce-website-main/app/api/ws-token/route.ts"],"sourcesContent":["import { NextResponse } from \"next/server\"\r\nimport { cookies } from \"next/headers\"\r\n\r\nexport async function GET() {\r\n  const cookieStore = await cookies()\r\n  const token = cookieStore.get(\"auth_token\")?.value\r\n\r\n  if (!token) {\r\n    return NextResponse.json({ error: \"Unauthorized\" }, { status: 401 })\r\n  }\r\n\r\n  // Used only to connect to the internal Ratchet WebSocket server which expects ?token=...\r\n  return NextResponse.json({ token }, { status: 200 })\r\n}\r\n"],"names":[],"mappings":";;;;AAAA;AACA;;;AAEO,eAAe;IACpB,MAAM,cAAc,MAAM,IAAA,4IAAO;IACjC,MAAM,QAAQ,YAAY,GAAG,CAAC,eAAe;IAE7C,IAAI,CAAC,OAAO;QACV,OAAO,gJAAY,CAAC,IAAI,CAAC;YAAE,OAAO;QAAe,GAAG;YAAE,QAAQ;QAAI;IACpE;IAEA,yFAAyF;IACzF,OAAO,gJAAY,CAAC,IAAI,CAAC;QAAE;IAAM,GAAG;QAAE,QAAQ;IAAI;AACpD"}}]
+}

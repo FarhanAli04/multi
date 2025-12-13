@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { RealtimeProvider } from "@/contexts/RealtimeContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -44,8 +45,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-          <Analytics />
+          <RealtimeProvider>
+            {children}
+            <Analytics />
+          </RealtimeProvider>
         </ThemeProvider>
       </body>
     </html>

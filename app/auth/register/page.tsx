@@ -3,11 +3,11 @@
 import type React from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { Mail, Lock, Eye, EyeOff, User, Phone, Store, FileText, AlertCircle, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-export default function RegisterPage() {
+function RegisterPageInner() {
   const searchParams = useSearchParams()
   const roleParam = searchParams.get("role") || "customer"
   const [role, setRole] = useState<"customer" | "seller">(roleParam as "customer" | "seller")
@@ -83,18 +83,6 @@ export default function RegisterPage() {
           setError("Promo code must be exactly 4 digits")
           return
         }
-        // Validate document uploads based on type
-        if (formData.documentType === "passport") {
-          if (!formData.passportImage) {
-            setError("Passport image is required")
-            return
-          }
-        } else {
-          if (!formData.idFrontImage || !formData.idBackImage) {
-            setError("Both ID front and back images are required")
-            return
-          }
-        }
       }
 
       if (formData.password.length < 8) {
@@ -120,12 +108,6 @@ export default function RegisterPage() {
         submitData.append("storeName", formData.storeName)
         submitData.append("promoCode", formData.promoCode)
         submitData.append("documentType", formData.documentType)
-        if (formData.documentType === "passport") {
-          if (formData.passportImage) submitData.append("passportImage", formData.passportImage)
-        } else {
-          if (formData.idFrontImage) submitData.append("idFrontImage", formData.idFrontImage)
-          if (formData.idBackImage) submitData.append("idBackImage", formData.idBackImage)
-        }
       }
 
       const response = await fetch("/api/auth/register", {
@@ -143,7 +125,8 @@ export default function RegisterPage() {
 
       setSuccess(true)
       setTimeout(() => {
-        router.push("/auth/login")
+        // Redirect to login with role parameter for context
+        router.push(`/auth/login?role=${role}`)
       }, 2000)
     } catch (err) {
       setError("An error occurred. Please try again.")
@@ -154,8 +137,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6 py-8">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-primary mb-4 inline-block">
             SAR Store
@@ -166,7 +149,6 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Role Selection */}
         <div className="flex gap-4 mb-6">
           <button
             type="button"
@@ -306,7 +288,6 @@ export default function RegisterPage() {
                       type="file"
                       accept="image/*"
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      required
                       onChange={(e) => handleFileChange(e, "passportImage")}
                     />
                     <div className="text-center">
@@ -328,7 +309,6 @@ export default function RegisterPage() {
                         type="file"
                         accept="image/*"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        required
                         onChange={(e) => handleFileChange(e, "idFrontImage")}
                       />
                       <div className="text-center">
@@ -349,7 +329,6 @@ export default function RegisterPage() {
                         type="file"
                         accept="image/*"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        required
                         onChange={(e) => handleFileChange(e, "idBackImage")}
                       />
                       <div className="text-center">
@@ -459,11 +438,19 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-primary hover:underline font-medium">
+          <Link href={`/auth/login?role=${role}`} className="text-primary hover:underline font-medium">
             Sign In
           </Link>
         </p>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterPageInner />
+    </Suspense>
   )
 }

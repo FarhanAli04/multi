@@ -9,17 +9,68 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Plus, Trash2, MoveUp, MoveDown } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function MenuSettingsPage() {
-  const [menuItems, setMenuItems] = useState([
-    { id: 1, name: "Home", url: "/", order: 1, active: true },
-    { id: 2, name: "Products", url: "/products", order: 2, active: true },
-    { id: 3, name: "About", url: "/about", order: 3, active: true },
-    { id: 4, name: "Contact", url: "/contact", order: 4, active: true },
-  ])
+  const [menuItems, setMenuItems] = useState<Array<{ id: number; name: string; url: string; order: number; active: boolean }>>([])
 
   const [newItem, setNewItem] = useState({ name: "", url: "", active: true })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        setSuccess("")
+        const res = await fetch("/api/settings")
+        const data = await res.json().catch(() => null)
+        if (!data?.success) {
+          throw new Error(data?.message || "Failed to load settings")
+        }
+        const ms = data?.data?.menu_settings || {}
+        const list = Array.isArray(ms.menuItems) ? ms.menuItems : []
+        if (!cancelled) setMenuItems(list)
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || "Failed to load settings")
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const save = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      setSuccess("")
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          menu_settings: {
+            menuItems,
+          },
+        }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!data?.success) {
+        throw new Error(data?.message || "Failed to save settings")
+      }
+      setSuccess("Saved")
+    } catch (e: any) {
+      setError(e?.message || "Failed to save settings")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const addMenuItem = () => {
     if (newItem.name && newItem.url) {
@@ -62,6 +113,9 @@ export default function MenuSettingsPage() {
         <h1 className="text-3xl font-bold">Menu Settings</h1>
         <p className="text-muted-foreground">Manage your website navigation menu</p>
       </div>
+
+      {error ? <div className="rounded-lg border border-border bg-muted p-4 text-sm text-destructive">{error}</div> : null}
+      {success ? <div className="rounded-lg border border-border bg-muted p-4 text-sm">{success}</div> : null}
 
       <Tabs defaultValue="main-menu" className="space-y-4">
         <TabsList>
@@ -136,6 +190,10 @@ export default function MenuSettingsPage() {
               </div>
 
               <Separator />
+
+              <Button onClick={save} disabled={isLoading}>
+                {isLoading ? "Saving..." : "Save Menu"}
+              </Button>
 
               <div className="space-y-3">
                 <h4 className="font-medium">Add New Menu Item</h4>

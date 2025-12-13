@@ -2,76 +2,89 @@
 
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { ProductCard } from "@/components/customer/product-card"
+import { useEffect, useMemo, useState } from "react"
 
 export default function ShopPage() {
-  const products = [
+  const [products, setProducts] = useState<
     {
-      id: "1",
-      name: "Wireless Bluetooth Headphones with Noise Cancellation",
-      price: 2499,
-      originalPrice: 4999,
-      image: "/wireless-headphones.jpg",
-      rating: 4.5,
-      reviews: 234,
-      seller: "Tech Store Pro",
-      stock: 45,
-    },
-    {
-      id: "2",
-      name: "Premium USB-C Fast Charging Cable 3M",
-      price: 399,
-      originalPrice: 799,
-      image: "/usb-cable.jpg",
-      rating: 4.8,
-      reviews: 512,
-      seller: "Electronics Hub",
-      stock: 120,
-    },
-    {
-      id: "3",
-      name: "Protective Phone Case - TPU Material",
-      price: 599,
-      originalPrice: 999,
-      image: "/stylish-phone-case.png",
-      rating: 4.3,
-      reviews: 156,
-      seller: "Accessories World",
-      stock: 89,
-    },
-    {
-      id: "4",
-      name: "Portable 20000mAh Power Bank",
-      price: 1299,
-      originalPrice: 1999,
-      image: "/power-bank.jpg",
-      rating: 4.6,
-      reviews: 389,
-      seller: "Power Devices Store",
-      stock: 67,
-    },
-    {
-      id: "5",
-      name: "HD Webcam 1080P with Microphone",
-      price: 1899,
-      originalPrice: 2999,
-      image: "/webcam-hd.png",
-      rating: 4.4,
-      reviews: 223,
-      seller: "Camera Electronics",
-      stock: 34,
-    },
-    {
-      id: "6",
-      name: "Mechanical Gaming Keyboard RGB",
-      price: 3499,
-      originalPrice: 5999,
-      image: "/gaming-keyboard.jpg",
-      rating: 4.7,
-      reviews: 445,
-      seller: "Gaming Gear Store",
-      stock: 52,
-    },
-  ]
+      id: string
+      name: string
+      price: number
+      originalPrice?: number
+      image: string
+      rating: number
+      reviews: number
+      seller: string
+      stock: number
+    }[]
+  >([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string>("")
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch("/api/backend/products"),
+          fetch("/api/backend/categories"),
+        ])
+
+        const productsJson = await productsRes.json().catch(() => null)
+        const categoriesJson = await categoriesRes.json().catch(() => null)
+
+        if (!productsRes.ok) {
+          throw new Error(productsJson?.error || "Failed to load products")
+        }
+
+        if (!categoriesRes.ok) {
+          throw new Error(categoriesJson?.error || "Failed to load categories")
+        }
+
+        const mappedProducts = (productsJson?.products || []).map((p: any) => ({
+          id: String(p.id),
+          name: p.name,
+          price: Number(p.price),
+          originalPrice: p.original_price ? Number(p.original_price) : undefined,
+          image: p.image_url || "/placeholder.svg",
+          rating: Number(p.avg_rating || 0),
+          reviews: Number(p.review_count || 0),
+          seller: p.store_name || p.seller_name || "",
+          stock: Number(p.stock ?? p.quantity ?? 0),
+        }))
+
+        const mappedCategories = (categoriesJson?.categories || []).map((c: any) => c.name).filter(Boolean)
+
+        if (!cancelled) {
+          setProducts(mappedProducts)
+          setCategories(mappedCategories)
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.message || "Failed to load shop")
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const categoryList = useMemo(() => {
+    if (categories.length > 0) return categories
+    return ["Electronics", "Accessories", "Clothing", "Home & Garden"]
+  }, [categories])
 
   return (
     <>
@@ -90,7 +103,7 @@ export default function ShopPage() {
               <div>
                 <h3 className="font-semibold mb-4">Categories</h3>
                 <div className="space-y-2">
-                  {["Electronics", "Accessories", "Clothing", "Home & Garden"].map((cat) => (
+                  {categoryList.map((cat) => (
                     <label key={cat} className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" className="w-4 h-4" />
                       <span className="text-sm">{cat}</span>
@@ -139,11 +152,21 @@ export default function ShopPage() {
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.id} {...product} />
-              ))}
-            </div>
+            {isLoading && (
+              <div className="text-muted-foreground">Loading products...</div>
+            )}
+
+            {!isLoading && error && (
+              <div className="text-red-600">{error}</div>
+            )}
+
+            {!isLoading && !error && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <ProductCard key={product.id} {...product} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

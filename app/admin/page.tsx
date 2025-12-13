@@ -8,53 +8,92 @@ import { useState, useEffect } from "react"
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false)
+  const [statsData, setStatsData] = useState<any>(null)
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
+  const [frozenAccounts, setFrozenAccounts] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
   
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // Placeholder data - will be replaced with real data from Supabase
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+
+        const [statsRes, ordersRes, frozenRes] = await Promise.all([
+          fetch("/api/backend/admin/dashboard/stats"),
+          fetch("/api/backend/admin/orders/recent?limit=10"),
+          fetch("/api/backend/admin/accounts/frozen"),
+        ])
+
+        const statsJson = await statsRes.json().catch(() => null)
+        const ordersJson = await ordersRes.json().catch(() => null)
+        const frozenJson = await frozenRes.json().catch(() => null)
+
+        if (!statsRes.ok) throw new Error(statsJson?.error || "Failed to load stats")
+        if (!ordersRes.ok) throw new Error(ordersJson?.error || "Failed to load recent orders")
+        if (!frozenRes.ok) throw new Error(frozenJson?.error || "Failed to load frozen accounts")
+
+        if (!cancelled) {
+          setStatsData(statsJson?.stats || null)
+          setRecentOrders(ordersJson?.orders || [])
+          setFrozenAccounts(frozenJson?.accounts || [])
+        }
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || "Failed to load dashboard")
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    if (isClient) {
+      load()
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [isClient])
+
   const stats = [
     {
       title: "Total Users",
-      value: "2,845",
-      subtitle: "+240 this month",
+      value: Number(statsData?.total_users || 0).toLocaleString(),
+      subtitle: `+${Number(statsData?.new_users || 0).toLocaleString()} (30d)`,
       icon: <Users className="w-6 h-6 md:w-7 md:h-7" />,
       trend: "up" as const,
-      trendValue: "+8.2%",
+      trendValue: "",
     },
     {
       title: "Total Orders",
-      value: "12,450",
-      subtitle: "₹42,50,000 revenue",
+      value: Number(statsData?.total_orders || 0).toLocaleString(),
+      subtitle: `₹${Number(statsData?.total_revenue || 0).toLocaleString()} revenue`,
       icon: <ShoppingCart className="w-6 h-6 md:w-7 md:h-7" />,
       trend: "up" as const,
-      trendValue: "+12.5%",
+      trendValue: "",
     },
     {
       title: "Active Sellers",
-      value: "342",
-      subtitle: "+45 this month",
+      value: Number(statsData?.active_sellers || 0).toLocaleString(),
+      subtitle: `+${Number(statsData?.new_sellers || 0).toLocaleString()} (30d)`,
       icon: <TrendingUp className="w-6 h-6 md:w-7 md:h-7" />,
       trend: "up" as const,
-      trendValue: "+5.3%",
+      trendValue: "",
     },
     {
       title: "Frozen Accounts",
-      value: "28",
+      value: Number(statsData?.frozen_accounts || 0).toLocaleString(),
       subtitle: "Requires action",
       icon: <AlertCircle className="w-6 h-6 md:w-7 md:h-7" />,
       trend: "down" as const,
-      trendValue: "-2.1%",
+      trendValue: "",
     },
-  ]
-
-  const recentOrders = [
-    { id: 12001, customer: 'John Doe', amount: '₹8,456.00', status: 'delivered', date: '2 days ago' },
-    { id: 12000, customer: 'Jane Smith', amount: '₹12,345.00', status: 'processing', date: '1 day ago' },
-    { id: 11999, customer: 'Robert Johnson', amount: '₹5,678.00', status: 'delivered', date: '3 days ago' },
-    { id: 11998, customer: 'Emily Davis', amount: '₹23,456.00', status: 'cancelled', date: '4 days ago' },
-    { id: 11997, customer: 'Michael Brown', amount: '₹3,210.00', status: 'delivered', date: '5 days ago' },
   ]
 
   const getStatusBadge = (status: string) => {
@@ -110,6 +149,9 @@ export default function AdminDashboard() {
             ))}
           </div>
 
+          {isLoading && <div className="text-muted-foreground mb-6">Loading dashboard...</div>}
+          {!isLoading && error && <div className="text-red-600 mb-6">{error}</div>}
+
           {/* Recent Orders Section */}
           <div className="bg-card rounded-lg shadow-sm border border-border mb-6 md:mb-8 overflow-hidden">
             <div className="p-4 md:p-6">
@@ -139,12 +181,14 @@ export default function AdminDashboard() {
                         {recentOrders.map((order) => (
                           <tr key={order.id} className="hover:bg-muted/50 transition-colors">
                             <td className="py-3 px-4 font-medium">#{order.id}</td>
-                            <td className="py-3 px-4">{order.customer}</td>
-                            <td className="py-3 px-4 text-right">{order.amount}</td>
+                            <td className="py-3 px-4">{order.customer_name || order.customer}</td>
+                            <td className="py-3 px-4 text-right">₹{Number(order.total_amount || 0).toLocaleString()}</td>
                             <td className="py-3 px-4">
-                              {getStatusBadge(order.status)}
+                              {getStatusBadge((order.status || "").toString().toLowerCase())}
                             </td>
-                            <td className="py-3 px-4 text-muted-foreground text-right">{order.date}</td>
+                            <td className="py-3 px-4 text-muted-foreground text-right">
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString() : order.date}
+                            </td>
                             <td className="py-3 pl-4 pr-2 text-right">
                               <button className="p-1 rounded-full hover:bg-muted">
                                 <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
@@ -163,15 +207,17 @@ export default function AdminDashboard() {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">#{order.id}</p>
-                            <p className="text-sm text-muted-foreground">{order.customer}</p>
+                            <p className="text-sm text-muted-foreground">{order.customer_name || order.customer}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">{order.amount}</p>
-                            <p className="text-xs text-muted-foreground">{order.date}</p>
+                            <p className="font-medium">₹{Number(order.total_amount || 0).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString() : order.date}
+                            </p>
                           </div>
                         </div>
                         <div className="mt-3 flex justify-between items-center">
-                          {getStatusBadge(order.status)}
+                          {getStatusBadge((order.status || "").toString().toLowerCase())}
                           <button className="p-1 -mr-2">
                             <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                           </button>
@@ -189,11 +235,14 @@ export default function AdminDashboard() {
             <div className="p-4 md:p-6">
               <h2 className="text-lg md:text-xl font-bold mb-4">Frozen Accounts Requiring Action</h2>
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                {frozenAccounts.slice(0, 3).map((acc) => (
+                  <div
+                    key={acc.id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                  >
                     <div className="mb-2 sm:mb-0">
-                      <p className="font-medium">Seller Name {i}</p>
-                      <p className="text-sm text-muted-foreground">Frozen due to policy violation</p>
+                      <p className="font-medium">{acc.full_name}</p>
+                      <p className="text-sm text-muted-foreground">Frozen account ({acc.role})</p>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
                       <button className="btn-outline w-full sm:w-auto text-sm py-1.5 px-3">View Details</button>

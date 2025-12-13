@@ -2,13 +2,69 @@
 
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { ShoppingCart, Heart, Package, Wallet } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function CustomerDashboard() {
-  const stats = [
-    { label: "Total Orders", value: "12", icon: <Package size={24} /> },
-    { label: "Wishlist Items", value: "8", icon: <Heart size={24} /> },
-    { label: "Cart Items", value: "3", icon: <ShoppingCart size={24} /> },
-    { label: "Wallet Balance", value: "₹2,500", icon: <Wallet size={24} /> },
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [me, setMe] = useState<any>(null)
+  const [stats, setStats] = useState<any>(null)
+  const [orders, setOrders] = useState<any[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+
+        const [meRes, statsRes, ordersRes] = await Promise.all([
+          fetch("/api/backend/auth/me"),
+          fetch("/api/backend/orders/stats"),
+          fetch("/api/backend/orders?limit=5"),
+        ])
+
+        const meData = await meRes.json().catch(() => null)
+        const statsData = await statsRes.json().catch(() => null)
+        const ordersData = await ordersRes.json().catch(() => null)
+
+        if (!meRes.ok) {
+          throw new Error(meData?.error || "Failed to load user")
+        }
+
+        if (!statsRes.ok) {
+          throw new Error(statsData?.error || "Failed to load stats")
+        }
+
+        if (!ordersRes.ok) {
+          throw new Error(ordersData?.error || "Failed to load orders")
+        }
+
+        if (cancelled) return
+        setMe(meData?.user || null)
+        setStats(statsData?.stats || null)
+        setOrders(Array.isArray(ordersData?.orders) ? ordersData.orders : [])
+      } catch (e: any) {
+        if (cancelled) return
+        setError(e?.message || "Failed to load dashboard")
+      } finally {
+        if (cancelled) return
+        setIsLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const statCards = [
+    { label: "Total Orders", value: stats?.total_orders ?? "—", icon: <Package size={24} /> },
+    { label: "Wishlist Items", value: stats?.wishlist_items ?? "—", icon: <Heart size={24} /> },
+    { label: "Cart Items", value: stats?.cart_items ?? "—", icon: <ShoppingCart size={24} /> },
+    { label: "Wallet Balance", value: stats ? `₹${Number(stats.wallet_balance || 0).toFixed(0)}` : "—", icon: <Wallet size={24} /> },
   ]
 
   return (
@@ -17,18 +73,24 @@ export default function CustomerDashboard() {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, Ahmed!</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome back{me?.full_name ? `, ${me.full_name}` : ""}!</h1>
           <p className="text-muted-foreground">Manage your account and view your purchases</p>
         </div>
 
+        {error ? (
+          <div className="card mb-6">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        ) : null}
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat) => (
+          {statCards.map((stat) => (
             <div key={stat.label} className="card">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                  <p className="text-3xl font-bold mt-2">{isLoading ? "…" : stat.value}</p>
                 </div>
                 <div className="text-primary">{stat.icon}</div>
               </div>
@@ -58,22 +120,38 @@ export default function CustomerDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {[1, 2, 3, 4].map((i) => (
-                  <tr key={i} className="border-b border-border hover:bg-muted transition-colors">
-                    <td className="py-3 px-4 font-medium text-primary">#1200{i}</td>
-                    <td className="py-3 px-4">Jan {20 - i}, 2024</td>
-                    <td className="py-3 px-4">Tech Store {i}</td>
-                    <td className="py-3 px-4 font-semibold">₹{(Math.random() * 5000 + 1000).toFixed(2)}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
-                        Delivered
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <button className="text-primary hover:underline font-medium">Track</button>
+                {isLoading ? (
+                  <tr>
+                    <td className="py-3 px-4 text-muted-foreground" colSpan={6}>
+                      Loading orders...
                     </td>
                   </tr>
-                ))}
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td className="py-3 px-4 text-muted-foreground" colSpan={6}>
+                      No orders yet.
+                    </td>
+                  </tr>
+                ) : (
+                  orders.map((o) => (
+                    <tr key={o.id} className="border-b border-border hover:bg-muted transition-colors">
+                      <td className="py-3 px-4 font-medium text-primary">#{o.id}</td>
+                      <td className="py-3 px-4">{o.created_at ? new Date(o.created_at).toLocaleDateString() : ""}</td>
+                      <td className="py-3 px-4">{o.store_name || o.seller_name || ""}</td>
+                      <td className="py-3 px-4 font-semibold">₹{Number(o.total_amount || 0).toFixed(2)}</td>
+                      <td className="py-3 px-4">
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
+                          {(o.status || "").toString()}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <a href="/customer/orders" className="text-primary hover:underline font-medium">
+                          View
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
 
-    const role = formData.get("role") as string
+    const role = (formData.get("role") as string) || "customer"
     const fullName = formData.get("fullName") as string
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -19,53 +19,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
     }
 
-    // Validate seller fields
-    if (role === "seller") {
-      const username = formData.get("username") as string
-      const storeName = formData.get("storeName") as string
-      const mobileNumber = formData.get("mobileNumber") as string
-      const promoCode = formData.get("promoCode") as string
-      const idFrontImage = formData.get("idFrontImage") as File
-      const idBackImage = formData.get("idBackImage") as File
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
 
-      if (!username || username.length < 3) {
-        return NextResponse.json({ error: "Username must be at least 3 characters" }, { status: 400 })
-      }
-
-      if (!storeName) {
-        return NextResponse.json({ error: "Store name is required" }, { status: 400 })
-      }
-
-      if (!mobileNumber) {
-        return NextResponse.json({ error: "Mobile number is required" }, { status: 400 })
-      }
-
-      if (!/^\d{4}$/.test(promoCode)) {
-        return NextResponse.json({ error: "Promo code must be exactly 4 digits" }, { status: 400 })
-      }
-
-      if (!idFrontImage || !idBackImage) {
-        return NextResponse.json({ error: "ID images are required" }, { status: 400 })
-      }
-
-      // Validate image files
-      if (!idFrontImage.type.startsWith("image/") || !idBackImage.type.startsWith("image/")) {
-        return NextResponse.json({ error: "Invalid image format" }, { status: 400 })
-      }
-
-      // TODO: Upload images to Vercel Blob or Supabase when integrations are set up
-      // TODO: Verify promo code against database
-      // TODO: Create seller record with verification_status = 'pending'
+    const payload: any = {
+      email,
+      password,
+      role,
+      full_name: fullName,
     }
 
-    // TODO: Create user in Supabase Auth and database when integration is set up
+    if (role === "seller") {
+      const storeName = formData.get("storeName") as string
+      const promoCode = (formData.get("promoCode") as string) || ""
+      const mobileNumber = formData.get("mobileNumber") as string
+      const username = formData.get("username") as string
+
+      payload.phone = mobileNumber
+
+      payload.business_name = storeName || username || "Seller Business"
+      payload.store_name = storeName || username || `store_${Date.now()}`
+      payload.cnic_number = promoCode || username || `${Date.now()}`
+    }
+
+    const apiResponse = await fetch(`${apiBaseUrl}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await apiResponse.json().catch(() => null)
+
+    if (!apiResponse.ok || !data?.success) {
+      return NextResponse.json({ error: data?.error || "Registration failed" }, { status: apiResponse.status || 500 })
+    }
 
     return NextResponse.json(
       {
         success: true,
-        role,
-        email,
-        message: `${role === "seller" ? "Seller" : "Customer"} registration successful. Please check your email to verify your account.`,
+        role: data.user?.role || role,
+        email: data.user?.email || email,
+        message: data.message || "Registration successful",
       },
       { status: 201 },
     )

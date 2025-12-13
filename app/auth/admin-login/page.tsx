@@ -42,10 +42,6 @@ export default function AdminLoginPage() {
         return
       }
 
-      const expires = new Date(Date.now() + 86400000).toUTCString()
-      document.cookie = `admin_token=${data.token}; path=/; expires=${expires}; SameSite=Lax`
-      document.cookie = `admin_email=${data.email}; path=/; expires=${expires}; SameSite=Lax`
-
       setTimeout(() => {
         window.location.href = "/admin-panel"
       }, 100)

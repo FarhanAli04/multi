@@ -1,7 +1,7 @@
 "use client"
 
 import { Search, Eye, Edit2, Trash2, RefreshCw, Download } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -9,97 +9,137 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
+interface AdminOrder {
+  orderId: number
+  id: string
+  customer: string
+  vendor: string
+  amount: string
+  status: string
+  items: number
+  date: string
+  email: string
+  phone: string
+  address: string
+}
+
 export default function OrdersManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [orders, setOrders] = useState([
-    {
-      id: "#ORD-001",
-      customer: "John Doe",
-      vendor: "Tech Store",
-      amount: "$245.99",
-      status: "Delivered",
-      items: 3,
-      date: "Dec 18, 2024",
-      email: "john@example.com",
-      phone: "+1234567890",
-      address: "123 Main St, City, State"
-    },
-    {
-      id: "#ORD-002",
-      customer: "Jane Smith",
-      vendor: "Fashion Hub",
-      amount: "$180.50",
-      status: "Processing",
-      items: 2,
-      date: "Dec 17, 2024",
-      email: "jane@example.com",
-      phone: "+1234567891",
-      address: "456 Oak Ave, City, State"
-    },
-    {
-      id: "#ORD-003",
-      customer: "Mike Johnson",
-      vendor: "Electronics Pro",
-      amount: "$320.00",
-      status: "Pending",
-      items: 5,
-      date: "Dec 17, 2024",
-      email: "mike@example.com",
-      phone: "+1234567892",
-      address: "789 Pine Rd, City, State"
-    },
-  ])
-  const [selectedOrder, setSelectedOrder] = useState(null)
-  const [editingOrder, setEditingOrder] = useState(null)
+  const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null)
+  const [editingOrder, setEditingOrder] = useState<AdminOrder | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.vendor.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase()
-    return matchesSearch && matchesStatus
-  })
+  const loadOrders = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
 
-  const handleView = (order: any) => {
+      const params = new URLSearchParams()
+      if (statusFilter !== "all") params.set("status", statusFilter.toLowerCase())
+      if (searchTerm.trim()) params.set("search", searchTerm.trim())
+
+      const url = params.size ? `/api/backend/admin/orders?${params.toString()}` : "/api/backend/admin/orders"
+      const res = await fetch(url)
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load orders")
+      }
+
+      const mapStatus = (s: string) => {
+        const v = (s || "").toLowerCase()
+        if (v === "pending") return "Pending"
+        if (v === "processing") return "Processing"
+        if (v === "shipped") return "Shipped"
+        if (v === "delivered") return "Delivered"
+        return "Cancelled"
+      }
+
+      const mapped: AdminOrder[] = (data?.orders || []).map((o: any) => ({
+        orderId: Number(o.id),
+        id: `#ORD-${String(o.id).padStart(3, "0")}`,
+        customer: o.customer_name || "",
+        vendor: o.store_name || o.seller_name || "",
+        amount: `$${Number(o.total_amount ?? 0).toFixed(2)}`,
+        status: mapStatus(o.status),
+        items: Number(o.item_count ?? 0),
+        date: o.created_at ? new Date(o.created_at).toLocaleDateString() : "",
+        email: o.customer_email || "",
+        phone: o.customer_phone || "",
+        address: o.shipping_address || "",
+      }))
+
+      setOrders(mapped)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load orders")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadOrders()
+  }, [statusFilter])
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      loadOrders()
+    }, 350)
+    return () => clearTimeout(t)
+  }, [searchTerm])
+
+  const filteredOrders = orders
+
+  const handleView = (order: AdminOrder) => {
     setSelectedOrder(order)
     setIsViewDialogOpen(true)
   }
 
-  const handleEdit = (order: any) => {
+  const handleEdit = (order: AdminOrder) => {
     setEditingOrder({...order})
     setIsEditDialogOpen(true)
   }
 
-  const handleDelete = (orderId: string) => {
-    if (confirm("Are you sure you want to delete this order?")) {
-      setOrders(orders.filter(order => order.id !== orderId))
+  const handleDelete = async (orderId: number) => {
+    if (!confirm("Cancel this order?")) return
+    await handleStatusChange(orderId, "Cancelled")
+  }
+
+  const handleStatusChange = async (orderId: number, newStatus: string) => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/admin/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus.toLowerCase() }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update status")
+      }
+      await loadOrders()
+    } catch (e: any) {
+      setError(e?.message || "Failed to update status")
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ))
-  }
-
   const handleSaveEdit = () => {
-    setOrders(orders.map(order => 
-      order.id === editingOrder.id ? editingOrder : order
-    ))
     setIsEditDialogOpen(false)
     setEditingOrder(null)
   }
 
   const handleRefresh = () => {
-    // Simulate data refresh
-    alert("Orders data refreshed!")
+    loadOrders()
   }
 
   const handleExport = () => {
-    // Simulate export functionality
     const csvContent = "data:text/csv;charset=utf-8," + 
       "Order ID,Customer,Vendor,Amount,Status,Items,Date\n" +
       orders.map(order => 
@@ -128,7 +168,7 @@ export default function OrdersManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Orders Management</h1>
           <p className="text-muted-foreground mt-1">Manage and track all orders</p>
@@ -144,6 +184,8 @@ export default function OrdersManagement() {
           </Button>
         </div>
       </div>
+
+      {error && <div className="text-red-600">{error}</div>}
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-end">
@@ -207,8 +249,8 @@ export default function OrdersManagement() {
                     <td className="px-4 py-3 font-semibold">{order.amount}</td>
                     <td className="px-4 py-3">{order.items}</td>
                     <td className="px-4 py-3">
-                      <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-                        <SelectTrigger className="w-[120px]">
+                      <Select value={order.status} onValueChange={(v) => handleStatusChange(order.orderId, v)}>
+                        <SelectTrigger className="w-[140px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -219,6 +261,11 @@ export default function OrdersManagement() {
                           <SelectItem value="Cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
+                      <div className="mt-2">
+                        <Badge className={getStatusColor(order.status)}>
+                          {order.status}
+                        </Badge>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm">{order.date}</td>
                     <td className="px-4 py-3">
@@ -229,7 +276,7 @@ export default function OrdersManagement() {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(order)}>
                           <Edit2 size={16} className="text-blue-500" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(order.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(order.orderId)}>
                           <Trash2 size={16} className="text-red-500" />
                         </Button>
                       </div>
@@ -238,10 +285,8 @@ export default function OrdersManagement() {
                 ))}
               </tbody>
             </table>
-            {filteredOrders.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No orders found matching your criteria
-              </div>
+            {!isLoading && filteredOrders.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">No orders found</div>
             )}
           </div>
         </CardContent>

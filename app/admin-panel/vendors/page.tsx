@@ -1,7 +1,7 @@
 "use client"
 
 import { Search, CheckCircle, AlertCircle, Eye, Ban, RotateCw, Download, RefreshCw, Filter, TrendingUp, Users, Package, DollarSign, Mail, Phone, MapPin, Star, Calendar, MoreVertical, Edit2, Trash2, CreditCard, FileText } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -48,95 +48,57 @@ export default function VendorsManagement() {
   const [sortBy, setSortBy] = useState("name")
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [vendors, setVendors] = useState<Vendor[]>([
-    {
-      id: 1,
-      name: "Tech Store",
-      owner: "Ahmed Khan",
-      email: "tech@example.com",
-      phone: "+1 234 567 8900",
-      address: "123 Tech Street, Silicon Valley, CA",
-      products: 245,
-      orders: 1203,
-      earnings: "$12,450.50",
-      verified: true,
-      status: "Active",
-      rating: 4.5,
-      joinDate: "Jan 15, 2024",
-      lastActive: "2 hours ago",
-      commission: 10,
-      paymentMethod: "Bank Transfer",
-      documents: {
-        idVerified: true,
-        businessLicense: true,
-        taxId: true
-      },
-      performance: {
-        avgResponseTime: "2 hours",
-        fulfillmentRate: 98,
-        returnRate: 2,
-        customerSatisfaction: 4.6
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const loadVendors = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch("/api/backend/admin/vendors")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load vendors")
       }
-    },
-    {
-      id: 2,
-      name: "Fashion Hub",
-      owner: "Sarah Ahmed",
-      email: "fashion@example.com",
-      phone: "+1 234 567 8901",
-      address: "456 Fashion Ave, New York, NY",
-      products: 512,
-      orders: 892,
-      earnings: "$8,920.25",
-      verified: true,
-      status: "Active",
-      rating: 4.2,
-      joinDate: "Feb 20, 2024",
-      lastActive: "1 day ago",
-      commission: 12,
-      paymentMethod: "PayPal",
-      documents: {
-        idVerified: true,
-        businessLicense: true,
-        taxId: false
-      },
-      performance: {
-        avgResponseTime: "4 hours",
-        fulfillmentRate: 95,
-        returnRate: 5,
-        customerSatisfaction: 4.3
-      }
-    },
-    {
-      id: 3,
-      name: "Electronics Pro",
-      owner: "Ali Hassan",
-      email: "electronics@example.com",
-      phone: "+1 234 567 8902",
-      address: "789 Electronics Blvd, Austin, TX",
-      products: 189,
-      orders: 456,
-      earnings: "$5,234.75",
-      verified: false,
-      status: "Pending",
-      rating: 3.8,
-      joinDate: "Mar 10, 2024",
-      lastActive: "3 days ago",
-      commission: 8,
-      paymentMethod: "Stripe",
-      documents: {
-        idVerified: false,
-        businessLicense: false,
-        taxId: false
-      },
-      performance: {
-        avgResponseTime: "6 hours",
-        fulfillmentRate: 92,
-        returnRate: 8,
-        customerSatisfaction: 3.9
-      }
-    },
-  ])
+
+      const mapped: Vendor[] = (data?.vendors || []).map((v: any) => {
+        const earningsNumber = Number(v.earnings ?? 0)
+        const joinDate = v.joinDate ? new Date(v.joinDate).toLocaleDateString() : ""
+        const lastActive = v.lastActive ? new Date(v.lastActive).toLocaleString() : ""
+        return {
+          id: Number(v.id),
+          name: v.name || "",
+          owner: v.owner || "",
+          email: v.email || "",
+          phone: v.phone || "",
+          address: v.address || "",
+          products: Number(v.products ?? 0),
+          orders: Number(v.orders ?? 0),
+          earnings: `$${earningsNumber.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          verified: Boolean(v.verified),
+          status: (v.status || "Pending") as Vendor["status"],
+          rating: 0,
+          joinDate,
+          lastActive,
+          commission: Number(v.commission ?? 10),
+          paymentMethod: "",
+          documents: { idVerified: false, businessLicense: false, taxId: false },
+          performance: { avgResponseTime: "", fulfillmentRate: 0, returnRate: 0, customerSatisfaction: 0 },
+        }
+      })
+
+      setVendors(mapped)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load vendors")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadVendors()
+  }, [])
 
   const filteredVendors = vendors.filter(vendor => {
     const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -163,29 +125,59 @@ export default function VendorsManagement() {
     setIsViewDialogOpen(true)
   }
 
-  const handleToggleStatus = (vendorId: number) => {
-    setVendors(vendors.map(vendor => {
-      if (vendor.id === vendorId) {
-        const statusFlow = {
-          "Active": "Suspended",
-          "Suspended": "Active", 
-          "Pending": "Active"
-        }
-        return { ...vendor, status: statusFlow[vendor.status] as any }
+  const handleToggleStatus = async (vendorId: number) => {
+    const current = vendors.find((v) => v.id === vendorId)
+    if (!current) return
+    const nextStatus: Vendor["status"] = current.status === "Suspended" ? "Active" : "Suspended"
+
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/admin/vendors/${vendorId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update vendor status")
       }
-      return vendor
-    }))
+      await loadVendors()
+    } catch (e: any) {
+      setError(e?.message || "Failed to update vendor status")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleVerify = (vendorId: number) => {
-    setVendors(vendors.map(vendor => 
-      vendor.id === vendorId ? { ...vendor, verified: !vendor.verified } : vendor
-    ))
+  const handleVerify = async (vendorId: number) => {
+    const current = vendors.find((v) => v.id === vendorId)
+    if (!current) return
+    const nextStatus: Vendor["status"] = current.verified ? "Pending" : "Active"
+
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(`/api/backend/admin/vendors/${vendorId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update vendor")
+      }
+      await loadVendors()
+    } catch (e: any) {
+      setError(e?.message || "Failed to update vendor")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDelete = (vendorId: number) => {
-    if (confirm("Are you sure you want to delete this vendor? This action cannot be undone.")) {
-      setVendors(vendors.filter(vendor => vendor.id !== vendorId))
+    if (confirm("Suspend this vendor?")) {
+      handleToggleStatus(vendorId)
     }
   }
 
@@ -235,6 +227,8 @@ export default function VendorsManagement() {
           </Button>
         </div>
       </div>
+
+      {error && <div className="text-red-600">{error}</div>}
 
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

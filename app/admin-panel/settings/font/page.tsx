@@ -8,20 +8,82 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Type, Download, Upload } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function FontSettingsPage() {
   const [fontSettings, setFontSettings] = useState({
-    primaryFont: "Inter",
-    secondaryFont: "Roboto",
-    headingFont: "Poppins",
-    bodyFontSize: "16",
-    headingFontSize: "24",
+    primaryFont: "",
+    secondaryFont: "",
+    headingFont: "",
+    bodyFontSize: "",
+    headingFontSize: "",
   })
 
-  const [customFonts, setCustomFonts] = useState([
-    { name: "Custom Font 1", family: "CustomFont1", url: "" },
-  ])
+  const [customFonts, setCustomFonts] = useState<Array<{ name: string; family: string; url: string }>>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        setSuccess("")
+        const res = await fetch("/api/settings")
+        const data = await res.json().catch(() => null)
+        if (!data?.success) {
+          throw new Error(data?.message || "Failed to load settings")
+        }
+        const fs = data?.data?.font_settings || {}
+        if (cancelled) return
+        setFontSettings({
+          primaryFont: fs.primaryFont || "Inter",
+          secondaryFont: fs.secondaryFont || "Roboto",
+          headingFont: fs.headingFont || "Poppins",
+          bodyFontSize: fs.bodyFontSize || "16",
+          headingFontSize: fs.headingFontSize || "24",
+        })
+        setCustomFonts(Array.isArray(fs.customFonts) ? fs.customFonts : [])
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || "Failed to load settings")
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const save = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      setSuccess("")
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          font_settings: {
+            ...fontSettings,
+            customFonts,
+          },
+        }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!data?.success) {
+        throw new Error(data?.message || "Failed to save settings")
+      }
+      setSuccess("Saved")
+    } catch (e: any) {
+      setError(e?.message || "Failed to save settings")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -29,6 +91,9 @@ export default function FontSettingsPage() {
         <h1 className="text-3xl font-bold">Font Options</h1>
         <p className="text-muted-foreground">Configure typography settings for your website</p>
       </div>
+
+      {error ? <div className="rounded-lg border border-border bg-muted p-4 text-sm text-destructive">{error}</div> : null}
+      {success ? <div className="rounded-lg border border-border bg-muted p-4 text-sm">{success}</div> : null}
 
       <Tabs defaultValue="system-fonts" className="space-y-4">
         <TabsList>
@@ -126,9 +191,9 @@ export default function FontSettingsPage() {
                 />
               </div>
 
-              <Button className="w-full md:w-auto">
+              <Button className="w-full md:w-auto" onClick={save} disabled={isLoading}>
                 <Type className="mr-2 h-4 w-4" />
-                Save Font Settings
+                {isLoading ? "Saving..." : "Save Font Settings"}
               </Button>
             </CardContent>
           </Card>

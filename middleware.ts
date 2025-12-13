@@ -1,23 +1,76 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+
+function clearAdminCookies(res: NextResponse) {
+  res.cookies.set("admin_token", "", {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  })
+  res.cookies.set("admin_email", "", {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  })
+}
 
 export async function middleware(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
   const pathname = request.nextUrl.pathname
   const isAdminPanelRoute = pathname.startsWith("/admin-panel")
   const isAdminLoginRoute = pathname === "/auth/admin-login"
   const isAdminApiRoute = pathname.startsWith("/api/auth/admin")
+  const isSellerRoute = pathname.startsWith("/seller")
+  const isAuthRoute = pathname.startsWith("/auth/")
+  const isCustomerRoute = pathname.startsWith("/customer")
+  const wantedRole = request.nextUrl.searchParams.get("role")
 
-  if (isAdminLoginRoute || isAdminApiRoute) {
+  // Handle admin API routes
+  if (isAdminApiRoute) {
     return NextResponse.next()
+  }
+
+  // Handle customer routes with cookie-based authentication
+  if (isCustomerRoute) {
+    const authToken = request.cookies.get("auth_token")?.value
+    const userRole = request.cookies.get("user_role")?.value
+    const adminToken = request.cookies.get("admin_token")?.value
+
+    if (!authToken) {
+      const loginUrl = new URL("/auth/login?role=customer", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    if (userRole !== "customer") {
+      const loginUrl = new URL("/auth/login?role=customer", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    const res = NextResponse.next()
+    if (adminToken) {
+      clearAdminCookies(res)
+    }
+    return res
   }
 
   if (isAdminPanelRoute) {
     const adminToken = request.cookies.get("admin_token")?.value
+    const authToken = request.cookies.get("auth_token")?.value
+    const userRole = request.cookies.get("user_role")?.value
 
-    if (!adminToken) {
+    if (adminToken && userRole !== "admin") {
+      const loginUrl = new URL("/auth/admin-login", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    if (authToken && userRole !== "admin" && !adminToken) {
+      const loginUrl = new URL("/auth/admin-login", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    if (!adminToken && !(authToken && userRole === "admin")) {
       const loginUrl = new URL("/auth/admin-login", request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -26,40 +79,69 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // If Supabase is not configured, allow request to proceed (demo mode)
-  if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.next()
+  // Handle seller routes with cookie-based authentication
+  if (isSellerRoute) {
+    const authToken = request.cookies.get("auth_token")?.value
+    const userRole = request.cookies.get("user_role")?.value
+    const adminToken = request.cookies.get("admin_token")?.value
+
+    if (!authToken) {
+      const loginUrl = new URL("/auth/login?role=seller", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    if (userRole === "admin") {
+      return NextResponse.redirect(new URL("/admin-panel", request.url))
+    }
+
+    if (userRole !== "seller") {
+      const loginUrl = new URL("/auth/login?role=seller", request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    const res = NextResponse.next()
+    if (adminToken) {
+      clearAdminCookies(res)
+    }
+    return res
   }
 
-  const response = await update(request)
-  return response
-}
+  // Redirect authenticated users away from auth pages
+  if (isAuthRoute) {
+    const authToken = request.cookies.get("auth_token")?.value
+    const userRole = request.cookies.get("user_role")?.value
+    const adminToken = request.cookies.get("admin_token")?.value
 
-async function update(request: NextRequest) {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          const response = NextResponse.next()
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
-          return response
-        },
-      },
-    },
-  )
+    if (pathname === "/auth/register") {
+      return NextResponse.next()
+    }
 
-  const { data } = await supabase.auth.getUser()
+    // Allow switching roles by explicitly visiting a role-specific login.
+    // Example: currently logged in as customer, but visiting /auth/login?role=seller should not redirect to '/'.
+    if (pathname === "/auth/login" && wantedRole && userRole && wantedRole !== userRole) {
+      return NextResponse.next()
+    }
 
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/seller") || request.nextUrl.pathname.startsWith("/customer")
+    if (isAdminLoginRoute && userRole && userRole !== "admin") {
+      return NextResponse.next()
+    }
 
-  if (!data.user && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/auth/login", request.url))
+    if (adminToken && userRole === "admin") {
+      return NextResponse.redirect(new URL("/admin-panel", request.url))
+    }
+
+    if (authToken) {
+      if (userRole === "admin") {
+        return NextResponse.redirect(new URL("/admin-panel", request.url))
+      }
+      if (userRole === "seller") {
+        return NextResponse.redirect(new URL("/seller", request.url))
+      }
+      if (userRole === "customer") {
+        return NextResponse.redirect(new URL("/customer", request.url))
+      }
+    }
+
   }
 
   return NextResponse.next()

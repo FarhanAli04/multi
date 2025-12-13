@@ -1,12 +1,13 @@
 "use client"
 
 import { Save, Upload } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 interface GeneralSettings {
   websiteName: string;
@@ -24,20 +25,40 @@ interface GeneralSettings {
 }
 
 export default function GeneralSettings() {
+  const { settings: realtimeSettings, updateSettings, isConnected } = useRealtime()
   const [settings, setSettings] = useState<GeneralSettings>({
-    websiteName: "Syed Asad Raza",
-    tagline: "Your Premier Multi-Vendor Marketplace",
+    websiteName: "",
+    tagline: "",
     currency: "USD",
     timezone: "UTC",
-    email: "admin@sar.com",
-    phone: "+1 234 567 8900",
-    address: "123 Business Street, City, Country",
+    email: "",
+    phone: "",
+    address: "",
     refundPolicy: "",
     returnPolicy: "",
     termsConditions: "",
     logo: null,
     favicon: null
   })
+
+  // Load settings from database when component mounts
+  useEffect(() => {
+    if (realtimeSettings.website_name) {
+      setSettings(prev => ({
+        ...prev,
+        websiteName: realtimeSettings.website_name || "",
+        tagline: realtimeSettings.tagline || "",
+        currency: realtimeSettings.currency || "USD",
+        timezone: realtimeSettings.timezone || "UTC",
+        email: realtimeSettings.email || "",
+        phone: realtimeSettings.phone || "",
+        address: realtimeSettings.address || "",
+        refundPolicy: realtimeSettings.refund_policy || "",
+        returnPolicy: realtimeSettings.return_policy || "",
+        termsConditions: realtimeSettings.terms_conditions || ""
+      }))
+    }
+  }, [realtimeSettings])
 
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
@@ -54,16 +75,28 @@ export default function GeneralSettings() {
     setIsSaving(true)
     setSaveMessage("")
     
-    // Simulate API call to save settings
-    setTimeout(() => {
-      // In a real app, this would save to a database
-      console.log("Saving settings:", settings)
-      setIsSaving(false)
-      setSaveMessage("Settings saved successfully!")
-      
-      // Clear message after 3 seconds
-      setTimeout(() => setSaveMessage(""), 3000)
-    }, 1500)
+    // Update real-time settings with database field names
+    const realtimeUpdate = {
+      website_name: settings.websiteName,
+      tagline: settings.tagline,
+      currency: settings.currency,
+      timezone: settings.timezone,
+      email: settings.email,
+      phone: settings.phone,
+      address: settings.address,
+      refund_policy: settings.refundPolicy,
+      return_policy: settings.returnPolicy,
+      terms_conditions: settings.termsConditions
+    }
+    
+    // Send real-time update
+    updateSettings(realtimeUpdate)
+    
+    setIsSaving(false)
+    setSaveMessage(`Settings saved successfully! ${isConnected ? "(Real-time updates enabled)" : "(Real-time disconnected)"}`)
+    
+    // Clear message after 3 seconds
+    setTimeout(() => setSaveMessage(""), 3000)
   }
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,9 +110,17 @@ export default function GeneralSettings() {
   }
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">General Settings</h1>
-        <p className="text-muted-foreground mt-1">Configure website-wide settings</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">General Settings</h1>
+          <p className="text-muted-foreground mt-1">Configure website-wide settings</p>
+        </div>
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+          isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-600' : 'bg-red-600'}`}></div>
+          {isConnected ? 'Real-time Connected' : 'Real-time Disconnected'}
+        </div>
       </div>
 
       {saveMessage && (

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { AdminPanelSidebar } from "@/components/admin-panel/sidebar"
 import { AdminPanelHeader } from "@/components/admin-panel/header"
 import { ChatWidget } from "@/components/chat/chat-widget"
+import { RealtimeProvider } from "@/contexts/RealtimeContext"
+import AdminMiddlewareCheck from "./middleware-check"
 import "@/styles/admin-panel.css"
 
 export default function AdminPanelLayout({
@@ -37,18 +39,21 @@ export default function AdminPanelLayout({
   }, [])
 
   return (
-    <div className="flex h-screen bg-background">
-      <AdminPanelSidebar />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminPanelHeader />
+    <RealtimeProvider>
+      <div className="flex h-screen bg-background">
+        <AdminMiddlewareCheck />
+        <AdminPanelSidebar />
         
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-muted/20">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminPanelHeader />
+          
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-muted/20">
+            {children}
+          </main>
+        </div>
+        
+        <ChatWidget />
       </div>
-      
-      <ChatWidget />
-    </div>
+    </RealtimeProvider>
   )
 }

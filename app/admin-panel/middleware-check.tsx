@@ -8,14 +8,40 @@ export default function AdminMiddlewareCheck() {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if admin token exists
-    const token = localStorage.getItem("admin_token")
-    const email = localStorage.getItem("admin_email")
+    let cancelled = false
 
-    if (!token || !email) {
-      router.push("/auth/admin-login")
-    } else {
-      setIsAuthenticated(true)
+    const check = async () => {
+      try {
+        const res = await fetch("/api/backend/auth/me")
+        const data = await res.json().catch(() => null)
+
+        if (cancelled) return
+
+        const role = data?.user?.role
+        if (!res.ok || !role) {
+          router.push("/auth/admin-login")
+          return
+        }
+
+        if (role !== "admin") {
+          if (role === "seller") {
+            router.push("/seller")
+          } else {
+            router.push("/customer")
+          }
+          return
+        }
+
+        setIsAuthenticated(true)
+      } catch {
+        if (cancelled) return
+        router.push("/auth/admin-login")
+      }
+    }
+
+    check()
+    return () => {
+      cancelled = true
     }
   }, [router])
 

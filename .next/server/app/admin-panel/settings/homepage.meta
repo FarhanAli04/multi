@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin-panel/layout,_N_T_/admin-panel/settings/layout,_N_T_/admin-panel/settings/homepage/layout,_N_T_/admin-panel/settings/homepage/page,_N_T_/admin-panel/settings/homepage"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin-panel/settings/homepage/__PAGE__",
+    "/admin-panel/settings/homepage",
+    "/admin-panel/settings",
+    "/admin-panel",
+    "/_index",
+    "/_head"
+  ]
+}

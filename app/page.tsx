@@ -3,15 +3,18 @@
 import Link from "next/link"
 import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 export default function Home() {
+  const { settings } = useRealtime()
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-primary">
-            SAR Store
+            {settings.website_name || "Your Store"}
           </Link>
 
           <div className="flex items-center gap-8">
@@ -19,10 +22,10 @@ export default function Home() {
               Shop
             </Link>
             <Link
-              href="/messaging"
+              href="/chat"
               className="text-foreground hover:text-primary transition-colors font-medium text-sm"
             >
-              Messages
+              Chat
             </Link>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -46,7 +49,7 @@ export default function Home() {
           <div className="space-y-8">
             <div className="space-y-6">
               <h1 className="text-5xl lg:text-6xl font-bold text-balance leading-tight">
-                Your Multi-Vendor Marketplace for Quality Products
+                {settings.tagline || "Your Multi-Vendor Marketplace"}
               </h1>
               <p className="text-xl text-muted-foreground text-balance leading-relaxed">
                 Experience seamless shopping with trusted sellers, powerful seller tools, and a growing community. All
@@ -228,7 +231,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="space-y-4">
-              <h3 className="font-bold text-lg">SAR Store</h3>
+              <h3 className="font-bold text-lg">{settings.website_name || "Your Store"}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Your trusted multi-vendor marketplace for quality products and exceptional service.
               </p>
@@ -296,7 +299,7 @@ export default function Home() {
           </div>
 
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2025 Syed Asad Raza. All rights reserved. | Designed for excellence.</p>
+            <p>© 2025 {settings.website_name || "Your Store"}. All rights reserved. | Designed for excellence.</p>
           </div>
         </div>
       </footer>

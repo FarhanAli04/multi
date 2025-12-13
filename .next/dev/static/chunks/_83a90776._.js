@@ -178,41 +178,76 @@ var _s = __turbopack_context__.k.signature();
 ;
 function MenuSettingsPage() {
     _s();
-    const [menuItems, setMenuItems] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([
-        {
-            id: 1,
-            name: "Home",
-            url: "/",
-            order: 1,
-            active: true
-        },
-        {
-            id: 2,
-            name: "Products",
-            url: "/products",
-            order: 2,
-            active: true
-        },
-        {
-            id: 3,
-            name: "About",
-            url: "/about",
-            order: 3,
-            active: true
-        },
-        {
-            id: 4,
-            name: "Contact",
-            url: "/contact",
-            order: 4,
-            active: true
-        }
-    ]);
+    const [menuItems, setMenuItems] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [newItem, setNewItem] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         name: "",
         url: "",
         active: true
     });
+    const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [success, setSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "MenuSettingsPage.useEffect": ()=>{
+            let cancelled = false;
+            const load = {
+                "MenuSettingsPage.useEffect.load": async ()=>{
+                    try {
+                        setIsLoading(true);
+                        setError("");
+                        setSuccess("");
+                        const res = await fetch("/api/settings");
+                        const data = await res.json().catch({
+                            "MenuSettingsPage.useEffect.load": ()=>null
+                        }["MenuSettingsPage.useEffect.load"]);
+                        if (!data?.success) {
+                            throw new Error(data?.message || "Failed to load settings");
+                        }
+                        const ms = data?.data?.menu_settings || {};
+                        const list = Array.isArray(ms.menuItems) ? ms.menuItems : [];
+                        if (!cancelled) setMenuItems(list);
+                    } catch (e) {
+                        if (!cancelled) setError(e?.message || "Failed to load settings");
+                    } finally{
+                        if (!cancelled) setIsLoading(false);
+                    }
+                }
+            }["MenuSettingsPage.useEffect.load"];
+            load();
+            return ({
+                "MenuSettingsPage.useEffect": ()=>{
+                    cancelled = true;
+                }
+            })["MenuSettingsPage.useEffect"];
+        }
+    }["MenuSettingsPage.useEffect"], []);
+    const save = async ()=>{
+        try {
+            setIsLoading(true);
+            setError("");
+            setSuccess("");
+            const res = await fetch("/api/settings", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    menu_settings: {
+                        menuItems
+                    }
+                })
+            });
+            const data = await res.json().catch(()=>null);
+            if (!data?.success) {
+                throw new Error(data?.message || "Failed to save settings");
+            }
+            setSuccess("Saved");
+        } catch (e) {
+            setError(e?.message || "Failed to save settings");
+        } finally{
+            setIsLoading(false);
+        }
+    };
     const addMenuItem = ()=>{
         if (newItem.name && newItem.url) {
             setMenuItems([
@@ -267,7 +302,7 @@ function MenuSettingsPage() {
                         children: "Menu Settings"
                     }, void 0, false, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 62,
+                        lineNumber: 113,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -275,15 +310,31 @@ function MenuSettingsPage() {
                         children: "Manage your website navigation menu"
                     }, void 0, false, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 63,
+                        lineNumber: 114,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                lineNumber: 61,
+                lineNumber: 112,
                 columnNumber: 7
             }, this),
+            error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "rounded-lg border border-border bg-muted p-4 text-sm text-destructive",
+                children: error
+            }, void 0, false, {
+                fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
+                lineNumber: 117,
+                columnNumber: 16
+            }, this) : null,
+            success ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "rounded-lg border border-border bg-muted p-4 text-sm",
+                children: success
+            }, void 0, false, {
+                fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
+                lineNumber: 118,
+                columnNumber: 18
+            }, this) : null,
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tabs"], {
                 defaultValue: "main-menu",
                 className: "space-y-4",
@@ -295,7 +346,7 @@ function MenuSettingsPage() {
                                 children: "Main Menu"
                             }, void 0, false, {
                                 fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                lineNumber: 68,
+                                lineNumber: 122,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsTrigger"], {
@@ -303,7 +354,7 @@ function MenuSettingsPage() {
                                 children: "Footer Menu"
                             }, void 0, false, {
                                 fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                lineNumber: 69,
+                                lineNumber: 123,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsTrigger"], {
@@ -311,13 +362,13 @@ function MenuSettingsPage() {
                                 children: "Mobile Menu"
                             }, void 0, false, {
                                 fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                lineNumber: 70,
+                                lineNumber: 124,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 67,
+                        lineNumber: 121,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsContent"], {
@@ -331,20 +382,20 @@ function MenuSettingsPage() {
                                             children: "Main Navigation Menu"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 76,
+                                            lineNumber: 130,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "Configure the main navigation menu items"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 77,
+                                            lineNumber: 131,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 75,
+                                    lineNumber: 129,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -369,7 +420,7 @@ function MenuSettingsPage() {
                                                                     placeholder: "Menu item name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 86,
+                                                                    lineNumber: 140,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -383,13 +434,13 @@ function MenuSettingsPage() {
                                                                     placeholder: "URL path"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 95,
+                                                                    lineNumber: 149,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                            lineNumber: 85,
+                                                            lineNumber: 139,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -400,7 +451,7 @@ function MenuSettingsPage() {
                                                                     onCheckedChange: ()=>toggleMenuItem(item.id)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 106,
+                                                                    lineNumber: 160,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -412,12 +463,12 @@ function MenuSettingsPage() {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                        lineNumber: 116,
+                                                                        lineNumber: 170,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 110,
+                                                                    lineNumber: 164,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -429,12 +480,12 @@ function MenuSettingsPage() {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                        lineNumber: 124,
+                                                                        lineNumber: 178,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 118,
+                                                                    lineNumber: 172,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -445,34 +496,43 @@ function MenuSettingsPage() {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                        lineNumber: 131,
+                                                                        lineNumber: 185,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 126,
+                                                                    lineNumber: 180,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                            lineNumber: 105,
+                                                            lineNumber: 159,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, item.id, true, {
                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                    lineNumber: 84,
+                                                    lineNumber: 138,
                                                     columnNumber: 19
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 82,
+                                            lineNumber: 136,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$separator$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Separator"], {}, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 138,
+                                            lineNumber: 192,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                            onClick: save,
+                                            disabled: isLoading,
+                                            children: isLoading ? "Saving..." : "Save Menu"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
+                                            lineNumber: 194,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -483,7 +543,7 @@ function MenuSettingsPage() {
                                                     children: "Add New Menu Item"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                    lineNumber: 141,
+                                                    lineNumber: 199,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -501,7 +561,7 @@ function MenuSettingsPage() {
                                                                     placeholder: "Menu item name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 144,
+                                                                    lineNumber: 202,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -513,13 +573,13 @@ function MenuSettingsPage() {
                                                                     placeholder: "URL path"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 149,
+                                                                    lineNumber: 207,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                            lineNumber: 143,
+                                                            lineNumber: 201,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -529,43 +589,43 @@ function MenuSettingsPage() {
                                                                     className: "h-4 w-4 mr-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                                    lineNumber: 156,
+                                                                    lineNumber: 214,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 "Add"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                            lineNumber: 155,
+                                                            lineNumber: 213,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                                    lineNumber: 142,
+                                                    lineNumber: 200,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 140,
+                                            lineNumber: 198,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 135,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                            lineNumber: 74,
+                            lineNumber: 128,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 73,
+                        lineNumber: 127,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsContent"], {
@@ -579,20 +639,20 @@ function MenuSettingsPage() {
                                             children: "Footer Menu"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 168,
+                                            lineNumber: 226,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "Configure footer navigation links"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 227,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 167,
+                                    lineNumber: 225,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -601,23 +661,23 @@ function MenuSettingsPage() {
                                         children: "Footer menu configuration coming soon..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                        lineNumber: 174,
+                                        lineNumber: 232,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 173,
+                                    lineNumber: 231,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                            lineNumber: 166,
+                            lineNumber: 224,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 165,
+                        lineNumber: 223,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsContent"], {
@@ -631,20 +691,20 @@ function MenuSettingsPage() {
                                             children: "Mobile Menu"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 182,
+                                            lineNumber: 240,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "Configure mobile-specific menu options"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                            lineNumber: 183,
+                                            lineNumber: 241,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 181,
+                                    lineNumber: 239,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -653,39 +713,39 @@ function MenuSettingsPage() {
                                         children: "Mobile menu configuration coming soon..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                        lineNumber: 188,
+                                        lineNumber: 246,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                                    lineNumber: 187,
+                                    lineNumber: 245,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                            lineNumber: 180,
+                            lineNumber: 238,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                        lineNumber: 179,
+                        lineNumber: 237,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-                lineNumber: 66,
+                lineNumber: 120,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/admin-panel/settings/menu/page.tsx",
-        lineNumber: 60,
+        lineNumber: 111,
         columnNumber: 5
     }, this);
 }
-_s(MenuSettingsPage, "CzTqd4CgPRdyJiJgfe8fT1gD3kk=");
+_s(MenuSettingsPage, "fbkAghC9raDvXLBDRcrAcLkui3Y=");
 _c = MenuSettingsPage;
 var _c;
 __turbopack_context__.k.register(_c, "MenuSettingsPage");

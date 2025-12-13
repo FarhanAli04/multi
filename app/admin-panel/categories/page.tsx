@@ -1,7 +1,7 @@
 "use client"
 
 import { Plus, Edit2, Trash2, Search, RefreshCw, Download, Eye, ToggleLeft, ToggleRight, FolderOpen, Tag, TrendingUp, MoreVertical, Filter, Star } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -47,66 +47,59 @@ export default function CategoriesManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([
-    {
-      id: 1,
-      name: "Electronics",
-      slug: "electronics",
-      description: "Electronic devices, gadgets, and accessories",
-      products: 245,
-      subcategories: 8,
-      status: "Active",
-      parent: "None",
-      image: "/images/electronics.jpg",
-      featured: true,
-      createdAt: "Jan 15, 2024",
-      updatedAt: "Dec 10, 2024",
-      seoTitle: "Best Electronics Online - Gadgets & Devices",
-      seoDescription: "Shop for latest electronics, smartphones, laptops, and more",
-      sortOrder: 1
-    },
-    {
-      id: 2,
-      name: "Fashion",
-      slug: "fashion",
-      description: "Clothing, shoes, and fashion accessories",
-      products: 512,
-      subcategories: 12,
-      status: "Active",
-      parent: "None",
-      image: "/images/fashion.jpg",
-      featured: true,
-      createdAt: "Jan 20, 2024",
-      updatedAt: "Dec 12, 2024",
-      seoTitle: "Fashion Trends - Clothing & Accessories",
-      seoDescription: "Discover latest fashion trends, clothing, shoes, and accessories",
-      sortOrder: 2
-    },
-    {
-      id: 3,
-      name: "Home & Garden",
-      slug: "home-garden",
-      description: "Home decor, furniture, and garden supplies",
-      products: 189,
-      subcategories: 5,
-      status: "Inactive",
-      parent: "None",
-      image: "/images/home.jpg",
-      featured: false,
-      createdAt: "Feb 10, 2024",
-      updatedAt: "Nov 28, 2024",
-      seoTitle: "Home & Garden Supplies",
-      seoDescription: "Quality home decor, furniture, and garden products",
-      sortOrder: 3
-    },
-  ])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const [subcategories] = useState<Subcategory[]>([
-    { id: 1, name: "Smartphones", slug: "smartphones", categoryId: 1, products: 89 },
-    { id: 2, name: "Laptops", slug: "laptops", categoryId: 1, products: 67 },
-    { id: 3, name: "Men's Clothing", slug: "mens-clothing", categoryId: 2, products: 234 },
-    { id: 4, name: "Women's Clothing", slug: "womens-clothing", categoryId: 2, products: 278 },
-  ])
+  const slugify = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+
+  const loadCategories = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch("/api/backend/admin/categories")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load categories")
+      }
+
+      const mapped: Category[] = (data?.categories || []).map((c: any, idx: number) => {
+        const name = c.name || ""
+        return {
+          id: Number(c.id),
+          name,
+          slug: slugify(name),
+          description: c.description || "",
+          products: Number(c.product_count ?? 0),
+          subcategories: 0,
+          status: Number(c.is_active) === 1 ? "Active" : "Inactive",
+          parent: "None",
+          image: c.image_url || "",
+          featured: false,
+          createdAt: c.created_at ? new Date(c.created_at).toLocaleDateString() : "",
+          updatedAt: c.updated_at ? new Date(c.updated_at).toLocaleDateString() : "",
+          seoTitle: "",
+          seoDescription: "",
+          sortOrder: idx + 1,
+        }
+      })
+
+      setCategories(mapped)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load categories")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadCategories()
+  }, [])
 
   const filteredCategories = categories.filter(category => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -134,17 +127,49 @@ export default function CategoriesManagement() {
   }
 
   const handleDelete = (categoryId: number) => {
-    if (confirm("Are you sure you want to delete this category? This action cannot be undone.")) {
-      setCategories(categories.filter(category => category.id !== categoryId))
-    }
+    if (!confirm("Are you sure you want to delete this category? This action cannot be undone.")) return
+    ;(async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        const res = await fetch(`/api/backend/admin/categories/${categoryId}`, { method: "DELETE" })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to delete category")
+        }
+        await loadCategories()
+      } catch (e: any) {
+        setError(e?.message || "Failed to delete category")
+      } finally {
+        setIsLoading(false)
+      }
+    })()
   }
 
   const handleToggleStatus = (categoryId: number) => {
-    setCategories(categories.map(category =>
-      category.id === categoryId
-        ? { ...category, status: category.status === "Active" ? "Inactive" : "Active" }
-        : category
-    ))
+    const current = categories.find((c) => c.id === categoryId)
+    if (!current) return
+    const nextIsActive = current.status !== "Active"
+    ;(async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        const res = await fetch(`/api/backend/admin/categories/${categoryId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_active: nextIsActive ? 1 : 0 }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to update category")
+        }
+        await loadCategories()
+      } catch (e: any) {
+        setError(e?.message || "Failed to update category")
+      } finally {
+        setIsLoading(false)
+      }
+    })()
   }
 
   const handleToggleFeatured = (categoryId: number) => {
@@ -154,40 +179,69 @@ export default function CategoriesManagement() {
   }
 
   const handleSaveEdit = () => {
-    if (editingCategory) {
-      setCategories(categories.map(category => 
-        category.id === editingCategory.id ? editingCategory : category
-      ))
-      setIsEditDialogOpen(false)
-      setEditingCategory(null)
-    }
+    if (!editingCategory) return
+    ;(async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        const res = await fetch(`/api/backend/admin/categories/${editingCategory.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editingCategory.name,
+            description: editingCategory.description,
+            image_url: editingCategory.image || null,
+            is_active: editingCategory.status === "Active" ? 1 : 0,
+          }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to update category")
+        }
+        setIsEditDialogOpen(false)
+        setEditingCategory(null)
+        await loadCategories()
+      } catch (e: any) {
+        setError(e?.message || "Failed to update category")
+      } finally {
+        setIsLoading(false)
+      }
+    })()
   }
 
   const handleAddCategory = () => {
-    const newCategory: Category = {
-      id: Math.max(...categories.map(c => c.id)) + 1,
-      name: editingCategory?.name || "New Category",
-      slug: editingCategory?.slug || "new-category",
-      description: editingCategory?.description || "",
-      products: 0,
-      subcategories: 0,
-      status: "Active",
-      parent: editingCategory?.parent || "None",
-      image: editingCategory?.image || "",
-      featured: editingCategory?.featured || false,
-      createdAt: new Date().toLocaleDateString(),
-      updatedAt: new Date().toLocaleDateString(),
-      seoTitle: editingCategory?.seoTitle || "",
-      seoDescription: editingCategory?.seoDescription || "",
-      sortOrder: categories.length + 1
-    }
-    setCategories([...categories, newCategory])
-    setIsAddDialogOpen(false)
-    setEditingCategory(null)
+    const draft = editingCategory
+    ;(async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        const res = await fetch("/api/backend/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: draft?.name || "New Category",
+            description: draft?.description || "",
+            image_url: draft?.image || null,
+            is_active: 1,
+          }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to create category")
+        }
+        setIsAddDialogOpen(false)
+        setEditingCategory(null)
+        await loadCategories()
+      } catch (e: any) {
+        setError(e?.message || "Failed to create category")
+      } finally {
+        setIsLoading(false)
+      }
+    })()
   }
 
   const handleRefresh = () => {
-    alert("Categories data refreshed!")
+    loadCategories()
   }
 
   const handleExport = () => {
@@ -237,6 +291,8 @@ export default function CategoriesManagement() {
           </Button>
         </div>
       </div>
+
+      {error && <div className="text-red-600">{error}</div>}
 
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -410,7 +466,7 @@ export default function CategoriesManagement() {
                 ))}
               </tbody>
             </table>
-            {filteredCategories.length === 0 && (
+            {!isLoading && filteredCategories.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No categories found matching your criteria
               </div>
@@ -503,7 +559,7 @@ export default function CategoriesManagement() {
                   <Input
                     id="name"
                     value={editingCategory.name}
-                    onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, name: e.target.value } : prev))}
                   />
                 </div>
                 <div>
@@ -511,7 +567,7 @@ export default function CategoriesManagement() {
                   <Input
                     id="slug"
                     value={editingCategory.slug}
-                    onChange={(e) => setEditingCategory({...editingCategory, slug: e.target.value})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, slug: e.target.value } : prev))}
                   />
                 </div>
                 <div className="col-span-2">
@@ -519,12 +575,15 @@ export default function CategoriesManagement() {
                   <Textarea
                     id="description"
                     value={editingCategory.description}
-                    onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, description: e.target.value } : prev))}
                   />
                 </div>
                 <div>
                   <Label htmlFor="parent">Parent Category</Label>
-                  <Select value={editingCategory.parent} onValueChange={(value) => setEditingCategory({...editingCategory, parent: value})}>
+                  <Select
+                    value={editingCategory.parent}
+                    onValueChange={(value) => setEditingCategory((prev) => (prev ? { ...prev, parent: value } : prev))}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -542,7 +601,7 @@ export default function CategoriesManagement() {
                     id="sortOrder"
                     type="number"
                     value={editingCategory.sortOrder}
-                    onChange={(e) => setEditingCategory({...editingCategory, sortOrder: parseInt(e.target.value)})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, sortOrder: parseInt(e.target.value) } : prev))}
                   />
                 </div>
                 <div className="col-span-2">
@@ -550,7 +609,7 @@ export default function CategoriesManagement() {
                   <Input
                     id="seoTitle"
                     value={editingCategory.seoTitle}
-                    onChange={(e) => setEditingCategory({...editingCategory, seoTitle: e.target.value})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, seoTitle: e.target.value } : prev))}
                   />
                 </div>
                 <div className="col-span-2">
@@ -558,7 +617,7 @@ export default function CategoriesManagement() {
                   <Textarea
                     id="seoDescription"
                     value={editingCategory.seoDescription}
-                    onChange={(e) => setEditingCategory({...editingCategory, seoDescription: e.target.value})}
+                    onChange={(e) => setEditingCategory((prev) => (prev ? { ...prev, seoDescription: e.target.value } : prev))}
                   />
                 </div>
               </div>
@@ -566,7 +625,7 @@ export default function CategoriesManagement() {
                 <Switch
                   id="featured"
                   checked={editingCategory.featured}
-                  onCheckedChange={(checked) => setEditingCategory({...editingCategory, featured: checked})}
+                  onCheckedChange={(checked) => setEditingCategory((prev) => (prev ? { ...prev, featured: checked } : prev))}
                 />
                 <Label htmlFor="featured">Featured Category</Label>
               </div>
@@ -597,7 +656,26 @@ export default function CategoriesManagement() {
                 <Input
                   id="new-name"
                   value={editingCategory?.name || ""}
-                  onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                  onChange={(e) => setEditingCategory((prev) => ({
+                    ...(prev || {
+                      id: 0,
+                      name: "",
+                      slug: "",
+                      description: "",
+                      products: 0,
+                      subcategories: 0,
+                      status: "Active",
+                      parent: "None",
+                      image: "",
+                      featured: false,
+                      createdAt: "",
+                      updatedAt: "",
+                      seoTitle: "",
+                      seoDescription: "",
+                      sortOrder: categories.length + 1,
+                    }),
+                    name: e.target.value,
+                  }))}
                 />
               </div>
               <div>
@@ -605,7 +683,26 @@ export default function CategoriesManagement() {
                 <Input
                   id="new-slug"
                   value={editingCategory?.slug || ""}
-                  onChange={(e) => setEditingCategory({...editingCategory, slug: e.target.value})}
+                  onChange={(e) => setEditingCategory((prev) => ({
+                    ...(prev || {
+                      id: 0,
+                      name: "",
+                      slug: "",
+                      description: "",
+                      products: 0,
+                      subcategories: 0,
+                      status: "Active",
+                      parent: "None",
+                      image: "",
+                      featured: false,
+                      createdAt: "",
+                      updatedAt: "",
+                      seoTitle: "",
+                      seoDescription: "",
+                      sortOrder: categories.length + 1,
+                    }),
+                    slug: e.target.value,
+                  }))}
                 />
               </div>
               <div className="col-span-2">
@@ -613,12 +710,55 @@ export default function CategoriesManagement() {
                 <Textarea
                   id="new-description"
                   value={editingCategory?.description || ""}
-                  onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
+                  onChange={(e) => setEditingCategory((prev) => ({
+                    ...(prev || {
+                      id: 0,
+                      name: "",
+                      slug: "",
+                      description: "",
+                      products: 0,
+                      subcategories: 0,
+                      status: "Active",
+                      parent: "None",
+                      image: "",
+                      featured: false,
+                      createdAt: "",
+                      updatedAt: "",
+                      seoTitle: "",
+                      seoDescription: "",
+                      sortOrder: categories.length + 1,
+                    }),
+                    description: e.target.value,
+                  }))}
                 />
               </div>
               <div>
                 <Label htmlFor="new-parent">Parent Category</Label>
-                <Select value={editingCategory?.parent || "None"} onValueChange={(value) => setEditingCategory({...editingCategory, parent: value})}>
+                <Select
+                  value={editingCategory?.parent || "None"}
+                  onValueChange={(value) =>
+                    setEditingCategory((prev) => ({
+                      ...(prev || {
+                        id: 0,
+                        name: "",
+                        slug: "",
+                        description: "",
+                        products: 0,
+                        subcategories: 0,
+                        status: "Active",
+                        parent: "None",
+                        image: "",
+                        featured: false,
+                        createdAt: "",
+                        updatedAt: "",
+                        seoTitle: "",
+                        seoDescription: "",
+                        sortOrder: categories.length + 1,
+                      }),
+                      parent: value,
+                    }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -636,7 +776,26 @@ export default function CategoriesManagement() {
                   id="new-sortOrder"
                   type="number"
                   value={editingCategory?.sortOrder || categories.length + 1}
-                  onChange={(e) => setEditingCategory({...editingCategory, sortOrder: parseInt(e.target.value)})}
+                  onChange={(e) => setEditingCategory((prev) => ({
+                    ...(prev || {
+                      id: 0,
+                      name: "",
+                      slug: "",
+                      description: "",
+                      products: 0,
+                      subcategories: 0,
+                      status: "Active",
+                      parent: "None",
+                      image: "",
+                      featured: false,
+                      createdAt: "",
+                      updatedAt: "",
+                      seoTitle: "",
+                      seoDescription: "",
+                      sortOrder: categories.length + 1,
+                    }),
+                    sortOrder: parseInt(e.target.value),
+                  }))}
                 />
               </div>
             </div>
@@ -644,7 +803,26 @@ export default function CategoriesManagement() {
               <Switch
                 id="new-featured"
                 checked={editingCategory?.featured || false}
-                onCheckedChange={(checked) => setEditingCategory({...editingCategory, featured: checked})}
+                onCheckedChange={(checked) => setEditingCategory((prev) => ({
+                  ...(prev || {
+                    id: 0,
+                    name: "",
+                    slug: "",
+                    description: "",
+                    products: 0,
+                    subcategories: 0,
+                    status: "Active",
+                    parent: "None",
+                    image: "",
+                    featured: false,
+                    createdAt: "",
+                    updatedAt: "",
+                    seoTitle: "",
+                    seoDescription: "",
+                    sortOrder: categories.length + 1,
+                  }),
+                  featured: checked,
+                }))}
               />
               <Label htmlFor="new-featured">Featured Category</Label>
             </div>
