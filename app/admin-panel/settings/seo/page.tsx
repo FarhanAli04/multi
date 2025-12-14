@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Globe, BarChart3, Download } from "lucide-react"
+import { Globe, BarChart3, Download, Search } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 export default function SEOToolsPage() {
