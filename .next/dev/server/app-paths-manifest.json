@@ -1,10 +1,20 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin-panel/orders/page": "app/admin-panel/orders/page.js",
+  "/admin-panel/page": "app/admin-panel/page.js",
+  "/admin-panel/products/page": "app/admin-panel/products/page.js",
+  "/admin-panel/vendors/page": "app/admin-panel/vendors/page.js",
+  "/api/auth/admin-login/route": "app/api/auth/admin-login/route.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/backend/[...path]/route": "app/api/backend/[...path]/route.js",
   "/api/settings/route": "app/api/settings/route.js",
+  "/api/ws-token/route": "app/api/ws-token/route.js",
+  "/auth/admin-login/page": "app/auth/admin-login/page.js",
   "/auth/login/page": "app/auth/login/page.js",
   "/auth/register/page": "app/auth/register/page.js",
   "/page": "app/page.js",
+  "/seller/orders/page": "app/seller/orders/page.js",
   "/seller/page": "app/seller/page.js",
-  "/seller/products/page": "app/seller/products/page.js"
+  "/seller/products/page": "app/seller/products/page.js",
+  "/shop/page": "app/shop/page.js"
 }

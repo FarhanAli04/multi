@@ -8,6 +8,7 @@ class ProductController {
     private $productColumns;
     private $categoryColumns;
     private $validatedProductColumns;
+    private $validatedCategoryColumns;
 
     public function __construct() {
         $this->db = new Database();
@@ -15,6 +16,7 @@ class ProductController {
         $this->productColumns = null;
         $this->categoryColumns = null;
         $this->validatedProductColumns = [];
+        $this->validatedCategoryColumns = [];
     }
 
     private function disableProductColumn($name) {
@@ -58,9 +60,41 @@ class ProductController {
         }
     }
 
+    private function disableCategoryColumn($name) {
+        $this->validatedCategoryColumns[$name] = false;
+        $cols = $this->getCategoryColumns();
+        unset($cols[$name]);
+        $this->categoryColumns = $cols;
+    }
+
     private function hasCategoryColumn($name) {
         $cols = $this->getCategoryColumns();
-        return isset($cols[$name]);
+        if (!isset($cols[$name])) {
+            return false;
+        }
+
+        if (in_array($name, ['is_active', 'status', 'created_at', 'updated_at', 'image_url', 'description'], true)) {
+            return $this->probeCategoryColumn($name);
+        }
+
+        return true;
+    }
+
+    private function probeCategoryColumn($name) {
+        if (array_key_exists($name, $this->validatedCategoryColumns)) {
+            return (bool)$this->validatedCategoryColumns[$name];
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT 1 FROM categories WHERE {$name} IS NOT NULL LIMIT 1");
+            $stmt->execute();
+            $this->validatedCategoryColumns[$name] = true;
+            return true;
+        } catch (PDOException $e) {
+            $this->validatedCategoryColumns[$name] = false;
+            $this->disableCategoryColumn($name);
+            return false;
+        }
     }
 
     private function activeCategoryCondition($alias = 'c') {
@@ -78,6 +112,32 @@ class ProductController {
             return 'p.created_at';
         }
         return 'p.id';
+    }
+
+    private function stockColumnName() {
+        if ($this->hasProductColumn('stock')) {
+            return 'stock';
+        }
+        if ($this->hasProductColumn('quantity')) {
+            return 'quantity';
+        }
+        return null;
+    }
+
+    private function stockSelectExpr($alias = 'p') {
+        $col = $this->stockColumnName();
+        if ($col) {
+            return "{$alias}.{$col} as stock";
+        }
+        return '0 as stock';
+    }
+
+    private function inStockCondition($alias = 'p') {
+        $col = $this->stockColumnName();
+        if ($col) {
+            return "{$alias}.{$col} > 0";
+        }
+        return '1=1';
     }
 
     private function getProductColumns() {
@@ -165,12 +225,21 @@ class ProductController {
     }
 
     public function getProducts() {
-        // Optional authentication - some endpoints may be public
-        $user = null;
-        try {
-            $user = $this->auth->authenticate();
-        } catch (Exception $e) {
-            // Continue without authentication for public access
+        $authHeader = null;
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        if (is_array($headers)) {
+            foreach ($headers as $k => $v) {
+                if (strtolower((string)$k) === 'authorization') {
+                    $authHeader = $v;
+                    break;
+                }
+            }
+        }
+        if (!$authHeader) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null);
+        }
+        if (is_string($authHeader) && preg_match('/Bearer\s(\S+)/', $authHeader)) {
+            $this->auth->authenticate();
         }
 
         $search = $_GET['search'] ?? '';
@@ -186,6 +255,8 @@ class ProductController {
         try {
             $products = $this->runWithIsActiveFallback(function () use ($search, $category, $minPrice, $maxPrice, $rating, $sortBy, $order, $limit, $offset) {
                 $activeProduct = $this->activeProductCondition('p');
+                $inStock = $this->inStockCondition('p');
+                $stockSelect = $this->stockSelectExpr('p');
 
                 $categoryJoin = '';
                 $categorySelect = "'' as category_name";
@@ -201,6 +272,7 @@ class ProductController {
                 $sql = "
                     SELECT 
                         p.*,
+                        {$stockSelect},
                         u.full_name as seller_name,
                         ss.store_name,
                         {$categorySelect},
@@ -211,7 +283,7 @@ class ProductController {
                     JOIN users u ON p.seller_id = u.id
                     LEFT JOIN sellers ss ON ss.user_id = u.id
                     {$categoryJoin}
-                    WHERE {$activeProduct} AND p.stock > 0
+                    WHERE {$activeProduct} AND {$inStock}
                 ";
 
                 $params = [];
@@ -303,7 +375,7 @@ class ProductController {
         if (isset($product['status']) && strtolower((string)$product['status']) !== 'active') {
             return 'Inactive';
         }
-        $stock = (int)($product['stock'] ?? 0);
+        $stock = (int)($product['stock'] ?? ($product['quantity'] ?? 0));
         if ($stock <= 0) {
             return 'Out of Stock';
         }
@@ -327,6 +399,7 @@ class ProductController {
 
         try {
             $rows = $this->runWithIsActiveFallback(function () use ($user, $search, $category, $status, $limit, $offset) {
+                $stockSelect = $this->stockSelectExpr('p');
                 $categoryJoin = '';
                 $categorySelect = "'' as category_name";
                 if ($this->hasProductColumn('category_id')) {
@@ -335,7 +408,7 @@ class ProductController {
                 }
 
                 $sql = "
-                    SELECT p.*, {$categorySelect}
+                    SELECT p.*, {$stockSelect}, {$categorySelect}
                     FROM products p
                     {$categoryJoin}
                     WHERE p.seller_id = ?
@@ -356,11 +429,16 @@ class ProductController {
 
                 if ($status !== '' && $status !== 'all') {
                     if ($status === 'Active') {
-                        $sql .= " AND " . $this->activeProductCondition('p') . " AND p.stock > 0";
+                        $sql .= " AND " . $this->activeProductCondition('p') . " AND " . $this->inStockCondition('p');
                     } elseif ($status === 'Inactive') {
                         $sql .= " AND " . $this->inactiveProductCondition('p');
                     } elseif ($status === 'Out of Stock') {
-                        $sql .= " AND " . $this->activeProductCondition('p') . " AND p.stock <= 0";
+                        $col = $this->stockColumnName();
+                        if ($col) {
+                            $sql .= " AND " . $this->activeProductCondition('p') . " AND p.{$col} <= 0";
+                        } else {
+                            $sql .= " AND 1=0";
+                        }
                     }
                 }
 
@@ -380,7 +458,7 @@ class ProductController {
                 'id' => (int)$row['id'],
                 'name' => $row['name'],
                 'price' => (float)$row['price'],
-                'stock' => (int)$row['stock'],
+                'stock' => (int)($row['stock'] ?? ($row['quantity'] ?? 0)),
                 'category' => $row['category_name'] ?? '',
                 'status' => $this->normalizeProductStatus($row),
                 'created_at' => $row['created_at'],
@@ -417,9 +495,16 @@ class ProductController {
         $imageUrl = $data['image_url'] ?? null;
         $isActive = isset($data['is_active']) ? (int)(!!$data['is_active']) : 1;
 
-        $columns = ['seller_id', 'name', 'price', 'stock'];
-        $placeholders = ['?', '?', '?', '?'];
-        $values = [$user['id'], $name, $price, $stock];
+        $columns = ['seller_id', 'name', 'price'];
+        $placeholders = ['?', '?', '?'];
+        $values = [$user['id'], $name, $price];
+
+        $stockCol = $this->stockColumnName();
+        if ($stockCol) {
+            $columns[] = $stockCol;
+            $placeholders[] = '?';
+            $values[] = $stock;
+        }
 
         if ($categoryId !== null && $this->hasProductColumn('category_id')) {
             $columns[] = 'category_id';
@@ -500,8 +585,11 @@ class ProductController {
         }
 
         if (array_key_exists('stock', $data)) {
-            $fields[] = "stock = ?";
-            $params[] = $data['stock'];
+            $stockCol = $this->stockColumnName();
+            if ($stockCol) {
+                $fields[] = "{$stockCol} = ?";
+                $params[] = $data['stock'];
+            }
         }
 
         if (array_key_exists('category_id', $data)) {
@@ -794,8 +882,45 @@ class ProductController {
         $description = $data['description'] ?? null;
         $imageUrl = $data['image_url'] ?? null;
         $isActive = isset($data['is_active']) ? (int)(!!$data['is_active']) : 1;
-        $stmt = $this->db->prepare("INSERT INTO categories (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
-        $stmt->execute([$name, $description, $imageUrl, $isActive]);
+
+        $columns = ['name'];
+        $placeholders = ['?'];
+        $values = [$name];
+
+        if ($this->hasCategoryColumn('description')) {
+            $columns[] = 'description';
+            $placeholders[] = '?';
+            $values[] = $description;
+        }
+
+        if ($this->hasCategoryColumn('image_url')) {
+            $columns[] = 'image_url';
+            $placeholders[] = '?';
+            $values[] = $imageUrl;
+        }
+
+        if ($this->hasCategoryColumn('is_active')) {
+            $columns[] = 'is_active';
+            $placeholders[] = '?';
+            $values[] = $isActive;
+        } elseif ($this->hasCategoryColumn('status')) {
+            $columns[] = 'status';
+            $placeholders[] = '?';
+            $values[] = $isActive ? 'active' : 'inactive';
+        }
+
+        if ($this->hasCategoryColumn('created_at')) {
+            $columns[] = 'created_at';
+            $placeholders[] = 'NOW()';
+        }
+        if ($this->hasCategoryColumn('updated_at')) {
+            $columns[] = 'updated_at';
+            $placeholders[] = 'NOW()';
+        }
+
+        $sql = "INSERT INTO categories (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($values);
         http_response_code(201);
         echo json_encode(['success' => true, 'category_id' => (int)$this->db->lastInsertId()]);
     }
@@ -805,20 +930,29 @@ class ProductController {
         $fields = [];
         $params = [];
         foreach (['name','description','image_url'] as $key) {
-            if (array_key_exists($key, $data)) {
+            if (array_key_exists($key, $data) && $this->hasCategoryColumn($key)) {
                 $fields[] = "$key = ?";
                 $params[] = $data[$key];
             }
         }
         if (array_key_exists('is_active', $data)) {
-            $fields[] = "is_active = ?";
-            $params[] = (int)(!!$data['is_active']);
+            $nextActive = (int)(!!$data['is_active']);
+            if ($this->hasCategoryColumn('is_active')) {
+                $fields[] = "is_active = ?";
+                $params[] = $nextActive;
+            } elseif ($this->hasCategoryColumn('status')) {
+                $fields[] = "status = ?";
+                $params[] = $nextActive ? 'active' : 'inactive';
+            }
         }
         if (empty($fields)) {
             echo json_encode(['success' => true]);
             return;
         }
-        $fields[] = "updated_at = NOW()";
+
+        if ($this->hasCategoryColumn('updated_at')) {
+            $fields[] = "updated_at = NOW()";
+        }
         $sql = "UPDATE categories SET " . implode(', ', $fields) . " WHERE id = ?";
         $params[] = (int)$categoryId;
         $stmt = $this->db->prepare($sql);
@@ -827,49 +961,82 @@ class ProductController {
     }
 
     private function deleteAdminCategory($user, $categoryId) {
-        $stmt = $this->db->prepare("UPDATE categories SET is_active = 0, updated_at = NOW() WHERE id = ?");
+        if ($this->hasCategoryColumn('is_active')) {
+            $sql = "UPDATE categories SET is_active = 0";
+            if ($this->hasCategoryColumn('updated_at')) {
+                $sql .= ", updated_at = NOW()";
+            }
+            $sql .= " WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$categoryId]);
+            echo json_encode(['success' => true]);
+            return;
+        }
+
+        if ($this->hasCategoryColumn('status')) {
+            $sql = "UPDATE categories SET status = 'inactive'";
+            if ($this->hasCategoryColumn('updated_at')) {
+                $sql .= ", updated_at = NOW()";
+            }
+            $sql .= " WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$categoryId]);
+            echo json_encode(['success' => true]);
+            return;
+        }
+
+        $stmt = $this->db->prepare("DELETE FROM categories WHERE id = ?");
         $stmt->execute([(int)$categoryId]);
         echo json_encode(['success' => true]);
     }
 
     public function getCategories() {
         try {
-            $activeProduct = $this->activeProductCondition('p');
+            $categories = $this->runWithIsActiveFallback(function () {
+                $activeProduct = $this->activeProductCondition('p');
 
-            $select = [
-                'c.id',
-                'c.name',
-                ($this->hasCategoryColumn('description') ? 'c.description' : 'NULL as description'),
-                ($this->hasCategoryColumn('image_url') ? 'c.image_url' : 'NULL as image_url'),
-                ($this->hasCategoryColumn('is_active') ? 'c.is_active' : '1 as is_active'),
-                ($this->hasCategoryColumn('created_at') ? 'c.created_at' : 'NULL as created_at'),
-                ($this->hasCategoryColumn('updated_at') ? 'c.updated_at' : 'NULL as updated_at'),
-            ];
-            $categoryActive = $this->activeCategoryCondition('c');
+                $select = [
+                    'c.id',
+                    'c.name',
+                    ($this->hasCategoryColumn('description') ? 'c.description' : 'NULL as description'),
+                    ($this->hasCategoryColumn('image_url') ? 'c.image_url' : 'NULL as image_url'),
+                    ($this->hasCategoryColumn('is_active') ? 'c.is_active' : '1 as is_active'),
+                    ($this->hasCategoryColumn('created_at') ? 'c.created_at' : 'NULL as created_at'),
+                    ($this->hasCategoryColumn('updated_at') ? 'c.updated_at' : 'NULL as updated_at'),
+                ];
+                $categoryActive = $this->activeCategoryCondition('c');
 
-            $groupBy = ['c.id', 'c.name'];
-            if ($this->hasCategoryColumn('description')) $groupBy[] = 'c.description';
-            if ($this->hasCategoryColumn('image_url')) $groupBy[] = 'c.image_url';
-            if ($this->hasCategoryColumn('is_active')) $groupBy[] = 'c.is_active';
-            if ($this->hasCategoryColumn('created_at')) $groupBy[] = 'c.created_at';
-            if ($this->hasCategoryColumn('updated_at')) $groupBy[] = 'c.updated_at';
+                $groupBy = ['c.id', 'c.name'];
+                if ($this->hasCategoryColumn('description')) $groupBy[] = 'c.description';
+                if ($this->hasCategoryColumn('image_url')) $groupBy[] = 'c.image_url';
+                if ($this->hasCategoryColumn('is_active')) $groupBy[] = 'c.is_active';
+                if ($this->hasCategoryColumn('created_at')) $groupBy[] = 'c.created_at';
+                if ($this->hasCategoryColumn('updated_at')) $groupBy[] = 'c.updated_at';
 
-            $stmt = $this->db->prepare("
-                SELECT
-                    " . implode(",\n                    ", $select) . ",
-                    COUNT(p.id) as product_count
-                FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND {$activeProduct}
-                WHERE {$categoryActive}
-                GROUP BY " . implode(', ', $groupBy) . "
-                ORDER BY c.name
-            ");
-            $stmt->execute();
-            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+                $productJoin = '';
+                $productCountSelect = '0 as product_count';
+                if ($this->hasProductColumn('category_id')) {
+                    $productJoin = "LEFT JOIN products p ON c.id = p.category_id AND {$activeProduct}";
+                    $productCountSelect = 'COUNT(p.id) as product_count';
+                }
+
+                $stmt = $this->db->prepare("
+                    SELECT
+                        " . implode(",\n                        ", $select) . ",
+                        {$productCountSelect}
+                    FROM categories c
+                    {$productJoin}
+                    WHERE {$categoryActive}
+                    GROUP BY " . implode(', ', $groupBy) . "
+                    ORDER BY c.name
+                ");
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            });
+
             header('Content-Type: application/json');
             echo json_encode(['categories' => $categories]);
-            
+
         } catch (PDOException $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
@@ -878,24 +1045,26 @@ class ProductController {
 
     public function getProduct($id) {
         try {
-            $activeProduct = $this->activeProductCondition('p');
-            $stmt = $this->db->prepare("
-                SELECT 
-                    p.*,
-                    u.full_name as seller_name,
-                    ss.store_name,
-                    u.email as seller_email,
-                    c.name as category_name,
-                    (SELECT AVG(rating) FROM reviews WHERE product_id = p.id) as avg_rating,
-                    (SELECT COUNT(*) FROM reviews WHERE product_id = p.id) as review_count
-                FROM products p
-                JOIN users u ON p.seller_id = u.id
-                LEFT JOIN sellers ss ON ss.user_id = u.id
-                LEFT JOIN categories c ON p.category_id = c.id
-                WHERE p.id = ? AND {$activeProduct}
-            ");
-            $stmt->execute([$id]);
-            $product = $stmt->fetch();
+            $product = $this->runWithIsActiveFallback(function () use ($id) {
+                $activeProduct = $this->activeProductCondition('p');
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        p.*,
+                        u.full_name as seller_name,
+                        ss.store_name,
+                        u.email as seller_email,
+                        c.name as category_name,
+                        (SELECT AVG(rating) FROM reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM reviews WHERE product_id = p.id) as review_count
+                    FROM products p
+                    JOIN users u ON p.seller_id = u.id
+                    LEFT JOIN sellers ss ON ss.user_id = u.id
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    WHERE p.id = ? AND {$activeProduct}
+                ");
+                $stmt->execute([(int)$id]);
+                return $stmt->fetch();
+            });
             
             if (!$product) {
                 http_response_code(404);

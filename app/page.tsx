@@ -1,43 +1,100 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck } from "lucide-react"
+import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRealtime } from "@/contexts/RealtimeContext"
+import { useState } from "react"
 
 export default function Home() {
   const { settings } = useRealtime()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            {settings.website_name || "Your Store"}
-          </Link>
-
-          <div className="flex items-center gap-8">
-            <Link href="/shop" className="text-foreground hover:text-primary transition-colors font-medium text-sm">
-              Shop
-            </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="h-16 flex items-center justify-between gap-3 min-w-0">
             <Link
-              href="/chat"
-              className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+              href="/"
+              className="text-xl sm:text-2xl font-bold text-primary truncate min-w-0 max-w-[55vw] sm:max-w-none"
             >
-              Chat
+              {settings.website_name || "Your Store"}
             </Link>
-            <div className="flex items-center gap-4">
+
+            <div className="flex items-center gap-2 sm:gap-4">
               <ThemeToggle />
-              <Link
-                href="/auth/login"
-                className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+
+              <button
+                type="button"
+                className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen((v) => !v)}
               >
-                Login
-              </Link>
-              <Link href="/auth/register" className="btn-primary text-sm">
-                Sign Up
-              </Link>
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+
+              <div className="hidden md:flex items-center gap-8">
+                <Link href="/shop" className="text-foreground hover:text-primary transition-colors font-medium text-sm">
+                  Shop
+                </Link>
+                <Link
+                  href="/chat"
+                  className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+                >
+                  Chat
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+                >
+                  Login
+                </Link>
+                <Link href="/auth/register" className="btn-primary text-sm">
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-200 ${
+              mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="border-t border-border py-4">
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/shop"
+                  className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Shop
+                </Link>
+                <Link
+                  href="/chat"
+                  className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Chat
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="btn-primary text-sm inline-flex items-center justify-center px-3 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -31,6 +31,7 @@
   "/admin/users/page": "/admin/users",
   "/api/auth/admin-login/route": "/api/auth/admin-login",
   "/api/auth/login/route": "/api/auth/login",
+  "/api/auth/logout/route": "/api/auth/logout",
   "/api/auth/register/route": "/api/auth/register",
   "/api/backend/[...path]/route": "/api/backend/[...path]",
   "/api/messaging/route": "/api/messaging",

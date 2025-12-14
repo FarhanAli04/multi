@@ -5,10 +5,39 @@ require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 class UserController {
     private $db;
     private $auth;
+    private $userColumns;
 
     public function __construct() {
         $this->db = new Database();
         $this->auth = new AuthMiddleware();
+        $this->userColumns = null;
+    }
+
+    private function getUserColumns() {
+        if (is_array($this->userColumns)) {
+            return $this->userColumns;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users");
+            $stmt->execute();
+            $cols = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (isset($row['Field'])) {
+                    $cols[$row['Field']] = true;
+                }
+            }
+            $this->userColumns = $cols;
+            return $this->userColumns;
+        } catch (Exception $e) {
+            $this->userColumns = [];
+            return $this->userColumns;
+        }
+    }
+
+    private function hasUserColumn($name) {
+        $cols = $this->getUserColumns();
+        return isset($cols[$name]);
     }
 
     public function getUsers() {
@@ -21,6 +50,7 @@ class UserController {
         $offset = $_GET['offset'] ?? 0;
         
         try {
+            $activeWhere = $this->hasUserColumn('is_active') ? 'is_active = 1 AND ' : '';
             $sql = "
                 SELECT 
                     id, 
@@ -31,7 +61,7 @@ class UserController {
                     is_online,
                     last_seen
                 FROM users 
-                WHERE is_active = 1 AND id != ?
+                WHERE {$activeWhere}id != ?
             ";
             $params = [$user['id']];
             

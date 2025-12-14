@@ -60,7 +60,7 @@ async function POST(request) {
                 status: 400
             });
         }
-        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost/sarstore-api") || process.env.API_URL || "http://localhost:8000";
+        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost:8000") || process.env.API_URL || "http://localhost:8000";
         let apiResponse;
         try {
             apiResponse = await fetch(`${apiBaseUrl}/api/auth/login`, {

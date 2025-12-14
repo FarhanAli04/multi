@@ -10,7 +10,21 @@ type RouteContext = {
 }
 
 async function proxy(request: NextRequest, context: RouteContext) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+  const localDevBaseUrl = "http://localhost:8000"
+
+  let baseUrl = configuredBaseUrl
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      const healthRes = await fetch(`${localDevBaseUrl}/api/health`, {
+        signal: AbortSignal.timeout(800),
+      })
+      if (healthRes.ok) {
+        baseUrl = localDevBaseUrl
+      }
+    } catch {
+    }
+  }
   const params = await (context.params as any)
   const targetPath = (params?.path || []).join("/")
   const url = new URL(request.url)
@@ -43,7 +57,12 @@ async function proxy(request: NextRequest, context: RouteContext) {
   } catch {
     return NextResponse.json(
       { success: false, error: `Backend unavailable. Start PHP API server at ${baseUrl}` },
-      { status: 503 },
+      {
+        status: 503,
+        headers: {
+          "x-proxy-target": targetUrl,
+        },
+      },
     )
   }
 
@@ -54,6 +73,7 @@ async function proxy(request: NextRequest, context: RouteContext) {
     status: response.status,
     headers: {
       "content-type": contentType,
+      "x-proxy-target": targetUrl,
     },
   })
 }

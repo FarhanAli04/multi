@@ -54,7 +54,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$serv
 ;
 async function GET() {
     try {
-        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost/sarstore-api") || process.env.API_URL || "http://localhost:8000";
+        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost:8000") || process.env.API_URL || "http://localhost:8000";
         const apiResponse = await fetch(`${apiBaseUrl}/api/settings`, {
             method: "GET",
             headers: {
@@ -86,7 +86,7 @@ async function GET() {
 async function PUT(request) {
     try {
         const body = await request.json();
-        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost/sarstore-api") || process.env.API_URL || "http://localhost:8000";
+        const apiBaseUrl = ("TURBOPACK compile-time value", "http://localhost:8000") || process.env.API_URL || "http://localhost:8000";
         const apiResponse = await fetch(`${apiBaseUrl}/api/settings/update`, {
             method: "POST",
             headers: {

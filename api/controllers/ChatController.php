@@ -5,10 +5,39 @@ require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 class ChatController {
     private $db;
     private $auth;
+    private $userColumns;
 
     public function __construct() {
         $this->db = new Database();
         $this->auth = new AuthMiddleware();
+        $this->userColumns = null;
+    }
+
+    private function getUserColumns() {
+        if (is_array($this->userColumns)) {
+            return $this->userColumns;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users");
+            $stmt->execute();
+            $cols = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (isset($row['Field'])) {
+                    $cols[$row['Field']] = true;
+                }
+            }
+            $this->userColumns = $cols;
+            return $this->userColumns;
+        } catch (Exception $e) {
+            $this->userColumns = [];
+            return $this->userColumns;
+        }
+    }
+
+    private function hasUserColumn($name) {
+        $cols = $this->getUserColumns();
+        return isset($cols[$name]);
     }
 
     public function conversations() {
@@ -95,7 +124,8 @@ class ChatController {
             $this->db->beginTransaction();
             
             // Check if recipient exists
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1");
+            $recipientActiveWhere = $this->hasUserColumn('is_active') ? ' AND is_active = 1' : '';
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE id = ?{$recipientActiveWhere}");
             $stmt->execute([$recipientId]);
             
             if ($stmt->rowCount() === 0) {

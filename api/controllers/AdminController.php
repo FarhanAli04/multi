@@ -7,12 +7,41 @@ class AdminController {
     private $auth;
     private $productColumns;
     private $validatedProductColumns;
+    private $userColumns;
 
     public function __construct() {
         $this->db = new Database();
         $this->auth = new AuthMiddleware();
         $this->productColumns = null;
         $this->validatedProductColumns = [];
+        $this->userColumns = null;
+    }
+
+    private function getUserColumns() {
+        if (is_array($this->userColumns)) {
+            return $this->userColumns;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users");
+            $stmt->execute();
+            $cols = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (isset($row['Field'])) {
+                    $cols[$row['Field']] = true;
+                }
+            }
+            $this->userColumns = $cols;
+            return $this->userColumns;
+        } catch (Exception $e) {
+            $this->userColumns = [];
+            return $this->userColumns;
+        }
+    }
+
+    private function hasUserColumn($name) {
+        $cols = $this->getUserColumns();
+        return isset($cols[$name]);
     }
 
     private function disableProductColumn($name) {
@@ -176,13 +205,14 @@ class AdminController {
         try {
             $vendors = $this->runWithIsActiveFallback(function () use ($search, $status, $limit, $offset) {
                 $activeProduct = $this->activeProductCondition('p');
+                $userIsActiveSelect = $this->hasUserColumn('is_active') ? 'u.is_active' : '1 as is_active';
                 $sql = "
                 SELECT
                     u.id as user_id,
                     u.full_name,
                     u.email,
                     u.phone,
-                    u.is_active,
+                    {$userIsActiveSelect},
                     u.created_at,
                     u.last_seen,
                     s.business_name,
@@ -209,11 +239,21 @@ class AdminController {
 
                 if ($status !== '' && $status !== 'all') {
                     if ($status === 'Active') {
-                        $sql .= " AND u.is_active = 1 AND COALESCE(s.is_approved, 0) = 1";
+                        if ($this->hasUserColumn('is_active')) {
+                            $sql .= " AND u.is_active = 1";
+                        }
+                        $sql .= " AND COALESCE(s.is_approved, 0) = 1";
                     } elseif ($status === 'Pending') {
-                        $sql .= " AND u.is_active = 1 AND COALESCE(s.is_approved, 0) = 0";
+                        if ($this->hasUserColumn('is_active')) {
+                            $sql .= " AND u.is_active = 1";
+                        }
+                        $sql .= " AND COALESCE(s.is_approved, 0) = 0";
                     } elseif ($status === 'Suspended') {
-                        $sql .= " AND u.is_active = 0";
+                        if ($this->hasUserColumn('is_active')) {
+                            $sql .= " AND u.is_active = 0";
+                        } else {
+                            $sql .= " AND 1=0";
+                        }
                     }
                 }
 
@@ -277,12 +317,13 @@ class AdminController {
             $stats = [];
             
             // Total users
+            $usersActiveWhere = $this->hasUserColumn('is_active') ? 'WHERE is_active = 1' : '';
             $stmt = $this->db->prepare("
                 SELECT 
                     COUNT(*) as total_users,
                     COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as new_users
                 FROM users
-                WHERE is_active = 1
+                {$usersActiveWhere}
             ");
             $stmt->execute();
             $userStats = $stmt->fetch();
@@ -305,12 +346,16 @@ class AdminController {
             $stats['new_orders'] = $orderStats['new_orders'];
             
             // Active sellers
+            $sellerActiveWhere = "WHERE role = 'seller'";
+            if ($this->hasUserColumn('is_active')) {
+                $sellerActiveWhere .= " AND is_active = 1";
+            }
             $stmt = $this->db->prepare("
                 SELECT 
                     COUNT(*) as active_sellers,
                     COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as new_sellers
                 FROM users
-                WHERE role = 'seller' AND is_active = 1
+                {$sellerActiveWhere}
             ");
             $stmt->execute();
             $sellerStats = $stmt->fetch();
@@ -318,14 +363,18 @@ class AdminController {
             $stats['new_sellers'] = $sellerStats['new_sellers'];
             
             // Frozen accounts
-            $stmt = $this->db->prepare("
-                SELECT COUNT(*) as frozen_accounts
-                FROM users
-                WHERE is_active = 0
-            ");
-            $stmt->execute();
-            $frozenStats = $stmt->fetch();
-            $stats['frozen_accounts'] = $frozenStats['frozen_accounts'];
+            if ($this->hasUserColumn('is_active')) {
+                $stmt = $this->db->prepare("
+                    SELECT COUNT(*) as frozen_accounts
+                    FROM users
+                    WHERE is_active = 0
+                ");
+                $stmt->execute();
+                $frozenStats = $stmt->fetch();
+                $stats['frozen_accounts'] = $frozenStats['frozen_accounts'];
+            } else {
+                $stats['frozen_accounts'] = 0;
+            }
             
             header('Content-Type: application/json');
             echo json_encode(['stats' => $stats]);
@@ -389,6 +438,11 @@ class AdminController {
         }
 
         try {
+            if (!$this->hasUserColumn('is_active')) {
+                header('Content-Type: application/json');
+                echo json_encode(['accounts' => []]);
+                return;
+            }
             $stmt = $this->db->prepare("
                 SELECT id, full_name, email, role, created_at, last_seen
                 FROM users
@@ -425,8 +479,9 @@ class AdminController {
         $offset = $_GET['offset'] ?? 0;
 
         try {
+            $userIsActiveSelect = $this->hasUserColumn('is_active') ? 'is_active' : '1 as is_active';
             $sql = "
-                SELECT id, full_name, email, role, phone, is_active, created_at, last_seen
+                SELECT id, full_name, email, role, phone, {$userIsActiveSelect}, created_at, last_seen
                 FROM users
                 WHERE 1=1
             ";
@@ -438,9 +493,15 @@ class AdminController {
             }
             
             if ($status === 'active') {
-                $sql .= " AND is_active = 1";
+                if ($this->hasUserColumn('is_active')) {
+                    $sql .= " AND is_active = 1";
+                }
             } elseif ($status === 'inactive') {
-                $sql .= " AND is_active = 0";
+                if ($this->hasUserColumn('is_active')) {
+                    $sql .= " AND is_active = 0";
+                } else {
+                    $sql .= " AND 1=0";
+                }
             }
             
             if (!empty($search)) {
@@ -488,6 +549,11 @@ class AdminController {
         }
 
         try {
+            if (!$this->hasUserColumn('is_active')) {
+                http_response_code(400);
+                echo json_encode(['error' => 'User status update is not supported (users.is_active column missing)']);
+                return;
+            }
             $stmt = $this->db->prepare("
                 UPDATE users 
                 SET is_active = ?, updated_at = NOW()

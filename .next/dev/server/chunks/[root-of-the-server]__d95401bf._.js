@@ -59,7 +59,19 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$head
 ;
 ;
 async function proxy(request, context) {
-    const baseUrl = ("TURBOPACK compile-time value", "http://localhost/sarstore-api") || process.env.API_URL || "http://localhost:8000";
+    const configuredBaseUrl = ("TURBOPACK compile-time value", "http://localhost:8000") || process.env.API_URL || "http://localhost:8000";
+    const localDevBaseUrl = "http://localhost:8000";
+    let baseUrl = configuredBaseUrl;
+    if ("TURBOPACK compile-time truthy", 1) {
+        try {
+            const healthRes = await fetch(`${localDevBaseUrl}/api/health`, {
+                signal: AbortSignal.timeout(800)
+            });
+            if (healthRes.ok) {
+                baseUrl = localDevBaseUrl;
+            }
+        } catch  {}
+    }
     const params = await context.params;
     const targetPath = (params?.path || []).join("/");
     const url = new URL(request.url);
@@ -89,7 +101,10 @@ async function proxy(request, context) {
             success: false,
             error: `Backend unavailable. Start PHP API server at ${baseUrl}`
         }, {
-            status: 503
+            status: 503,
+            headers: {
+                "x-proxy-target": targetUrl
+            }
         });
     }
     const responseBody = await response.text();
@@ -97,7 +112,8 @@ async function proxy(request, context) {
     return new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"](responseBody, {
         status: response.status,
         headers: {
-            "content-type": contentType
+            "content-type": contentType,
+            "x-proxy-target": targetUrl
         }
     });
 }

@@ -17,10 +17,12 @@ class Chat implements MessageComponentInterface {
     protected $clients;
     protected $userConnections;
     protected $db;
+    protected $hasUsersIsActive;
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
         $this->userConnections = [];
+        $this->hasUsersIsActive = null;
         
         // Initialize database connection
         try {
@@ -39,6 +41,22 @@ class Chat implements MessageComponentInterface {
         }
     }
 
+    protected function usersHasIsActiveColumn() {
+        if ($this->hasUsersIsActive !== null) {
+            return (bool)$this->hasUsersIsActive;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users LIKE 'is_active'");
+            $stmt->execute();
+            $this->hasUsersIsActive = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            return (bool)$this->hasUsersIsActive;
+        } catch (Exception $e) {
+            $this->hasUsersIsActive = false;
+            return false;
+        }
+    }
+
     public function onOpen(ConnectionInterface $conn) {
         // Store the new connection
         $this->clients->attach($conn);
@@ -54,7 +72,8 @@ class Chat implements MessageComponentInterface {
                 $userId = $decoded->sub;
                 
                 // Get user from database
-                $stmt = $this->db->prepare("SELECT id, email, full_name, role, avatar_url FROM users WHERE id = ? AND is_active = 1");
+                $activeWhere = $this->usersHasIsActiveColumn() ? ' AND is_active = 1' : '';
+                $stmt = $this->db->prepare("SELECT id, email, full_name, role, avatar_url FROM users WHERE id = ?{$activeWhere}");
                 $stmt->execute([$userId]);
                 $user = $stmt->fetch();
                 

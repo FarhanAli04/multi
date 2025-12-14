@@ -1,42 +1,117 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Search, User, Heart } from "lucide-react"
+import { ShoppingCart, Search, User, Heart, Menu, X } from "lucide-react"
+import { useState } from "react"
 
 export function CustomerNavbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-primary">
-          SAR Store
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((v) => !v)}
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
 
-        <div className="flex-1 mx-8">
+            <Link href="/" className="text-xl sm:text-2xl font-bold text-primary truncate">
+              SAR Store
+            </Link>
+          </div>
+
+          <div className="hidden md:flex flex-1 mx-8 min-w-0">
+            <div className="relative w-full">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                size={18}
+              />
+              <input type="text" placeholder="Search products..." className="input pl-10 w-full" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button
+              type="button"
+              className="relative text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart size={20} />
+            </button>
+
+            <Link
+              href="/customer/cart"
+              className="relative text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Cart"
+            >
+              <ShoppingCart size={20} />
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-danger text-white rounded-full text-xs flex items-center justify-center">
+                3
+              </span>
+            </Link>
+
+            <Link
+              href="/customer"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Account"
+            >
+              <User size={20} className="text-muted-foreground" />
+              <span className="hidden sm:inline font-medium">Account</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="md:hidden pb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <input type="text" placeholder="Search products..." className="input pl-10 w-full" />
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <button className="relative text-muted-foreground hover:text-foreground transition-colors">
-            <Heart size={20} />
-          </button>
-
-          <button className="relative text-muted-foreground hover:text-foreground transition-colors">
-            <ShoppingCart size={20} />
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-danger text-white rounded-full text-xs flex items-center justify-center">
-              3
-            </span>
-          </button>
-
-          <Link
-            href="/customer"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-          >
-            <User size={20} className="text-muted-foreground" />
-            <span className="font-medium">Account</span>
-          </Link>
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-200 ${
+            mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="border-t border-border pt-4 pb-6">
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/shop"
+                className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Shop
+              </Link>
+              <Link
+                href="/customer/orders"
+                className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Orders
+              </Link>
+              <Link
+                href="/customer/cart"
+                className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Cart
+              </Link>
+              <Link
+                href="/customer"
+                className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Account
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

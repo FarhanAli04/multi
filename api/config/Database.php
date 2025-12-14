@@ -5,6 +5,8 @@ class Database {
     private $username;
     private $password;
     private $conn;
+    private static $sharedConn;
+    private static $schemaEnsured = false;
 
     private function ensureSchema(PDO $conn) {
         try {
@@ -136,6 +138,30 @@ class Database {
             $ensureColumn('order_items', 'quantity', 'quantity INT NOT NULL DEFAULT 1');
             $ensureColumn('order_items', 'price', 'price DECIMAL(10,2) NOT NULL DEFAULT 0.00');
             $ensureColumn('order_items', 'created_at', 'created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
+
+            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+            $stmt->execute(['seller@example.com']);
+            $sellerUser = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$sellerUser) {
+                $hash = password_hash('password', PASSWORD_BCRYPT);
+                $stmtIns = $conn->prepare("INSERT INTO users (email, password_hash, role, full_name, is_active, email_verified_at, created_at, updated_at) VALUES (?, ?, 'seller', ?, 1, NOW(), NOW(), NOW())");
+                $stmtIns->execute(['seller@example.com', $hash, 'Sample Seller']);
+                $sellerId = (int)$conn->lastInsertId();
+            } else {
+                $sellerId = (int)($sellerUser['id'] ?? 0);
+            }
+
+            if ($sellerId > 0) {
+                $stmt = $conn->prepare("SELECT user_id FROM sellers WHERE user_id = ? LIMIT 1");
+                $stmt->execute([$sellerId]);
+                $sellerProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$sellerProfile) {
+                    $storeName = 'store_' . $sellerId;
+                    $cnic = 'cnic_' . $sellerId;
+                    $stmtIns = $conn->prepare("INSERT INTO sellers (user_id, business_name, store_name, cnic_number, is_approved, commission_rate) VALUES (?, ?, ?, ?, 1, 10.00)");
+                    $stmtIns->execute([$sellerId, 'Sample Seller Business', $storeName, $cnic]);
+                }
+            }
         } catch (Exception $e) {
         }
     }
@@ -149,7 +175,10 @@ class Database {
 
     // Get the database connection
     public function getConnection() {
-        $this->conn = null;
+        if (self::$sharedConn instanceof PDO) {
+            $this->conn = self::$sharedConn;
+            return $this->conn;
+        }
 
         try {
             $this->conn = new PDO(
@@ -163,7 +192,12 @@ class Database {
                 ]
             );
 
-            $this->ensureSchema($this->conn);
+            self::$sharedConn = $this->conn;
+
+            if (!self::$schemaEnsured) {
+                $this->ensureSchema($this->conn);
+                self::$schemaEnsured = true;
+            }
         } catch(PDOException $e) {
             error_log('Connection Error: ' . $e->getMessage());
             throw new Exception('Database connection error. Please try again later.');

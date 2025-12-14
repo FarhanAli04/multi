@@ -190,14 +190,60 @@ class AuthController {
 
     // Get JSON input from request
     private function getRequestData() {
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Invalid JSON data');
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+
+        // Prefer JSON when declared.
+        if (stripos((string)$contentType, 'application/json') !== false) {
+            $raw = file_get_contents('php://input');
+            $raw = is_string($raw) ? trim($raw) : '';
+
+            // Strip UTF-8 BOM if present.
+            if (strncmp($raw, "\xEF\xBB\xBF", 3) === 0) {
+                $raw = substr($raw, 3);
+                $raw = trim($raw);
+            }
+
+            // Windows curl/Powershell users often wrap JSON in single quotes; accept it.
+            if (strlen($raw) >= 2 && $raw[0] === "'" && substr($raw, -1) === "'") {
+                $raw = substr($raw, 1, -1);
+                $raw = trim($raw);
+            }
+
+            if ($raw === '') {
+                return [];
+            }
+
+            $data = json_decode($raw, true);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+                // Some Windows shells send JSON with literal backslashes (e.g. {\"email\":...}).
+                // Try to unescape and decode again.
+                $raw2 = str_replace('\\"', '"', $raw);
+                $raw2 = str_replace('\\\'', "'", $raw2);
+                $raw2 = str_replace('\\\\', '\\', $raw2);
+                $data2 = json_decode($raw2, true);
+                if (json_last_error() !== JSON_ERROR_NONE || !is_array($data2)) {
+                    throw new Exception('Invalid JSON data');
+                }
+                $data = $data2;
+            }
+
+            return $data;
         }
-        
-        return $data;
+
+        // Fallback: handle form submissions.
+        if (!empty($_POST) && is_array($_POST)) {
+            return $_POST;
+        }
+
+        $raw = file_get_contents('php://input');
+        $raw = is_string($raw) ? trim($raw) : '';
+        if ($raw === '') {
+            return [];
+        }
+
+        $data = [];
+        parse_str($raw, $data);
+        return is_array($data) ? $data : [];
     }
 
     // Validate required fields
@@ -235,7 +281,4 @@ class AuthController {
     }
 }
 
-// Create and run the controller
-$authController = new AuthController();
-$authController->handleRequest();
 ?>
