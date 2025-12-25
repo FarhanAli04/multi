@@ -3,6 +3,7 @@
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { ShoppingCart, Heart, Package, Wallet } from "lucide-react"
 import { useEffect, useState } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function CustomerDashboard() {
   const [isLoading, setIsLoading] = useState(true)
@@ -64,7 +65,7 @@ export default function CustomerDashboard() {
     { label: "Total Orders", value: stats?.total_orders ?? "—", icon: <Package size={24} /> },
     { label: "Wishlist Items", value: stats?.wishlist_items ?? "—", icon: <Heart size={24} /> },
     { label: "Cart Items", value: stats?.cart_items ?? "—", icon: <ShoppingCart size={24} /> },
-    { label: "Wallet Balance", value: stats ? `₹${Number(stats.wallet_balance || 0).toFixed(0)}` : "—", icon: <Wallet size={24} /> },
+    { label: "Wallet Balance", value: stats ? formatCurrency(Number(stats.wallet_balance || 0)) : "—", icon: <Wallet size={24} /> },
   ]
 
   return (
@@ -138,7 +139,7 @@ export default function CustomerDashboard() {
                       <td className="py-3 px-4 font-medium text-primary">#{o.id}</td>
                       <td className="py-3 px-4">{o.created_at ? new Date(o.created_at).toLocaleDateString() : ""}</td>
                       <td className="py-3 px-4">{o.store_name || o.seller_name || ""}</td>
-                      <td className="py-3 px-4 font-semibold">₹{Number(o.total_amount || 0).toFixed(2)}</td>
+                      <td className="py-3 px-4 font-semibold">{formatCurrency(Number(o.total_amount || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="py-3 px-4">
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
                           {(o.status || "").toString()}

@@ -6,6 +6,7 @@ import { SellerHeader } from "@/components/seller/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Plus, MoreVertical, Edit, Trash2, Eye } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 interface Product {
   id: number
@@ -362,7 +363,7 @@ export default function SellerProductsPage() {
                             <div className="text-sm text-gray-900">{product.category}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">₹{product.price.toLocaleString()}</div>
+                            <div className="text-sm text-gray-900">{formatCurrency(product.price)}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{product.stock} units</div>
@@ -451,7 +452,7 @@ export default function SellerProductsPage() {
                   
                   <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                      Price (₹) <span className="text-red-500">*</span>
+                      Price (PKR) <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="number"
@@ -585,7 +586,7 @@ export default function SellerProductsPage() {
                   
                   <div>
                     <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700">
-                      Price (₹) <span className="text-red-500">*</span>
+                      Price (PKR) <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="number"

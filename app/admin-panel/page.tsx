@@ -14,6 +14,7 @@ import {
 } from "recharts"
 import { Users, Store, ShoppingCart, DollarSign, AlertCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function AdminPanelDashboard() {
   const [stats, setStats] = useState<any>(null)
@@ -103,7 +104,7 @@ export default function AdminPanelDashboard() {
       {
         icon: DollarSign,
         label: "Total Revenue",
-        value: `₹${totalRevenue.toLocaleString()}`,
+        value: formatCurrency(totalRevenue),
         change: "",
         positive: true,
         color: "from-emerald-500 to-emerald-600",
@@ -140,7 +141,7 @@ export default function AdminPanelDashboard() {
     return recentOrders.slice(0, 10).map((o) => ({
       id: `#${o.id}`,
       customer: o.customer_name || "",
-      amount: `₹${Number(o.total_amount || 0).toLocaleString()}`,
+      amount: formatCurrency(Number(o.total_amount || 0)),
       status: (o.status || "").toString(),
       date: o.created_at ? new Date(o.created_at).toLocaleDateString() : "",
     }))

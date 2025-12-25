@@ -5,6 +5,7 @@ import { AdminHeader } from "@/components/admin/header"
 import { StatCard } from "@/components/admin/stat-card"
 import { Users, ShoppingCart, TrendingUp, AlertCircle, Clock, CheckCircle, XCircle, MoreHorizontal } from "lucide-react"
 import { useState, useEffect } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false)
@@ -73,7 +74,7 @@ export default function AdminDashboard() {
     {
       title: "Total Orders",
       value: Number(statsData?.total_orders || 0).toLocaleString(),
-      subtitle: `₹${Number(statsData?.total_revenue || 0).toLocaleString()} revenue`,
+      subtitle: `${formatCurrency(Number(statsData?.total_revenue || 0))} revenue`,
       icon: <ShoppingCart className="w-6 h-6 md:w-7 md:h-7" />,
       trend: "up" as const,
       trendValue: "",
@@ -182,7 +183,7 @@ export default function AdminDashboard() {
                           <tr key={order.id} className="hover:bg-muted/50 transition-colors">
                             <td className="py-3 px-4 font-medium">#{order.id}</td>
                             <td className="py-3 px-4">{order.customer_name || order.customer}</td>
-                            <td className="py-3 px-4 text-right">₹{Number(order.total_amount || 0).toLocaleString()}</td>
+                            <td className="py-3 px-4 text-right">{formatCurrency(Number(order.total_amount || 0))}</td>
                             <td className="py-3 px-4">
                               {getStatusBadge((order.status || "").toString().toLowerCase())}
                             </td>
@@ -210,7 +211,7 @@ export default function AdminDashboard() {
                             <p className="text-sm text-muted-foreground">{order.customer_name || order.customer}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">₹{Number(order.total_amount || 0).toLocaleString()}</p>
+                            <p className="font-medium">{formatCurrency(Number(order.total_amount || 0))}</p>
                             <p className="text-xs text-muted-foreground">
                               {order.created_at ? new Date(order.created_at).toLocaleDateString() : order.date}
                             </p>

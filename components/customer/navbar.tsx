@@ -2,10 +2,40 @@
 
 import Link from "next/link"
 import { ShoppingCart, Search, User, Heart, Menu, X } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export function CustomerNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [cartCount, setCartCount] = useState<number>(0)
+
+  const loadCartCount = async () => {
+    try {
+      const res = await fetch("/api/backend/cart")
+      if (res.status === 401 || res.status === 403) {
+        setCartCount(0)
+        return
+      }
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setCartCount(0)
+        return
+      }
+      const items = Array.isArray(data?.items) ? data.items : []
+      const count = items.reduce((sum: number, item: any) => sum + (Number(item?.quantity) || 0), 0)
+      setCartCount(count)
+    } catch {
+      setCartCount(0)
+    }
+  }
+
+  useEffect(() => {
+    loadCartCount()
+    const handler = () => {
+      loadCartCount()
+    }
+    window.addEventListener("cart:updated", handler)
+    return () => window.removeEventListener("cart:updated", handler)
+  }, [])
 
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-40">
@@ -52,9 +82,11 @@ export function CustomerNavbar() {
               aria-label="Cart"
             >
               <ShoppingCart size={20} />
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-danger text-white rounded-full text-xs flex items-center justify-center">
-                3
-              </span>
+              {cartCount > 0 ? (
+                <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 bg-danger text-white rounded-full text-xs flex items-center justify-center">
+                  {cartCount}
+                </span>
+              ) : null}
             </Link>
 
             <Link

@@ -11,7 +11,7 @@ class Database {
     private function ensureSchema(PDO $conn) {
         try {
             $ensureTable = function (string $table, string $createSql) use ($conn) {
-                $stmt = $conn->prepare("SHOW TABLES LIKE ?");
+                $stmt = $conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
                 $stmt->execute([$table]);
                 if (!$stmt->fetch(PDO::FETCH_NUM)) {
                     $conn->exec($createSql);
@@ -23,15 +23,15 @@ class Database {
             $ensureTable('categories', "CREATE TABLE IF NOT EXISTS categories (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT NULL, image_url VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('products', "CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, seller_id INT NULL, category_id INT NULL, name VARCHAR(255) NOT NULL, description TEXT NULL, price DECIMAL(10,2) NOT NULL DEFAULT 0.00, stock INT NOT NULL DEFAULT 0, image_url VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('orders', "CREATE TABLE IF NOT EXISTS orders (id INT AUTO_INCREMENT PRIMARY KEY, order_number VARCHAR(50) NULL, customer_id INT NULL, seller_id INT NULL, status VARCHAR(30) DEFAULT 'pending', subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00, tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, shipping_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, payment_status VARCHAR(30) DEFAULT 'pending', payment_method VARCHAR(50) DEFAULT NULL, shipping_address TEXT NULL, billing_address TEXT NULL, notes TEXT NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
-            $ensureTable('order_items', "CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, price DECIMAL(10,2) NOT NULL DEFAULT 0.00, total DECIMAL(10,2) NOT NULL DEFAULT 0.00, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
+            $ensureTable('order_items', "CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product_id INT NOT NULL, seller_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00, total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('cart', "CREATE TABLE IF NOT EXISTS cart (user_id INT NOT NULL, product_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, product_id)) ENGINE=InnoDB");
             $ensureTable('reviews', "CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, user_id INT NOT NULL, rating TINYINT NOT NULL, comment TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_reviews_product_id (product_id), INDEX idx_reviews_user_id (user_id)) ENGINE=InnoDB");
 
             $ensureColumn = function (string $table, string $column, string $definition) use ($conn) {
                 try {
-                    $stmt = $conn->prepare("SHOW COLUMNS FROM {$table} LIKE ?");
-                    $stmt->execute([$column]);
-                    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $stmt = $conn->prepare("SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ? LIMIT 1");
+                    $stmt->execute([$table, $column]);
+                    if (!$stmt->fetch(PDO::FETCH_NUM)) {
                         $conn->exec("ALTER TABLE {$table} ADD COLUMN {$definition}");
                     }
                 } catch (Exception $e) {
@@ -78,8 +78,13 @@ class Database {
             $stmt = $conn->prepare("SHOW COLUMNS FROM products LIKE 'quantity'");
             $stmt->execute();
             $hasQuantity = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = $conn->prepare("SHOW COLUMNS FROM products LIKE 'stock'");
+            $stmt->execute();
+            $hasStock = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
             if ($hasQuantity) {
-                $conn->exec("UPDATE products SET stock = quantity WHERE stock = 0 AND quantity IS NOT NULL");
+                if ($hasStock) {
+                    $conn->exec("UPDATE products SET stock = quantity WHERE stock = 0 AND quantity IS NOT NULL");
+                }
             }
 
             $stmt = $conn->prepare("SHOW COLUMNS FROM products LIKE 'status'");
@@ -135,9 +140,32 @@ class Database {
 
             $ensureColumn('order_items', 'order_id', 'order_id INT NULL');
             $ensureColumn('order_items', 'product_id', 'product_id INT NULL');
+            $ensureColumn('order_items', 'seller_id', 'seller_id INT NULL');
             $ensureColumn('order_items', 'quantity', 'quantity INT NOT NULL DEFAULT 1');
-            $ensureColumn('order_items', 'price', 'price DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+            $ensureColumn('order_items', 'unit_price', 'unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+            $ensureColumn('order_items', 'total_price', 'total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00');
             $ensureColumn('order_items', 'created_at', 'created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
+
+            // Backfill unit_price/total_price from legacy columns if present
+            try {
+                $stmt = $conn->prepare("SHOW COLUMNS FROM order_items LIKE 'price'");
+                $stmt->execute();
+                $hasLegacyPrice = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+                if ($hasLegacyPrice) {
+                    $conn->exec("UPDATE order_items SET unit_price = price WHERE (unit_price IS NULL OR unit_price = 0) AND price IS NOT NULL");
+                }
+            } catch (Exception $e) {
+            }
+
+            try {
+                $stmt = $conn->prepare("SHOW COLUMNS FROM order_items LIKE 'total'");
+                $stmt->execute();
+                $hasLegacyTotal = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+                if ($hasLegacyTotal) {
+                    $conn->exec("UPDATE order_items SET total_price = total WHERE (total_price IS NULL OR total_price = 0) AND total IS NOT NULL");
+                }
+            } catch (Exception $e) {
+            }
 
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
             $stmt->execute(['seller@example.com']);
@@ -163,6 +191,7 @@ class Database {
                 }
             }
         } catch (Exception $e) {
+            error_log('Schema ensure failed: ' . $e->getMessage());
         }
     }
 
@@ -177,6 +206,29 @@ class Database {
     public function getConnection() {
         if (self::$sharedConn instanceof PDO) {
             $this->conn = self::$sharedConn;
+
+            $shouldEnsureSchema = !self::$schemaEnsured;
+            if (!$shouldEnsureSchema) {
+                try {
+                    $stmt = $this->conn->prepare("SHOW TABLES LIKE 'cart'");
+                    $stmt->execute();
+                    if (!$stmt->fetch(PDO::FETCH_NUM)) {
+                        $shouldEnsureSchema = true;
+                    }
+                } catch (Exception $e) {
+                    $shouldEnsureSchema = true;
+                }
+            }
+
+            if ($shouldEnsureSchema) {
+                try {
+                    $this->ensureSchema($this->conn);
+                    self::$schemaEnsured = true;
+                } catch (Exception $e) {
+                    self::$schemaEnsured = false;
+                }
+            }
+
             return $this->conn;
         }
 
@@ -194,9 +246,26 @@ class Database {
 
             self::$sharedConn = $this->conn;
 
-            if (!self::$schemaEnsured) {
-                $this->ensureSchema($this->conn);
-                self::$schemaEnsured = true;
+            $shouldEnsureSchema = !self::$schemaEnsured;
+            if (!$shouldEnsureSchema) {
+                try {
+                    $stmt = $this->conn->prepare("SHOW TABLES LIKE 'cart'");
+                    $stmt->execute();
+                    if (!$stmt->fetch(PDO::FETCH_NUM)) {
+                        $shouldEnsureSchema = true;
+                    }
+                } catch (Exception $e) {
+                    $shouldEnsureSchema = true;
+                }
+            }
+
+            if ($shouldEnsureSchema) {
+                try {
+                    $this->ensureSchema($this->conn);
+                    self::$schemaEnsured = true;
+                } catch (Exception $e) {
+                    self::$schemaEnsured = false;
+                }
             }
         } catch(PDOException $e) {
             error_log('Connection Error: ' . $e->getMessage());

@@ -2,10 +2,133 @@
 
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { Truck, Wallet, AlertCircle } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { formatCurrency } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+
+type CartItem = {
+  product_id: number
+  quantity: number
+  name?: string
+  price?: number | string
+  image_url?: string
+  seller_id?: number | string
+}
 
 export default function CheckoutPage() {
+  const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "online">("online")
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isPlacing, setIsPlacing] = useState(false)
+  const [error, setError] = useState<string>("")
+  const [fullName, setFullName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
+  const [city, setCity] = useState("")
+  const [postalCode, setPostalCode] = useState("")
+
+  const loadCart = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch("/api/backend/cart")
+      if (res.status === 401 || res.status === 403) {
+        router.push("/auth/login?role=customer")
+        return
+      }
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to load cart")
+      }
+      const items = Array.isArray(data?.items) ? data.items : []
+      setCartItems(items)
+    } catch (e: any) {
+      setError(e?.message || "Failed to load cart")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadCart()
+  }, [])
+
+  const { itemCount, subtotal, tax, shipping, total } = useMemo(() => {
+    const count = cartItems.reduce((sum, item) => sum + (Number(item.quantity || 0) || 0), 0)
+    const sub = cartItems.reduce(
+      (sum, item) => sum + (Number(item.price || 0) || 0) * (Number(item.quantity || 0) || 0),
+      0,
+    )
+    const t = Math.round(sub * 0.18)
+    const ship = cartItems.length > 0 ? 99 : 0
+    return { itemCount: count, subtotal: sub, tax: t, shipping: ship, total: sub + t + ship }
+  }, [cartItems])
+
+  const placeOrder = async () => {
+    if (isPlacing) return
+    if (cartItems.length === 0) {
+      router.push("/customer/cart")
+      return
+    }
+
+    if (!fullName.trim() || !phone.trim() || !address.trim() || !city.trim()) {
+      setError("Please fill shipping address fields")
+      return
+    }
+
+    const shippingAddress = [
+      fullName.trim(),
+      phone.trim(),
+      address.trim(),
+      city.trim(),
+      postalCode.trim(),
+    ]
+      .filter(Boolean)
+      .join(", ")
+
+    const items = cartItems.map((it) => ({
+      product_id: Number(it.product_id),
+      quantity: Number(it.quantity || 0),
+      price: Number(it.price || 0),
+      seller_id: Number(it.seller_id || 0),
+    }))
+
+    if (items.some((it) => !it.product_id || !it.quantity || !it.seller_id)) {
+      setError("Cart items are missing required data. Please refresh the page.")
+      return
+    }
+
+    try {
+      setIsPlacing(true)
+      setError("")
+      const res = await fetch("/api/backend/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items,
+          shipping_address: shippingAddress,
+          payment_method: paymentMethod,
+        }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          router.push("/auth/login?role=customer")
+          return
+        }
+        throw new Error(data?.error || "Failed to place order")
+      }
+
+      window.dispatchEvent(new Event("cart:updated"))
+      const ids = Array.isArray(data?.order_ids) ? data.order_ids.join(",") : ""
+      router.push(`/customer/order-placed${ids ? `?ids=${encodeURIComponent(ids)}` : ""}`)
+    } catch (e: any) {
+      setError(e?.message || "Failed to place order")
+    } finally {
+      setIsPlacing(false)
+    }
+  }
 
   return (
     <>
@@ -17,6 +140,10 @@ export default function CheckoutPage() {
           <p className="text-muted-foreground">Complete your purchase</p>
         </div>
 
+        {error ? (
+          <div className="mb-6 rounded-lg border border-border bg-muted p-4 text-sm text-destructive">{error}</div>
+        ) : null}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
           <div className="lg:col-span-2 space-y-6">
@@ -27,13 +154,13 @@ export default function CheckoutPage() {
                 Shipping Address
               </h2>
 
-              <form className="space-y-4">
-                <input type="text" placeholder="Full Name" className="input" />
-                <input type="text" placeholder="Phone Number" className="input" />
-                <input type="text" placeholder="Address" className="input" />
+              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                <input type="text" placeholder="Full Name" className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <input type="text" placeholder="Phone Number" className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input type="text" placeholder="Address" className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
                 <div className="grid grid-cols-2 gap-4">
-                  <input type="text" placeholder="City" className="input" />
-                  <input type="text" placeholder="Postal Code" className="input" />
+                  <input type="text" placeholder="City" className="input" value={city} onChange={(e) => setCity(e.target.value)} />
+                  <input type="text" placeholder="Postal Code" className="input" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
                 </div>
                 <button type="button" className="btn-secondary w-full">
                   Use Saved Address
@@ -49,14 +176,14 @@ export default function CheckoutPage() {
                   <input type="radio" name="delivery" defaultChecked className="w-4 h-4" />
                   <div className="ml-4">
                     <p className="font-semibold">Standard Delivery</p>
-                    <p className="text-sm text-muted-foreground">3-5 business days • ₹99</p>
+                    <p className="text-sm text-muted-foreground">3-5 business days • {formatCurrency(99)}</p>
                   </div>
                 </label>
                 <label className="flex items-center p-4 border border-border rounded-lg cursor-pointer hover:border-primary">
                   <input type="radio" name="delivery" className="w-4 h-4" />
                   <div className="ml-4">
                     <p className="font-semibold">Express Delivery</p>
-                    <p className="text-sm text-muted-foreground">1-2 business days • ₹499</p>
+                    <p className="text-sm text-muted-foreground">1-2 business days • {formatCurrency(499)}</p>
                   </div>
                 </label>
               </div>
@@ -102,7 +229,7 @@ export default function CheckoutPage() {
                       <Wallet size={16} />
                       Wallet
                     </p>
-                    <p className="text-sm text-muted-foreground">Available Balance: ₹2,500</p>
+                    <p className="text-sm text-muted-foreground">Available Balance: {formatCurrency(2500)}</p>
                   </div>
                 </label>
               </div>
@@ -116,22 +243,22 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 pb-6 border-b border-border">
                 <div className="flex justify-between text-sm">
-                  <span>3 items</span>
-                  <span>₹3,497</span>
+                  <span>{isLoading ? "Loading..." : `${itemCount} item(s)`}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>
-                  <span>₹629</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
-                  <span>₹99</span>
+                  <span>{formatCurrency(shipping)}</span>
                 </div>
               </div>
 
               <div className="flex justify-between mt-6 mb-6">
                 <span className="font-bold">Total</span>
-                <span className="text-2xl font-bold text-primary">₹4,225</span>
+                <span className="text-2xl font-bold text-primary">{formatCurrency(total)}</span>
               </div>
 
               {paymentMethod === "wallet" && (
@@ -141,7 +268,14 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <button className="w-full btn-primary">Place Order</button>
+              <button
+                className="w-full btn-primary"
+                type="button"
+                disabled={isLoading || isPlacing || cartItems.length === 0}
+                onClick={placeOrder}
+              >
+                {isPlacing ? "Placing Order..." : "Place Order"}
+              </button>
 
               <div className="mt-4 p-4 bg-muted rounded-lg text-center">
                 <p className="text-xs text-muted-foreground mb-2">Your order is secure & encrypted</p>

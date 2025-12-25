@@ -3,6 +3,7 @@
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { Truck, Package, CheckCircle, Clock } from "lucide-react"
 import { useEffect, useState } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState<
@@ -128,7 +129,7 @@ export default function CustomerOrdersPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Amount</p>
-                    <p className="font-bold text-foreground">₹{order.amount}</p>
+                    <p className="font-bold text-foreground">{formatCurrency(order.amount)}</p>
                   </div>
                   <div className="flex items-end justify-between md:flex-col md:items-end">
                     <span

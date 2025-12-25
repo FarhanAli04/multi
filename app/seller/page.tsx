@@ -5,6 +5,7 @@ import { SellerSidebar } from "@/components/seller/sidebar"
 import { SellerHeader } from "@/components/seller/header"
 import { StatCard } from "@/components/admin/stat-card"
 import { Package, ShoppingCart, Wallet, Star } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function SellerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -86,7 +87,7 @@ export default function SellerDashboard() {
       },
       {
         title: "This Month Sales",
-        value: `₹${monthSales.toFixed(0)}`,
+        value: formatCurrency(monthSales),
         subtitle: `${monthOrders.length} orders`,
         icon: <ShoppingCart size={28} />,
       },
@@ -164,7 +165,7 @@ export default function SellerDashboard() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">₹{Number(o.total_amount || 0).toFixed(2)}</p>
+                        <p className="font-semibold">{formatCurrency(Number(o.total_amount || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         <span className="text-xs inline-block mt-1 px-2 py-1 rounded bg-warning/10 text-warning">
                           {(o.status || "pending").toString()}
                         </span>
@@ -218,7 +219,7 @@ export default function SellerDashboard() {
                     topProducts.map((p) => (
                       <tr key={p.id} className="border-b border-border hover:bg-muted transition-colors">
                         <td className="py-3 px-4 font-medium">{p.name || ""}</td>
-                        <td className="py-3 px-4">₹{Number(p.price || 0).toFixed(2)}</td>
+                        <td className="py-3 px-4">{formatCurrency(Number(p.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td className="py-3 px-4">{Number(p.stock || 0)} units</td>
                         <td className="py-3 px-4 text-muted-foreground">{p.category || ""}</td>
                         <td className="py-3 px-4 font-medium">{p.status || ""}</td>

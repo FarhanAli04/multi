@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { formatCurrency } from "@/lib/utils"
 
 interface Order {
   id: string
@@ -219,13 +220,13 @@ export default function SellerOrdersPage() {
       Email: ${order.customer.email}
       Phone: ${order.customer.phone}
       Address: ${order.customer.address}
-      Amount: ₹${order.amount}
+      Amount: ${formatCurrency(order.amount)}
       Status: ${order.status}
       Payment Method: ${order.paymentMethod}
       Payment Status: ${order.paymentStatus}
       Date: ${order.date}
       Items:
-      ${order.items.map(item => `- ${item.name} x${item.quantity} - ₹${item.price}`).join('\n')}
+      ${order.items.map(item => `- ${item.name} x${item.quantity} - ${formatCurrency(item.price)}`).join('\n')}
     `
     window.print()
   }
@@ -314,7 +315,7 @@ export default function SellerOrdersPage() {
                           </div>
                         </td>
                         <td className="py-3 px-4">{order.items.length} item(s)</td>
-                        <td className="py-3 px-4 font-semibold">₹{order.amount}</td>
+                        <td className="py-3 px-4 font-semibold">{formatCurrency(order.amount)}</td>
                         <td className="py-3 px-4">
                           <Badge className={getStatusColor(order.status)}>
                             {getStatusIcon(order.status)} {order.status}
@@ -427,7 +428,7 @@ export default function SellerOrdersPage() {
                               <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                             </div>
                           </div>
-                          <p className="font-medium">₹{item.price}</p>
+                          <p className="font-medium">{formatCurrency(item.price)}</p>
                         </div>
                       ))}
                     </div>
@@ -439,15 +440,15 @@ export default function SellerOrdersPage() {
                     <div className="space-y-2 p-4 bg-muted rounded-lg">
                       <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>₹{selectedOrder.amount}</span>
+                        <span>{formatCurrency(selectedOrder.amount)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping</span>
-                        <span>₹0</span>
+                        <span>{formatCurrency(0)}</span>
                       </div>
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>₹{selectedOrder.amount}</span>
+                        <span>{formatCurrency(selectedOrder.amount)}</span>
                       </div>
                     </div>
                   </div>

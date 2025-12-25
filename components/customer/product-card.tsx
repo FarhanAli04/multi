@@ -1,4 +1,9 @@
+"use client"
+
 import { Heart, Star } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export interface ProductCardProps {
   id: string
@@ -12,8 +17,41 @@ export interface ProductCardProps {
   stock: number
 }
 
-export function ProductCard({ name, price, originalPrice, image, rating, reviews, seller, stock }: ProductCardProps) {
+export function ProductCard({ id, name, price, originalPrice, image, rating, reviews, seller, stock }: ProductCardProps) {
+  const router = useRouter()
+  const [isAdding, setIsAdding] = useState(false)
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
+
+  const addToCart = async () => {
+    if (isAdding) return
+    if (stock <= 0) return
+
+    try {
+      setIsAdding(true)
+      const res = await fetch("/api/backend/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ product_id: Number(id), quantity: 1 }),
+      })
+
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          router.push("/auth/login?role=customer")
+          return
+        }
+        throw new Error(data?.error || "Failed to add to cart")
+      }
+
+      window.dispatchEvent(new Event("cart:updated"))
+    } catch (e: any) {
+      alert(e?.message || "Failed to add to cart")
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
     <div className="card hover:shadow-lg transition-shadow">
@@ -47,15 +85,22 @@ export function ProductCard({ name, price, originalPrice, image, rating, reviews
       <p className="text-xs text-muted-foreground mb-3">by {seller}</p>
 
       <div className="flex items-baseline gap-2 mb-3">
-        <span className="text-xl font-bold text-foreground">₹{price}</span>
-        {originalPrice && <span className="text-sm text-muted-foreground line-through">₹{originalPrice}</span>}
+        <span className="text-xl font-bold text-foreground">{formatCurrency(price)}</span>
+        {originalPrice && <span className="text-sm text-muted-foreground line-through">{formatCurrency(originalPrice)}</span>}
       </div>
 
       <div className="flex items-center justify-between">
         <span className={`text-xs font-medium ${stock > 10 ? "text-success" : "text-warning"}`}>
           {stock > 0 ? `${stock} in stock` : "Out of stock"}
         </span>
-        <button className="btn-primary text-sm">Add to Cart</button>
+        <button
+          type="button"
+          className="btn-primary text-sm"
+          disabled={stock <= 0 || isAdding}
+          onClick={addToCart}
+        >
+          {isAdding ? "Adding..." : "Add to Cart"}
+        </button>
       </div>
     </div>
   )

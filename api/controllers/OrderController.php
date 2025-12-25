@@ -5,6 +5,7 @@ require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 class OrderController {
     private $db;
     private $auth;
+    private $orderItemColumns;
 
     public function __construct() {
         $this->db = new Database();
@@ -24,12 +25,44 @@ class OrderController {
 
     private function tableExists($table) {
         try {
-            $stmt = $this->db->prepare("SHOW TABLES LIKE ?");
+            $stmt = $this->db->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
             $stmt->execute([$table]);
             return (bool)$stmt->fetch(PDO::FETCH_NUM);
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    private function getOrderItemColumns() {
+        if (is_array($this->orderItemColumns)) {
+            return $this->orderItemColumns;
+        }
+
+        $cols = [];
+        try {
+            $stmt = $this->db->prepare("SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'order_items'");
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $name = strtolower($row['column_name'] ?? '');
+                if ($name !== '') {
+                    $cols[$name] = true;
+                }
+            }
+        } catch (Exception $e) {
+        }
+
+        $priceCol = isset($cols['unit_price']) ? 'unit_price' : (isset($cols['price']) ? 'price' : 'unit_price');
+        $totalCol = isset($cols['total_price']) ? 'total_price' : (isset($cols['total']) ? 'total' : 'total_price');
+        $hasSellerId = isset($cols['seller_id']);
+
+        $this->orderItemColumns = [
+            'price' => $priceCol,
+            'total' => $totalCol,
+            'has_seller_id' => $hasSellerId,
+        ];
+
+        return $this->orderItemColumns;
     }
 
     private function listSellerOrders($user) {
@@ -40,6 +73,9 @@ class OrderController {
 
         try {
 
+        $orderItemCols = $this->getOrderItemColumns();
+        $priceCol = $orderItemCols['price'];
+
         $sql = "
             SELECT 
                 o.*,
@@ -47,7 +83,7 @@ class OrderController {
                 u.email as customer_email,
                 u.phone as customer_phone,
                 COUNT(oi.id) as item_count,
-                COALESCE(SUM(oi.quantity * oi.price), o.total_amount) as total_amount
+                COALESCE(SUM(oi.quantity * oi.{$priceCol}), o.total_amount) as total_amount
             FROM orders o
             JOIN users u ON o.customer_id = u.id
             LEFT JOIN order_items oi ON o.id = oi.order_id
@@ -78,7 +114,7 @@ class OrderController {
 
         foreach ($orders as &$order) {
             $stmtItems = $this->db->prepare("
-                SELECT oi.*, p.name as product_name, p.image_url
+                SELECT oi.*, oi.{$priceCol} as price, p.name as product_name, p.image_url
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = ?
@@ -204,13 +240,16 @@ class OrderController {
         $status = $_GET['status'] ?? '';
 
         try {
+            $orderItemCols = $this->getOrderItemColumns();
+            $priceCol = $orderItemCols['price'];
+
             $sql = "
                 SELECT 
                     o.*,
                     u.full_name as seller_name,
                     ss.store_name,
                     COUNT(oi.id) as item_count,
-                    SUM(oi.quantity * oi.price) as total_amount
+                    SUM(oi.quantity * oi.{$priceCol}) as total_amount
                 FROM orders o
                 JOIN users u ON o.seller_id = u.id
                 LEFT JOIN sellers ss ON ss.user_id = u.id
@@ -236,7 +275,7 @@ class OrderController {
             // Get order items for each order
             foreach ($orders as &$order) {
                 $stmt = $this->db->prepare("
-                    SELECT oi.*, p.name as product_name, p.image_url
+                    SELECT oi.*, oi.{$priceCol} as price, p.name as product_name, p.image_url
                     FROM order_items oi
                     JOIN products p ON oi.product_id = p.id
                     WHERE oi.order_id = ?
@@ -265,6 +304,8 @@ class OrderController {
         }
 
         try {
+            $orderItemCols = $this->getOrderItemColumns();
+            $priceCol = $orderItemCols['price'];
             $hasWishlist = $this->tableExists('wishlist');
             $hasWallets = $this->tableExists('wallets');
 
@@ -274,7 +315,7 @@ class OrderController {
                 SELECT 
                     COUNT(DISTINCT o.id) as total_orders,
                     COUNT(DISTINCT CASE WHEN o.status = 'delivered' THEN o.id END) as delivered_orders,
-                    COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN oi.quantity * oi.price END), 0) as total_spent,
+                    COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN oi.quantity * oi.{$priceCol} END), 0) as total_spent,
                     {$wishlistSelect} as wishlist_items,
                     (SELECT COUNT(*) FROM cart WHERE user_id = ?) as cart_items
                 FROM orders o
@@ -337,6 +378,11 @@ class OrderController {
 
         try {
             $this->db->beginTransaction();
+
+            $orderItemCols = $this->getOrderItemColumns();
+            $priceCol = $orderItemCols['price'];
+            $totalCol = $orderItemCols['total'];
+            $hasSellerId = $orderItemCols['has_seller_id'];
             
             // Group items by seller
             $sellerItems = [];
@@ -348,27 +394,54 @@ class OrderController {
             
             foreach ($sellerItems as $sellerId => $sellerItemsList) {
                 // Create order for each seller
+                $subtotal = 0.0;
+                foreach ($sellerItemsList as $item) {
+                    $qty = (int)($item['quantity'] ?? 0);
+                    $unit = (float)($item['unit_price'] ?? ($item['price'] ?? 0));
+                    if ($qty > 0) {
+                        $subtotal += ($qty * $unit);
+                    }
+                }
+
+                $orderNumber = 'ORD-' . date('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 8);
+                $totalAmount = $subtotal;
+
                 $stmt = $this->db->prepare("
-                    INSERT INTO orders (customer_id, seller_id, status, shipping_address, created_at)
-                    VALUES (?, ?, 'pending', ?, NOW())
+                    INSERT INTO orders (order_number, customer_id, seller_id, status, subtotal, tax_amount, shipping_amount, discount_amount, total_amount, payment_status, shipping_address, created_at, updated_at)
+                    VALUES (?, ?, ?, 'pending', ?, 0.00, 0.00, 0.00, ?, 'pending', ?, NOW(), NOW())
                 ");
-                $stmt->execute([$user['id'], $sellerId, $shippingAddress]);
+                $stmt->execute([$orderNumber, $user['id'], $sellerId, $subtotal, $totalAmount, $shippingAddress]);
                 $orderId = $this->db->lastInsertId();
                 $orderIds[] = $orderId;
                 
                 // Add order items
                 foreach ($sellerItemsList as $item) {
+                    $qty = (int)($item['quantity'] ?? 0);
+                    $unit = (float)($item['unit_price'] ?? ($item['price'] ?? 0));
+                    if ($qty <= 0) {
+                        continue;
+                    }
+                    $lineTotal = $qty * $unit;
+
+                    if ($hasSellerId) {
                     $stmt = $this->db->prepare("
-                        INSERT INTO order_items (order_id, product_id, quantity, price, created_at)
-                        VALUES (?, ?, ?, ?, NOW())
+                        INSERT INTO order_items (order_id, product_id, seller_id, quantity, {$priceCol}, {$totalCol}, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, NOW())
                     ");
-                    $stmt->execute([$orderId, $item['product_id'], $item['quantity'], $item['price']]);
+                    $stmt->execute([$orderId, $item['product_id'], $sellerId, $qty, $unit, $lineTotal]);
+                    } else {
+                        $stmt = $this->db->prepare("
+                            INSERT INTO order_items (order_id, product_id, quantity, {$priceCol}, {$totalCol}, created_at)
+                            VALUES (?, ?, ?, ?, ?, NOW())
+                        ");
+                        $stmt->execute([$orderId, $item['product_id'], $qty, $unit, $lineTotal]);
+                    }
                     
                     // Update product stock
                     $stmt = $this->db->prepare("
                         UPDATE products SET stock = stock - ? WHERE id = ?
                     ");
-                    $stmt->execute([$item['quantity'], $item['product_id']]);
+                    $stmt->execute([$qty, $item['product_id']]);
                 }
             }
             

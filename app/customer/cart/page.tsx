@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { Trash2, Plus, Minus } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 type CartItem = {
   product_id: number
@@ -13,6 +15,7 @@ type CartItem = {
 }
 
 export default function CartPage() {
+  const router = useRouter()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
@@ -53,6 +56,7 @@ export default function CartPage() {
         throw new Error(data?.error || "Failed to update cart")
       }
       await loadCart()
+      window.dispatchEvent(new Event("cart:updated"))
     } catch (e: any) {
       setError(e?.message || "Failed to update cart")
     } finally {
@@ -70,6 +74,7 @@ export default function CartPage() {
         throw new Error(data?.error || "Failed to remove item")
       }
       await loadCart()
+      window.dispatchEvent(new Event("cart:updated"))
     } catch (e: any) {
       setError(e?.message || "Failed to remove item")
     } finally {
@@ -118,7 +123,7 @@ export default function CartPage() {
 
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{item.name || "Product"}</h3>
-                    <p className="text-primary font-bold mt-1">₹{Number(item.price || 0).toFixed(0)}</p>
+                    <p className="text-primary font-bold mt-1">{formatCurrency(Number(item.price || 0))}</p>
 
                     <div className="flex items-center gap-4 mt-4">
                       <div className="flex items-center gap-2">
@@ -149,7 +154,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="text-right">
-                    <p className="font-bold text-lg">₹{(Number(item.price || 0) * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-lg">{formatCurrency(Number(item.price || 0) * item.quantity, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                   </div>
                 ))
@@ -165,31 +170,36 @@ export default function CartPage() {
               <div className="space-y-3 pb-6 border-b border-border">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(subtotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax (18%)</span>
-                  <span className="font-medium">₹{tax.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(tax, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span className="font-medium">₹{shipping.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(shipping, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
               <div className="flex justify-between mt-6 mb-6">
                 <span className="font-bold text-lg">Total</span>
-                <span className="text-2xl font-bold text-primary">₹{total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">{formatCurrency(total, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
-              <button className="w-full btn-primary" disabled={cartItems.length === 0}>
+              <button
+                className="w-full btn-primary"
+                type="button"
+                disabled={cartItems.length === 0}
+                onClick={() => router.push("/customer/checkout")}
+              >
                 Proceed to Checkout
               </button>
 
-              <button className="w-full btn-secondary mt-3">Continue Shopping</button>
+              <button className="w-full btn-secondary mt-3" type="button" onClick={() => router.push("/shop")}>Continue Shopping</button>
 
               <div className="mt-6 p-4 bg-success/10 rounded-lg">
-                <p className="text-sm text-success font-medium">Free shipping on orders above ₹5000</p>
+                <p className="text-sm text-success font-medium">Free shipping on orders above {formatCurrency(5000)}</p>
               </div>
             </div>
           </div>

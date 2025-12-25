@@ -24,7 +24,7 @@ type WalletTransaction = {
 function formatMoney(amount: number) {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: "INR",
+    currency: "PKR",
     maximumFractionDigits: 0,
   }).format(amount)
 }
@@ -33,6 +33,11 @@ export default function SellerWalletPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((v) => !v)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -123,10 +128,10 @@ export default function SellerWalletPage() {
 
   return (
     <div className="flex bg-background">
-      <SellerSidebar />
+      <SellerSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={() => setIsMobileMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col">
-        <SellerHeader />
+        <SellerHeader onMobileMenuToggle={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
 
         <main className="flex-1 p-8">
           <div className="mb-8">
@@ -245,9 +250,9 @@ export default function SellerWalletPage() {
                             }`}
                           >
                             {txn.type === "credit" ? (
-                              <ArrowDown className={txn.type === "credit" ? "text-success" : "text-danger"} size={16} />
+                              <ArrowDown className="text-success" size={16} />
                             ) : (
-                              <ArrowUp className={txn.type === "credit" ? "text-success" : "text-danger"} size={16} />
+                              <ArrowUp className="text-danger" size={16} />
                             )}
                           </div>
                         </td>
