@@ -8,7 +8,7 @@ export async function GET(request: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://127.0.0.1:8000"
     const apiResponse = await fetch(`${apiBaseUrl}/api/conversations`, {
       method: "GET",
       headers: {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://127.0.0.1:8000"
 
     const bodyJson = await request.json().catch(() => ({} as any))
     const receiverId = bodyJson.receiverId ?? bodyJson.recipient_id ?? bodyJson.recipientId

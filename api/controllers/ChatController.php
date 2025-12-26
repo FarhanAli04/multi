@@ -6,11 +6,59 @@ class ChatController {
     private $db;
     private $auth;
     private $userColumns;
+    private $messageColumns;
+    private $conversationColumns;
+
+    private static $chatSchemaEnsured = false;
+    private static $chatSchemaBroken = false;
+    private static $chatSchemaBrokenReason = null;
 
     public function __construct() {
         $this->db = new Database();
         $this->auth = new AuthMiddleware();
         $this->userColumns = null;
+        $this->messageColumns = null;
+        $this->conversationColumns = null;
+
+        if (!self::$chatSchemaEnsured && !self::$chatSchemaBroken) {
+            $this->ensureChatTables();
+        }
+    }
+
+    private function ensureChatTables() {
+        try {
+            $this->db->exec("CREATE TABLE IF NOT EXISTS conversations (id INT AUTO_INCREMENT PRIMARY KEY, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
+            $this->db->exec("CREATE TABLE IF NOT EXISTS conversation_participants (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, user_id INT NOT NULL, last_read_message_id INT NOT NULL DEFAULT 0, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_conversation_user (conversation_id, user_id), KEY idx_cp_user (user_id), KEY idx_cp_conversation (conversation_id)) ENGINE=InnoDB");
+            $this->db->exec("CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, sender_id INT NOT NULL, content TEXT NOT NULL, message_type VARCHAR(20) NOT NULL DEFAULT 'text', created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, KEY idx_messages_conversation (conversation_id), KEY idx_messages_sender (sender_id)) ENGINE=InnoDB");
+            $this->db->exec("CREATE TABLE IF NOT EXISTS message_reads (message_id INT NOT NULL, user_id INT NOT NULL, read_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (message_id, user_id), KEY idx_mr_user (user_id)) ENGINE=InnoDB");
+
+            self::$chatSchemaEnsured = true;
+        } catch (Exception $e) {
+            $msg = $e->getMessage();
+            error_log('Chat schema ensure failed: ' . $msg);
+
+            // MySQL 1813 means an orphaned tablespace file exists on disk for this table.
+            // This cannot be fixed reliably from application code.
+            if (strpos($msg, '1813') !== false || strpos($msg, 'Tablespace for table') !== false) {
+                self::$chatSchemaBroken = true;
+                self::$chatSchemaBrokenReason = $msg;
+            }
+        }
+    }
+
+    private function guardChatSchema() {
+        if (!self::$chatSchemaBroken) {
+            return true;
+        }
+
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'error' => 'Chat database schema is corrupted (orphaned tablespace). Please repair MySQL table files and restart the API.',
+            'details' => self::$chatSchemaBrokenReason,
+            'table' => 'conversation_participants',
+        ]);
+        return false;
     }
 
     private function getUserColumns() {
@@ -40,6 +88,83 @@ class ChatController {
         return isset($cols[$name]);
     }
 
+    private function getMessageColumns() {
+        if (is_array($this->messageColumns)) {
+            return $this->messageColumns;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM messages");
+            $stmt->execute();
+            $cols = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (isset($row['Field'])) {
+                    $cols[$row['Field']] = true;
+                }
+            }
+            $this->messageColumns = $cols;
+            return $this->messageColumns;
+        } catch (Exception $e) {
+            $this->messageColumns = [];
+            return $this->messageColumns;
+        }
+    }
+
+    private function hasMessageColumn($name) {
+        $cols = $this->getMessageColumns();
+        return isset($cols[$name]);
+    }
+
+    private function getConversationColumns() {
+        if (is_array($this->conversationColumns)) {
+            return $this->conversationColumns;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM conversations");
+            $stmt->execute();
+            $cols = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (isset($row['Field'])) {
+                    $cols[$row['Field']] = true;
+                }
+            }
+            $this->conversationColumns = $cols;
+            return $this->conversationColumns;
+        } catch (Exception $e) {
+            $this->conversationColumns = [];
+            return $this->conversationColumns;
+        }
+    }
+
+    private function hasConversationColumn($name) {
+        $cols = $this->getConversationColumns();
+        return isset($cols[$name]);
+    }
+
+    private function isUserInConversation($conversationId, $userId) {
+        try {
+            $stmt = $this->db->prepare("SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND user_id = ?");
+            $stmt->execute([(int)$conversationId, (int)$userId]);
+            if ($stmt->fetch(PDO::FETCH_NUM)) {
+                return true;
+            }
+        } catch (Exception $e) {
+        }
+
+        if ($this->hasConversationColumn('user1_id') && $this->hasConversationColumn('user2_id')) {
+            try {
+                $stmt = $this->db->prepare("SELECT 1 FROM conversations WHERE id = ? AND (user1_id = ? OR user2_id = ?) LIMIT 1");
+                $stmt->execute([(int)$conversationId, (int)$userId, (int)$userId]);
+                return (bool)$stmt->fetch(PDO::FETCH_NUM);
+            } catch (Exception $e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     public function conversations() {
         $method = $_SERVER['REQUEST_METHOD'];
         
@@ -53,48 +178,89 @@ class ChatController {
     public function getConversations() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         try {
-            $stmt = $this->db->prepare("
-                SELECT 
-                    c.id as conversation_id,
-                    c.created_at,
-                    c.updated_at,
-                    u.id as other_user_id,
-                    u.full_name as other_user_name,
-                    u.email as other_user_email,
-                    u.avatar_url as other_user_avatar,
-                    u.is_online as other_user_online,
-                    u.last_seen as other_user_last_seen,
-                    m.content as last_message,
-                    m.created_at as last_message_at,
-                    m.sender_id as last_message_sender_id,
-                    (SELECT COUNT(*) FROM messages m2 
-                     WHERE m2.conversation_id = c.id 
-                     AND m2.id > cp.last_read_message_id
-                     AND m2.sender_id != ?) as unread_count
-                FROM conversations c
-                JOIN conversation_participants cp ON c.id = cp.conversation_id
-                JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
-                JOIN users u ON cp2.user_id = u.id
-                LEFT JOIN messages m ON (
-                    m.id = (
-                        SELECT id FROM messages 
-                        WHERE conversation_id = c.id 
-                        ORDER BY created_at DESC 
-                        LIMIT 1
+            $onlineSelect = $this->hasUserColumn('is_online') ? 'u.is_online as other_user_online,' : '0 as other_user_online,';
+            $lastSeenSelect = $this->hasUserColumn('last_seen') ? 'u.last_seen as other_user_last_seen,' : 'NULL as other_user_last_seen,';
+            $lastMessageExpr = $this->hasMessageColumn('content') ? 'm.content' : ($this->hasMessageColumn('message') ? 'm.message' : "''");
+
+            if ($this->hasConversationColumn('user1_id') && $this->hasConversationColumn('user2_id')) {
+                $stmt = $this->db->prepare("
+                    SELECT
+                        c.id as conversation_id,
+                        c.created_at,
+                        c.updated_at,
+                        u.id as other_user_id,
+                        u.full_name as other_user_name,
+                        u.email as other_user_email,
+                        u.avatar_url as other_user_avatar,
+                        {$onlineSelect}
+                        {$lastSeenSelect}
+                        {$lastMessageExpr} as last_message,
+                        m.created_at as last_message_at,
+                        m.sender_id as last_message_sender_id,
+                        0 as unread_count
+                    FROM conversations c
+                    JOIN users u ON u.id = (CASE WHEN c.user1_id = ? THEN c.user2_id ELSE c.user1_id END)
+                    LEFT JOIN messages m ON (
+                        m.id = (
+                            SELECT id FROM messages
+                            WHERE conversation_id = c.id
+                            ORDER BY created_at DESC
+                            LIMIT 1
+                        )
                     )
-                )
-                WHERE cp.user_id = ? AND cp2.user_id != ?
-                ORDER BY m.created_at DESC
-            ");
-            
-            $stmt->execute([$user['id'], $user['id'], $user['id']]);
+                    WHERE c.user1_id = ? OR c.user2_id = ?
+                    ORDER BY COALESCE(m.created_at, c.updated_at, c.created_at) DESC
+                ");
+                $stmt->execute([$user['id'], $user['id'], $user['id']]);
+            } else {
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        c.id as conversation_id,
+                        c.created_at,
+                        c.updated_at,
+                        u.id as other_user_id,
+                        u.full_name as other_user_name,
+                        u.email as other_user_email,
+                        u.avatar_url as other_user_avatar,
+                        {$onlineSelect}
+                        {$lastSeenSelect}
+                        {$lastMessageExpr} as last_message,
+                        m.created_at as last_message_at,
+                        m.sender_id as last_message_sender_id,
+                        (SELECT COUNT(*) FROM messages m2 
+                         WHERE m2.conversation_id = c.id 
+                         AND m2.id > cp.last_read_message_id
+                         AND m2.sender_id != ?) as unread_count
+                    FROM conversations c
+                    JOIN conversation_participants cp ON c.id = cp.conversation_id
+                    JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
+                    JOIN users u ON cp2.user_id = u.id
+                    LEFT JOIN messages m ON (
+                        m.id = (
+                            SELECT id FROM messages 
+                            WHERE conversation_id = c.id 
+                            ORDER BY created_at DESC 
+                            LIMIT 1
+                        )
+                    )
+                    WHERE cp.user_id = ? AND cp2.user_id != ?
+                    ORDER BY m.created_at DESC
+                ");
+
+                $stmt->execute([$user['id'], $user['id'], $user['id']]);
+            }
+
             $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             header('Content-Type: application/json');
             echo json_encode(['conversations' => $conversations]);
-            
+
         } catch (PDOException $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
@@ -104,6 +270,10 @@ class ChatController {
     public function createConversation() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         $data = json_decode(file_get_contents('php://input'), true);
         $recipientId = $data['recipient_id'] ?? null;
@@ -134,26 +304,48 @@ class ChatController {
                 return;
             }
             
-            // Check if conversation already exists
-            $stmt = $this->db->prepare("
-                SELECT c.id 
-                FROM conversations c
-                JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
-                JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
-                WHERE cp1.user_id = ? AND cp2.user_id = ?
-            ");
-            
-            $stmt->execute([$user['id'], $recipientId]);
-            $existing = $stmt->fetch();
+            $existing = null;
+            if ($this->hasConversationColumn('user1_id') && $this->hasConversationColumn('user2_id')) {
+                $stmt = $this->db->prepare("SELECT id FROM conversations WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?) LIMIT 1");
+                $stmt->execute([$user['id'], $recipientId, $recipientId, $user['id']]);
+                $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+            } else {
+                // Check if conversation already exists
+                $stmt = $this->db->prepare("
+                    SELECT c.id 
+                    FROM conversations c
+                    JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
+                    JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
+                    WHERE cp1.user_id = ? AND cp2.user_id = ?
+                ");
+                
+                $stmt->execute([$user['id'], $recipientId]);
+                $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+            }
             
             if ($existing) {
-                echo json_encode(['conversation_id' => $existing['id']]);
+                $conversationId = $existing['id'];
+
+                // Ensure participant rows exist for apps relying on conversation_participants.
+                try {
+                    $stmt = $this->db->prepare("INSERT IGNORE INTO conversation_participants (conversation_id, user_id) VALUES (?, ?), (?, ?)");
+                    $stmt->execute([(int)$conversationId, (int)$user['id'], (int)$conversationId, (int)$recipientId]);
+                } catch (Exception $e) {
+                }
+
+                echo json_encode(['conversation_id' => $conversationId]);
                 return;
             }
             
             // Create new conversation
-            $this->db->exec("INSERT INTO conversations () VALUES ()");
-            $conversationId = $this->db->lastInsertId();
+            if ($this->hasConversationColumn('user1_id') && $this->hasConversationColumn('user2_id')) {
+                $stmt = $this->db->prepare("INSERT INTO conversations (user1_id, user2_id) VALUES (?, ?)");
+                $stmt->execute([(int)$user['id'], (int)$recipientId]);
+                $conversationId = $this->db->lastInsertId();
+            } else {
+                $this->db->exec("INSERT INTO conversations () VALUES ()");
+                $conversationId = $this->db->lastInsertId();
+            }
             
             // Add participants
             $stmt = $this->db->prepare("
@@ -180,6 +372,10 @@ class ChatController {
     public function getConversation() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         $conversationId = $this->getIdFromUrl();
         
@@ -189,39 +385,55 @@ class ChatController {
             return;
         }
         
-        // Verify user is part of the conversation
-        $stmt = $this->db->prepare("
-            SELECT 1 FROM conversation_participants 
-            WHERE conversation_id = ? AND user_id = ?
-        ");
-        $stmt->execute([$conversationId, $user['id']]);
-        
-        if ($stmt->rowCount() === 0) {
+        if (!$this->isUserInConversation($conversationId, $user['id'])) {
             http_response_code(403);
             echo json_encode(['error' => 'Not authorized to view this conversation']);
             return;
         }
         
-        // Get conversation details with participants
-        $stmt = $this->db->prepare("
-            SELECT 
-                c.id as conversation_id,
-                c.created_at,
-                c.updated_at,
-                u.id as user_id,
-                u.full_name,
-                u.email,
-                u.avatar_url,
-                u.is_online,
-                u.last_seen
-            FROM conversations c
-            JOIN conversation_participants cp ON c.id = cp.conversation_id
-            JOIN users u ON cp.user_id = u.id
-            WHERE c.id = ? AND u.id != ?
-        ");
-        
-        $stmt->execute([$conversationId, $user['id']]);
-        $otherUser = $stmt->fetch();
+        $onlineSelect = $this->hasUserColumn('is_online') ? 'u.is_online as is_online,' : '0 as is_online,';
+        $lastSeenSelect = $this->hasUserColumn('last_seen') ? 'u.last_seen as last_seen' : 'NULL as last_seen';
+
+        if ($this->hasConversationColumn('user1_id') && $this->hasConversationColumn('user2_id')) {
+            $stmt = $this->db->prepare("
+                SELECT
+                    c.id as conversation_id,
+                    c.created_at,
+                    c.updated_at,
+                    u.id as user_id,
+                    u.full_name,
+                    u.email,
+                    u.avatar_url,
+                    {$onlineSelect}
+                    {$lastSeenSelect}
+                FROM conversations c
+                JOIN users u ON u.id = (CASE WHEN c.user1_id = ? THEN c.user2_id ELSE c.user1_id END)
+                WHERE c.id = ?
+            ");
+            $stmt->execute([$user['id'], $conversationId]);
+            $otherUser = $stmt->fetch();
+        } else {
+            // Get conversation details with participants
+            $stmt = $this->db->prepare("
+                SELECT 
+                    c.id as conversation_id,
+                    c.created_at,
+                    c.updated_at,
+                    u.id as user_id,
+                    u.full_name,
+                    u.email,
+                    u.avatar_url,
+                    {$onlineSelect}
+                    {$lastSeenSelect}
+                FROM conversations c
+                JOIN conversation_participants cp ON c.id = cp.conversation_id
+                JOIN users u ON cp.user_id = u.id
+                WHERE c.id = ? AND u.id != ?
+            ");
+            
+            $stmt->execute([$conversationId, $user['id']]);
+            $otherUser = $stmt->fetch();
+        }
         
         if (!$otherUser) {
             http_response_code(404);
@@ -238,6 +450,10 @@ class ChatController {
     public function getMessages() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         $conversationId = $this->getIdFromUrl();
         
@@ -247,23 +463,24 @@ class ChatController {
             return;
         }
         
-        // Verify user is part of the conversation
-        $stmt = $this->db->prepare("
-            SELECT 1 FROM conversation_participants 
-            WHERE conversation_id = ? AND user_id = ?
-        ");
-        $stmt->execute([$conversationId, $user['id']]);
-        
-        if ($stmt->rowCount() === 0) {
+        if (!$this->isUserInConversation($conversationId, $user['id'])) {
             http_response_code(403);
             echo json_encode(['error' => 'Not authorized to view this conversation']);
             return;
         }
         
+        $messageBodyExpr = $this->hasMessageColumn('content') ? 'm.content' : ($this->hasMessageColumn('message') ? 'm.message' : "''");
+        $messageTypeExpr = $this->hasMessageColumn('message_type') ? 'm.message_type' : "'text'";
+
         // Get messages
         $stmt = $this->db->prepare("
             SELECT 
-                m.*, 
+                m.id,
+                m.conversation_id,
+                m.sender_id,
+                {$messageBodyExpr} as content,
+                {$messageTypeExpr} as message_type,
+                m.created_at,
                 u.full_name as sender_name, 
                 u.avatar_url as sender_avatar,
                 (SELECT COUNT(*) > 0 FROM message_reads mr 
@@ -276,16 +493,19 @@ class ChatController {
         $stmt->execute([$user['id'], $conversationId]);
         $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Mark messages as read
-        $stmt = $this->db->prepare("
-            UPDATE conversation_participants 
-            SET last_read_message_id = (
-                SELECT MAX(id) FROM messages 
-                WHERE conversation_id = ?
-            )
-            WHERE conversation_id = ? AND user_id = ?
-        ");
-        $stmt->execute([$conversationId, $conversationId, $user['id']]);
+        // Mark messages as read when supported by conversation_participants
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE conversation_participants 
+                SET last_read_message_id = (
+                    SELECT MAX(id) FROM messages 
+                    WHERE conversation_id = ?
+                )
+                WHERE conversation_id = ? AND user_id = ?
+            ");
+            $stmt->execute([$conversationId, $conversationId, $user['id']]);
+        } catch (Exception $e) {
+        }
         
         header('Content-Type: application/json');
         echo json_encode(['messages' => $messages]);
@@ -294,6 +514,10 @@ class ChatController {
     public function sendMessage() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         $data = json_decode(file_get_contents('php://input'), true);
         $conversationId = $data['conversation_id'] ?? null;
@@ -307,30 +531,45 @@ class ChatController {
         }
         
         try {
-            // Verify user is part of the conversation
-            $stmt = $this->db->prepare("
-                SELECT 1 FROM conversation_participants 
-                WHERE conversation_id = ? AND user_id = ?
-            ");
-            $stmt->execute([$conversationId, $user['id']]);
-            
-            if ($stmt->rowCount() === 0) {
+            if (!$this->isUserInConversation($conversationId, $user['id'])) {
                 http_response_code(403);
                 echo json_encode(['error' => 'Not authorized for this conversation']);
                 return;
             }
             
-            // Save message
-            $stmt = $this->db->prepare("
-                INSERT INTO messages (conversation_id, sender_id, content, message_type)
-                VALUES (?, ?, ?, ?)
-            ");
-            $stmt->execute([$conversationId, $user['id'], $content, $messageType]);
+            $bodyColumn = $this->hasMessageColumn('content') ? 'content' : ($this->hasMessageColumn('message') ? 'message' : null);
+            if (!$bodyColumn) {
+                throw new Exception('Messages table is missing message/content column');
+            }
+
+            $columns = ['conversation_id', 'sender_id', $bodyColumn];
+            $placeholders = ['?', '?', '?'];
+            $params = [$conversationId, $user['id'], $content];
+
+            if ($this->hasMessageColumn('message_type')) {
+                $columns[] = 'message_type';
+                $placeholders[] = '?';
+                $params[] = $messageType;
+            }
+
+            $sql = "INSERT INTO messages (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             $messageId = $this->db->lastInsertId();
             
             // Get the full message with user details
+            $messageBodyExpr = $this->hasMessageColumn('content') ? 'm.content' : ($this->hasMessageColumn('message') ? 'm.message' : "''");
+            $messageTypeExpr = $this->hasMessageColumn('message_type') ? 'm.message_type' : "'text'";
             $stmt = $this->db->prepare("
-                SELECT m.*, u.full_name as sender_name, u.avatar_url as sender_avatar
+                SELECT
+                    m.id,
+                    m.conversation_id,
+                    m.sender_id,
+                    {$messageBodyExpr} as content,
+                    {$messageTypeExpr} as message_type,
+                    m.created_at,
+                    u.full_name as sender_name,
+                    u.avatar_url as sender_avatar
                 FROM messages m
                 JOIN users u ON m.sender_id = u.id
                 WHERE m.id = ?
@@ -370,6 +609,10 @@ class ChatController {
     public function markAsRead() {
         // Authenticate user
         $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
         
         $messageId = $this->getIdFromUrl();
         
@@ -380,22 +623,21 @@ class ChatController {
         }
         
         try {
-            // Verify message exists and user is in the conversation
-            $stmt = $this->db->prepare("
-                SELECT m.conversation_id, m.sender_id
-                FROM messages m
-                JOIN conversation_participants cp ON m.conversation_id = cp.conversation_id
-                WHERE m.id = ? AND cp.user_id = ?
-            ");
-            $stmt->execute([$messageId, $user['id']]);
-            
-            if ($stmt->rowCount() === 0) {
+            $stmt = $this->db->prepare("SELECT conversation_id, sender_id FROM messages WHERE id = ? LIMIT 1");
+            $stmt->execute([$messageId]);
+            $message = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$message) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Message not found']);
+                return;
+            }
+
+            if (!$this->isUserInConversation($message['conversation_id'], $user['id'])) {
                 http_response_code(404);
                 echo json_encode(['error' => 'Message not found or not authorized']);
                 return;
             }
-            
-            $message = $stmt->fetch();
             
             // Mark message as read
             $stmt = $this->db->prepare("
@@ -405,12 +647,15 @@ class ChatController {
             $stmt->execute([$messageId, $user['id']]);
             
             // Update last read message in conversation
-            $stmt = $this->db->prepare("
-                UPDATE conversation_participants 
-                SET last_read_message_id = ?
-                WHERE conversation_id = ? AND user_id = ?
-            ");
-            $stmt->execute([$messageId, $message['conversation_id'], $user['id']]);
+            try {
+                $stmt = $this->db->prepare("
+                    UPDATE conversation_participants 
+                    SET last_read_message_id = ?
+                    WHERE conversation_id = ? AND user_id = ?
+                ");
+                $stmt->execute([$messageId, $message['conversation_id'], $user['id']]);
+            } catch (Exception $e) {
+            }
             
             echo json_encode([
                 'message' => 'Message marked as read',

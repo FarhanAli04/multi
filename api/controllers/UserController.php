@@ -51,6 +51,8 @@ class UserController {
         
         try {
             $activeWhere = $this->hasUserColumn('is_active') ? 'is_active = 1 AND ' : '';
+            $onlineSelect = $this->hasUserColumn('is_online') ? 'is_online,' : '0 as is_online,';
+            $lastSeenSelect = $this->hasUserColumn('last_seen') ? 'last_seen' : 'NULL as last_seen';
             $sql = "
                 SELECT 
                     id, 
@@ -58,8 +60,8 @@ class UserController {
                     email, 
                     role, 
                     avatar_url,
-                    is_online,
-                    last_seen
+                    {$onlineSelect}
+                    {$lastSeenSelect}
                 FROM users 
                 WHERE {$activeWhere}id != ?
             ";
@@ -77,7 +79,11 @@ class UserController {
                 $params[] = $role;
             }
             
-            $sql .= " ORDER BY is_online DESC, full_name ASC LIMIT ? OFFSET ?";
+            if ($this->hasUserColumn('is_online')) {
+                $sql .= " ORDER BY is_online DESC, full_name ASC LIMIT ? OFFSET ?";
+            } else {
+                $sql .= " ORDER BY full_name ASC LIMIT ? OFFSET ?";
+            }
             $params[] = $limit;
             $params[] = $offset;
             

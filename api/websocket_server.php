@@ -18,11 +18,19 @@ class Chat implements MessageComponentInterface {
     protected $userConnections;
     protected $db;
     protected $hasUsersIsActive;
+    protected $hasUsersIsOnline;
+    protected $hasUsersLastSeen;
+    protected $hasMessagesContent;
+    protected $hasMessagesMessage;
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
         $this->userConnections = [];
         $this->hasUsersIsActive = null;
+        $this->hasUsersIsOnline = null;
+        $this->hasUsersLastSeen = null;
+        $this->hasMessagesContent = null;
+        $this->hasMessagesMessage = null;
         
         // Initialize database connection
         try {
@@ -38,6 +46,70 @@ class Chat implements MessageComponentInterface {
             );
         } catch (PDOException $e) {
             die("Database connection failed: " . $e->getMessage());
+        }
+    }
+
+    protected function messagesHasContentColumn() {
+        if ($this->hasMessagesContent !== null) {
+            return (bool)$this->hasMessagesContent;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM messages LIKE 'content'");
+            $stmt->execute();
+            $this->hasMessagesContent = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            return (bool)$this->hasMessagesContent;
+        } catch (Exception $e) {
+            $this->hasMessagesContent = false;
+            return false;
+        }
+    }
+
+    protected function messagesHasMessageColumn() {
+        if ($this->hasMessagesMessage !== null) {
+            return (bool)$this->hasMessagesMessage;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM messages LIKE 'message'");
+            $stmt->execute();
+            $this->hasMessagesMessage = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            return (bool)$this->hasMessagesMessage;
+        } catch (Exception $e) {
+            $this->hasMessagesMessage = false;
+            return false;
+        }
+    }
+
+    protected function usersHasIsOnlineColumn() {
+        if ($this->hasUsersIsOnline !== null) {
+            return (bool)$this->hasUsersIsOnline;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users LIKE 'is_online'");
+            $stmt->execute();
+            $this->hasUsersIsOnline = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            return (bool)$this->hasUsersIsOnline;
+        } catch (Exception $e) {
+            $this->hasUsersIsOnline = false;
+            return false;
+        }
+    }
+
+    protected function usersHasLastSeenColumn() {
+        if ($this->hasUsersLastSeen !== null) {
+            return (bool)$this->hasUsersLastSeen;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM users LIKE 'last_seen'");
+            $stmt->execute();
+            $this->hasUsersLastSeen = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+            return (bool)$this->hasUsersLastSeen;
+        } catch (Exception $e) {
+            $this->hasUsersLastSeen = false;
+            return false;
         }
     }
 
@@ -89,7 +161,20 @@ class Chat implements MessageComponentInterface {
                 ];
                 
                 // Update user online status in database
-                $this->db->prepare("UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?")->execute([$userId]);
+                try {
+                    $set = [];
+                    if ($this->usersHasIsOnlineColumn()) {
+                        $set[] = "is_online = 1";
+                    }
+                    if ($this->usersHasLastSeenColumn()) {
+                        $set[] = "last_seen = NOW()";
+                    }
+                    if (!empty($set)) {
+                        $sql = "UPDATE users SET " . implode(', ', $set) . " WHERE id = ?";
+                        $this->db->prepare($sql)->execute([$userId]);
+                    }
+                } catch (Exception $e) {
+                }
                 
                 // Notify user that they're connected
                 $conn->send(json_encode([
@@ -167,7 +252,20 @@ class Chat implements MessageComponentInterface {
             
             if (!$hasOtherConnections) {
                 // Update user status to offline in database
-                $this->db->prepare("UPDATE users SET is_online = 0, last_seen = NOW() WHERE id = ?")->execute([$userId]);
+                try {
+                    $set = [];
+                    if ($this->usersHasIsOnlineColumn()) {
+                        $set[] = "is_online = 0";
+                    }
+                    if ($this->usersHasLastSeenColumn()) {
+                        $set[] = "last_seen = NOW()";
+                    }
+                    if (!empty($set)) {
+                        $sql = "UPDATE users SET " . implode(', ', $set) . " WHERE id = ?";
+                        $this->db->prepare($sql)->execute([$userId]);
+                    }
+                } catch (Exception $e) {
+                }
                 
                 // Notify contacts about offline status
                 $this->broadcastUserStatus($userId, false);
@@ -205,11 +303,14 @@ class Chat implements MessageComponentInterface {
             throw new Exception('Not authorized for this conversation');
         }
         
+        $bodyColumn = $this->messagesHasContentColumn() ? 'content' : ($this->messagesHasMessageColumn() ? 'message' : null);
+        if (!$bodyColumn) {
+            throw new Exception('Messages table is missing message/content column');
+        }
+
         // Save message to database
-        $stmt = $this->db->prepare("
-            INSERT INTO messages (conversation_id, sender_id, content) 
-            VALUES (?, ?, ?)
-        ");
+        $sql = "INSERT INTO messages (conversation_id, sender_id, {$bodyColumn}) VALUES (?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$conversationId, $fromUserId, $content]);
         $messageId = $this->db->lastInsertId();
         
@@ -299,10 +400,24 @@ class Chat implements MessageComponentInterface {
     
     protected function handleUserStatus($fromUserId, $data) {
         $isOnline = (bool)($data['is_online'] ?? false);
-        
-        $this->db->prepare("
-            UPDATE users SET is_online = ?, last_seen = NOW() WHERE id = ?
-        ")->execute([$isOnline ? 1 : 0, $fromUserId]);
+
+        try {
+            $set = [];
+            $params = [];
+            if ($this->usersHasIsOnlineColumn()) {
+                $set[] = "is_online = ?";
+                $params[] = $isOnline ? 1 : 0;
+            }
+            if ($this->usersHasLastSeenColumn()) {
+                $set[] = "last_seen = NOW()";
+            }
+            if (!empty($set)) {
+                $params[] = $fromUserId;
+                $sql = "UPDATE users SET " . implode(', ', $set) . " WHERE id = ?";
+                $this->db->prepare($sql)->execute($params);
+            }
+        } catch (Exception $e) {
+        }
         
         $this->broadcastUserStatus($fromUserId, $isOnline);
     }
@@ -351,6 +466,8 @@ class Chat implements MessageComponentInterface {
             }
         }
     }
+
+}
 
 // Run the WebSocket server
 $port = getenv('WEBSOCKET_PORT') ?: 8080;

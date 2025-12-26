@@ -10,8 +10,8 @@ type RouteContext = {
 }
 
 async function proxy(request: NextRequest, context: RouteContext) {
-  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
-  const localDevBaseUrl = "http://localhost:8000"
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://127.0.0.1:8000"
+  const localDevBaseUrl = "http://127.0.0.1:8000"
 
   let baseUrl = configuredBaseUrl
   if (process.env.NODE_ENV !== "production") {

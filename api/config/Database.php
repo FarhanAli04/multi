@@ -7,6 +7,92 @@ class Database {
     private $conn;
     private static $sharedConn;
     private static $schemaEnsured = false;
+    private static $brokenTables = [];
+
+    private function ensureHealthyTable(PDO $conn, string $table, string $createSql) {
+        if (!empty(self::$brokenTables[$table])) {
+            return;
+        }
+
+        $exists = null;
+        try {
+            // Some MySQL setups don't allow parameterized SHOW statements; use quote() + direct query.
+            $q = $conn->quote($table);
+            $stmt = $conn->query("SHOW TABLES LIKE {$q}");
+            $exists = (bool)$stmt->fetch(PDO::FETCH_NUM);
+        } catch (Exception $e) {
+            // If SHOW TABLES fails for any reason, fall back to attempting creation.
+            $exists = null;
+        }
+
+        if ($exists === false || $exists === null) {
+            try {
+                $conn->exec($createSql);
+            } catch (Exception $e) {
+                $msg = $e->getMessage();
+                error_log("Failed to create table {$table}: " . $msg);
+
+                // MySQL 1813: orphaned tablespace exists. App code cannot repair this.
+                if (strpos($msg, '1813') !== false || strpos($msg, 'Tablespace for table') !== false) {
+                    self::$brokenTables[$table] = true;
+                }
+            }
+            return;
+        }
+
+        // If table exists but is corrupted / missing in engine (MySQL 1932), a simple query will throw.
+        try {
+            $conn->query("SELECT 1 FROM {$table} LIMIT 1");
+        } catch (PDOException $e) {
+            $msg = $e->getMessage();
+            if (strpos($msg, '1932') !== false || strpos($msg, "doesn't exist in engine") !== false) {
+                try {
+                    $conn->exec('SET FOREIGN_KEY_CHECKS=0');
+                } catch (Exception $ignore) {
+                }
+                try {
+                    $conn->exec("DROP TABLE IF EXISTS {$table}");
+                } catch (Exception $ignore) {
+                }
+                try {
+                    $conn->exec($createSql);
+                } catch (Exception $e2) {
+                    error_log("Failed to recreate corrupted table {$table}: " . $e2->getMessage());
+                }
+                try {
+                    $conn->exec('SET FOREIGN_KEY_CHECKS=1');
+                } catch (Exception $ignore) {
+                }
+            }
+        } catch (Exception $e) {
+        }
+    }
+
+    private function ensureChatSchema(PDO $conn) {
+        try {
+            $this->ensureHealthyTable(
+                $conn,
+                'conversations',
+                "CREATE TABLE IF NOT EXISTS conversations (id INT AUTO_INCREMENT PRIMARY KEY, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'conversation_participants',
+                "CREATE TABLE IF NOT EXISTS conversation_participants (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, user_id INT NOT NULL, last_read_message_id INT NOT NULL DEFAULT 0, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_conversation_user (conversation_id, user_id), KEY idx_cp_user (user_id), KEY idx_cp_conversation (conversation_id)) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'messages',
+                "CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, sender_id INT NOT NULL, content TEXT NOT NULL, message_type VARCHAR(20) NOT NULL DEFAULT 'text', created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, KEY idx_messages_conversation (conversation_id), KEY idx_messages_sender (sender_id)) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'message_reads',
+                "CREATE TABLE IF NOT EXISTS message_reads (message_id INT NOT NULL, user_id INT NOT NULL, read_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (message_id, user_id), KEY idx_mr_user (user_id)) ENGINE=InnoDB"
+            );
+        } catch (Exception $e) {
+        }
+    }
 
     private function ensureSchema(PDO $conn) {
         try {
@@ -27,6 +113,29 @@ class Database {
             $ensureTable('cart', "CREATE TABLE IF NOT EXISTS cart (user_id INT NOT NULL, product_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, product_id)) ENGINE=InnoDB");
             $ensureTable('reviews', "CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, user_id INT NOT NULL, rating TINYINT NOT NULL, comment TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_reviews_product_id (product_id), INDEX idx_reviews_user_id (user_id)) ENGINE=InnoDB");
 
+            // Chat tables (required by ChatController / websocket_server)
+            // Use ensureHealthyTable to also repair the MySQL 1932 "doesn't exist in engine" condition.
+            $this->ensureHealthyTable(
+                $conn,
+                'conversations',
+                "CREATE TABLE IF NOT EXISTS conversations (id INT AUTO_INCREMENT PRIMARY KEY, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'conversation_participants',
+                "CREATE TABLE IF NOT EXISTS conversation_participants (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, user_id INT NOT NULL, last_read_message_id INT NOT NULL DEFAULT 0, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_conversation_user (conversation_id, user_id), KEY idx_cp_user (user_id), KEY idx_cp_conversation (conversation_id)) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'messages',
+                "CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, conversation_id INT NOT NULL, sender_id INT NOT NULL, content TEXT NOT NULL, message_type VARCHAR(20) NOT NULL DEFAULT 'text', created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, KEY idx_messages_conversation (conversation_id), KEY idx_messages_sender (sender_id)) ENGINE=InnoDB"
+            );
+            $this->ensureHealthyTable(
+                $conn,
+                'message_reads',
+                "CREATE TABLE IF NOT EXISTS message_reads (message_id INT NOT NULL, user_id INT NOT NULL, read_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (message_id, user_id), KEY idx_mr_user (user_id)) ENGINE=InnoDB"
+            );
+
             $ensureColumn = function (string $table, string $column, string $definition) use ($conn) {
                 try {
                     $stmt = $conn->prepare("SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ? LIMIT 1");
@@ -45,10 +154,28 @@ class Database {
             $ensureColumn('users', 'phone', 'phone VARCHAR(20) NULL');
             $ensureColumn('users', 'avatar_url', 'avatar_url VARCHAR(255) DEFAULT NULL');
             $ensureColumn('users', 'is_active', 'is_active TINYINT(1) NOT NULL DEFAULT 1');
+            $ensureColumn('users', 'is_online', 'is_online TINYINT(1) NOT NULL DEFAULT 0');
             $ensureColumn('users', 'created_at', 'created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
             $ensureColumn('users', 'updated_at', 'updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
 
             $ensureColumn('users', 'last_seen', 'last_seen TIMESTAMP NULL');
+
+            // Chat message schema compatibility: legacy installs used `message`, newer uses `content`.
+            $ensureColumn('messages', 'content', 'content TEXT NULL');
+            $ensureColumn('messages', 'message_type', "message_type VARCHAR(20) NOT NULL DEFAULT 'text'");
+
+            try {
+                $stmt = $conn->prepare("SHOW COLUMNS FROM messages LIKE 'message'");
+                $stmt->execute();
+                $hasLegacyMessage = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+                $stmt = $conn->prepare("SHOW COLUMNS FROM messages LIKE 'content'");
+                $stmt->execute();
+                $hasContent = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+                if ($hasLegacyMessage && $hasContent) {
+                    $conn->exec("UPDATE messages SET content = message WHERE (content IS NULL OR content = '') AND message IS NOT NULL");
+                }
+            } catch (Exception $e) {
+            }
 
             $ensureColumn('products', 'category_id', 'category_id INT NULL');
             $ensureColumn('products', 'seller_id', 'seller_id INT NULL');
@@ -192,6 +319,8 @@ class Database {
             }
         } catch (Exception $e) {
             error_log('Schema ensure failed: ' . $e->getMessage());
+        } finally {
+            $this->ensureChatSchema($conn);
         }
     }
 
@@ -215,6 +344,33 @@ class Database {
                     if (!$stmt->fetch(PDO::FETCH_NUM)) {
                         $shouldEnsureSchema = true;
                     }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM users LIKE 'is_online'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM messages LIKE 'content'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW TABLES LIKE 'conversation_participants'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_NUM)) {
+                            $shouldEnsureSchema = true;
+                        } else {
+                            // detect MySQL 1932 corruption case
+                            $this->conn->query("SELECT 1 FROM conversation_participants LIMIT 1");
+                        }
+                    }
                 } catch (Exception $e) {
                     $shouldEnsureSchema = true;
                 }
@@ -228,6 +384,9 @@ class Database {
                     self::$schemaEnsured = false;
                 }
             }
+
+            // Always ensure chat schema (cheap) so chat never breaks even if other schema steps are skipped.
+            $this->ensureChatSchema($this->conn);
 
             return $this->conn;
         }
@@ -254,6 +413,32 @@ class Database {
                     if (!$stmt->fetch(PDO::FETCH_NUM)) {
                         $shouldEnsureSchema = true;
                     }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM users LIKE 'is_online'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM messages LIKE 'content'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW TABLES LIKE 'conversation_participants'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_NUM)) {
+                            $shouldEnsureSchema = true;
+                        } else {
+                            // detect MySQL 1932 corruption case
+                            $this->conn->query("SELECT 1 FROM conversation_participants LIMIT 1");
+                        }
+                    }
                 } catch (Exception $e) {
                     $shouldEnsureSchema = true;
                 }
@@ -267,6 +452,9 @@ class Database {
                     self::$schemaEnsured = false;
                 }
             }
+
+            // Always ensure chat schema (cheap) so chat never breaks even if other schema steps are skipped.
+            $this->ensureChatSchema($this->conn);
         } catch(PDOException $e) {
             error_log('Connection Error: ' . $e->getMessage());
             throw new Exception('Database connection error. Please try again later.');
@@ -284,9 +472,23 @@ class Database {
     public function query($sql) {
         return $this->getConnection()->query($sql);
     }
+
+    // Exec shortcut
+    public function exec($sql) {
+        return $this->getConnection()->exec($sql);
+    }
     
     // Last insert ID
     public function lastInsertId() {
+        if ($this->conn instanceof PDO) {
+            return $this->conn->lastInsertId();
+        }
+
+        if (self::$sharedConn instanceof PDO) {
+            $this->conn = self::$sharedConn;
+            return $this->conn->lastInsertId();
+        }
+
         return $this->getConnection()->lastInsertId();
     }
     

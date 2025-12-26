@@ -26,7 +26,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponse & { socket: any
     // Function to fetch settings from database
     const fetchSettingsFromDB = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/settings`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/settings`)
         const result = await response.json()
         if (result.success) {
           return result.data
@@ -40,7 +40,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponse & { socket: any
     // Function to update settings in database
     const updateSettingsInDB = async (settings: any) => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/settings/update`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/settings/update`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

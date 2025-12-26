@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo, useState, type ReactNode } from "react"
 import { Search } from "lucide-react"
 
 export interface ConversationItemProps {
@@ -47,47 +48,86 @@ export function ConversationItem({
 }
 
 export function ConversationList() {
-  const conversations = [
-    {
-      id: "1",
-      name: "Ahmed Khan",
-      lastMessage: "Thanks for the quick delivery!",
-      lastMessageTime: "2 min",
-      unreadCount: 1,
-      isActive: true,
-    },
-    {
-      id: "2",
-      name: "Fatima Ali",
-      lastMessage: "Do you have this in blue?",
-      lastMessageTime: "1 hour",
-      unreadCount: 0,
-      isActive: false,
-    },
-    {
-      id: "3",
-      name: "Hassan Malik",
-      lastMessage: "Order received, very satisfied",
-      lastMessageTime: "3 hours",
-      unreadCount: 0,
-      isActive: false,
-    },
-  ]
+  return null
+}
+
+export function ConversationListView({
+  conversations,
+  selectedId,
+  isLoading,
+  error,
+  onSelect,
+  onRefresh,
+  headerActions,
+}: {
+  conversations: ConversationItemProps[]
+  selectedId?: string | null
+  isLoading?: boolean
+  error?: string
+  onSelect: (id: string) => void
+  onRefresh?: () => void
+  headerActions?: ReactNode
+}) {
+  const [search, setSearch] = useState("")
+
+  const filtered = useMemo(() => {
+    const s = search.trim().toLowerCase()
+    if (!s) return conversations
+    return conversations.filter((c) => {
+      return (c.name || "").toLowerCase().includes(s) || (c.lastMessage || "").toLowerCase().includes(s)
+    })
+  }, [conversations, search])
 
   return (
     <div className="w-80 bg-card border-r border-border flex flex-col">
       <div className="p-4 border-b border-border">
-        <h2 className="text-xl font-bold mb-4">Messages</h2>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <h2 className="text-xl font-bold">Messages</h2>
+          {headerActions}
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-          <input type="text" placeholder="Search conversations..." className="input pl-9" />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            className="input pl-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {conversations.map((conv) => (
-          <ConversationItem key={conv.id} {...conv} onSelect={() => {}} />
-        ))}
+        {error ? (
+          <div className="p-4 text-sm text-red-600">
+            {error}
+            {onRefresh && (
+              <button className="ml-2 underline" onClick={onRefresh}>
+                Retry
+              </button>
+            )}
+          </div>
+        ) : isLoading ? (
+          <div className="p-4 text-sm text-muted-foreground">Loading conversations...</div>
+        ) : filtered.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">
+            No conversations yet.
+            {onRefresh && (
+              <button className="ml-2 underline" onClick={onRefresh}>
+                Refresh
+              </button>
+            )}
+          </div>
+        ) : (
+          filtered.map((conv) => (
+            <ConversationItem
+              key={conv.id}
+              {...conv}
+              isActive={String(selectedId || "") === String(conv.id)}
+              onSelect={() => onSelect(conv.id)}
+            />
+          ))
+        )}
       </div>
     </div>
   )

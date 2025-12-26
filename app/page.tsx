@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck, Menu, X } from "lucide-react"
+import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck, Menu, X, MessageCircle } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRealtime } from "@/contexts/RealtimeContext"
 import { useState } from "react"
@@ -41,9 +41,10 @@ export default function Home() {
                   Shop
                 </Link>
                 <Link
-                  href="/chat"
-                  className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+                  href="/messaging"
+                  className="inline-flex items-center gap-2 text-foreground hover:text-primary transition-colors font-medium text-sm"
                 >
+                  <MessageCircle size={16} />
                   Chat
                 </Link>
                 <Link
@@ -74,10 +75,11 @@ export default function Home() {
                   Shop
                 </Link>
                 <Link
-                  href="/chat"
-                  className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  href="/messaging"
+                  className="px-3 py-2 rounded-lg hover:bg-muted transition-colors inline-flex items-center gap-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
+                  <MessageCircle size={16} />
                   Chat
                 </Link>
                 <Link

@@ -1,22 +1,34 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { Send, Phone, Video, MoreVertical } from "lucide-react"
 import { MessageBubble } from "./message-bubble"
 
-export function ChatWindow() {
-  const [messages, setMessages] = useState([
-    { id: "1", content: "Hey! I have a question about the order", timestamp: "2:30 PM", isOwn: false },
-    { id: "2", content: "What can I help you with?", timestamp: "2:31 PM", isOwn: true },
-    { id: "3", content: "When will it be delivered?", timestamp: "2:32 PM", isOwn: false },
-    {
-      id: "4",
-      content: "Your order is on the way. Expected delivery is tomorrow by 6 PM.",
-      timestamp: "2:33 PM",
-      isOwn: true,
-    },
-  ])
+export type MessagingMessage = {
+  id: string
+  content: string
+  timestamp: string
+  isOwn: boolean
+  senderName?: string
+}
 
+export function ChatWindow({
+  title,
+  status,
+  messages,
+  isLoading,
+  error,
+  canSend,
+  onSend,
+}: {
+  title?: string
+  status?: string
+  messages: MessagingMessage[]
+  isLoading?: boolean
+  error?: string
+  canSend: boolean
+  onSend: (content: string) => Promise<void> | void
+}) {
   const [inputValue, setInputValue] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -28,17 +40,12 @@ export function ChatWindow() {
     scrollToBottom()
   }, [messages])
 
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      const newMessage = {
-        id: Date.now().toString(),
-        content: inputValue,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isOwn: true,
-      }
-      setMessages([...messages, newMessage])
-      setInputValue("")
-    }
+  const handleSendMessage = async () => {
+    if (!canSend) return
+    const v = inputValue.trim()
+    if (!v) return
+    setInputValue("")
+    await onSend(v)
   }
 
   return (
@@ -46,8 +53,8 @@ export function ChatWindow() {
       {/* Header */}
       <div className="bg-card border-b border-border p-4 flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-foreground">Ahmed Khan</h3>
-          <p className="text-xs text-muted-foreground">Active now</p>
+          <h3 className="font-semibold text-foreground">{title || "Select a conversation"}</h3>
+          <p className="text-xs text-muted-foreground">{status || (title ? "" : "Choose a chat from the left")}</p>
         </div>
         <div className="flex items-center gap-4">
           <button className="p-2 hover:bg-muted rounded-lg transition-colors">
@@ -64,9 +71,17 @@ export function ChatWindow() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} {...msg} />
-        ))}
+        {error ? (
+          <div className="text-sm text-red-600">{error}</div>
+        ) : isLoading ? (
+          <div className="text-sm text-muted-foreground">Loading messages...</div>
+        ) : !title ? (
+          <div className="text-sm text-muted-foreground">Select a conversation to start.</div>
+        ) : messages.length === 0 ? (
+          <div className="text-sm text-muted-foreground">No messages yet. Say hello!</div>
+        ) : (
+          messages.map((msg) => <MessageBubble key={msg.id} {...msg} />)
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -77,11 +92,16 @@ export function ChatWindow() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Type your message..."
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            placeholder={canSend ? "Type your message..." : "Select a conversation to chat"}
             className="input flex-1"
+            disabled={!canSend}
           />
-          <button onClick={handleSendMessage} className="btn-primary flex items-center gap-2 px-4">
+          <button
+            onClick={handleSendMessage}
+            className="btn-primary flex items-center gap-2 px-4"
+            disabled={!canSend}
+          >
             <Send size={18} />
           </button>
         </div>

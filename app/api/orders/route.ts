@@ -8,7 +8,7 @@ export async function GET(request: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://127.0.0.1:8000"
     const url = new URL(request.url)
     const apiResponse = await fetch(`${apiBaseUrl}/api/orders${url.search}`, {
       method: "GET",
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.text()
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:8000"
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://127.0.0.1:8000"
     const apiResponse = await fetch(`${apiBaseUrl}/api/orders`, {
       method: "POST",
       headers: {

@@ -13,8 +13,8 @@ import {
   X, 
   Send, 
   Paperclip, 
-  Minimize2, 
-  Maximize2,
+  ChevronDown,
+  ChevronUp,
   Phone,
   Video,
   Users
@@ -375,9 +375,9 @@ export function ChatWidget() {
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="relative h-14 w-14 rounded-full shadow-lg"
+          className="relative h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-6 w-6 text-white" />
           {totalUnread > 0 && (
             <Badge 
               variant="destructive" 
@@ -393,13 +393,16 @@ export function ChatWidget() {
 
   return (
     <div className={cn(
-      "fixed bottom-4 right-4 z-50 transition-all duration-300",
-      isMinimized ? "w-80" : "w-96 h-[600px]"
+      "fixed bottom-4 right-4 z-50 transition-all duration-300 w-[calc(100vw-2rem)]",
+      isMinimized ? "max-w-sm h-14" : "max-w-md h-[70vh] sm:h-[600px]"
     )}>
       <Card className="h-full flex flex-col shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className={cn(
+          "flex flex-row items-center justify-between space-y-0",
+          isMinimized ? "py-3" : "pb-2"
+        )}>
           <div className="flex items-center space-x-2">
-            <MessageCircle className="h-5 w-5" />
+            <MessageCircle className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">Chat Support</CardTitle>
             {totalUnread > 0 && (
               <Badge variant="destructive" className="ml-2">
@@ -411,13 +414,15 @@ export function ChatWidget() {
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               onClick={() => setIsMinimized(!isMinimized)}
             >
-              {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+              {isMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-4 w-4" />
@@ -437,49 +442,66 @@ export function ChatWidget() {
                 )}>
                   <ScrollArea className="h-full">
                     <div className="p-2 space-y-1">
-                      {chatUsers.map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => {
-                            setSelectedUser(user)
-                            if (user.conversationId) {
-                              loadMessages(user.conversationId)
-                            }
-                          }}
-                          className={cn(
-                            "flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors",
-                            selectedUser?.id === user.id && "bg-muted"
-                          )}
-                        >
-                          <div className="relative">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            {user.isOnline && (
-                              <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-background" />
-                            )}
+                      {isLoading ? (
+                        <div className="p-4 text-sm text-muted-foreground">Loading conversations...</div>
+                      ) : chatUsers.length === 0 ? (
+                        <div className="p-6 text-center">
+                          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                            <Users className="h-5 w-5 text-muted-foreground" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium truncate">{user.name}</p>
-                              {user.unreadCount && user.unreadCount > 0 && (
-                                <Badge variant="destructive" className="ml-1 h-4 w-4 rounded-full p-0 text-xs">
-                                  {user.unreadCount}
-                                </Badge>
+                          <p className="text-sm font-medium">No conversations yet</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Once you message a seller or support, it will appear here.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" onClick={loadConversations}>
+                            Refresh
+                          </Button>
+                        </div>
+                      ) : (
+                        chatUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            onClick={() => {
+                              setSelectedUser(user)
+                              if (user.conversationId) {
+                                loadMessages(user.conversationId)
+                              }
+                            }}
+                            className={cn(
+                              "flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors",
+                              selectedUser?.id === user.id && "bg-muted"
+                            )}
+                          >
+                            <div className="relative">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.avatar} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              {user.isOnline && (
+                                <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-background" />
                               )}
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <p className="text-xs text-muted-foreground truncate">
-                                {user.lastMessage}
-                              </p>
-                              <Badge className={cn("text-xs", getRoleColor(user.role))}>
-                                {user.role}
-                              </Badge>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium truncate">{user.name}</p>
+                                {user.unreadCount && user.unreadCount > 0 && (
+                                  <Badge variant="destructive" className="ml-1 h-4 w-4 rounded-full p-0 text-xs">
+                                    {user.unreadCount}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {user.lastMessage}
+                                </p>
+                                <Badge className={cn("text-xs", getRoleColor(user.role))}>
+                                  {user.role}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </ScrollArea>
                 </div>
@@ -514,34 +536,43 @@ export function ChatWidget() {
 
                     <ScrollArea className="flex-1 p-4">
                       <div className="space-y-3">
-                        {messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={cn(
-                              "flex",
-                              msg.senderId === currentUser?.id ? "justify-end" : "justify-start"
-                            )}
-                          >
-                            <div className={cn(
-                              "max-w-[70%] rounded-lg p-2",
-                              msg.senderId === currentUser?.id
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted"
-                            )}>
-                              {msg.type === 'text' ? (
-                                <p className="text-sm">{msg.text}</p>
-                              ) : (
-                                <div className="flex items-center space-x-2">
-                                  <Paperclip className="h-4 w-4" />
-                                  <span className="text-sm">{msg.fileName}</span>
-                                </div>
-                              )}
-                              <p className="text-xs opacity-70 mt-1">
-                                {formatTime(msg.timestamp)}
-                              </p>
-                            </div>
+                        {isLoading ? (
+                          <div className="p-4 text-sm text-muted-foreground">Loading messages...</div>
+                        ) : messages.length === 0 ? (
+                          <div className="py-10 text-center">
+                            <p className="text-sm font-medium">No messages yet</p>
+                            <p className="mt-1 text-xs text-muted-foreground">Send a message to start the conversation.</p>
                           </div>
-                        ))}
+                        ) : (
+                          messages.map((msg) => (
+                            <div
+                              key={msg.id}
+                              className={cn(
+                                "flex",
+                                msg.senderId === currentUser?.id ? "justify-end" : "justify-start"
+                              )}
+                            >
+                              <div className={cn(
+                                "max-w-[70%] rounded-lg p-2",
+                                msg.senderId === currentUser?.id
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted"
+                              )}>
+                                {msg.type === 'text' ? (
+                                  <p className="text-sm">{msg.text}</p>
+                                ) : (
+                                  <div className="flex items-center space-x-2">
+                                    <Paperclip className="h-4 w-4" />
+                                    <span className="text-sm">{msg.fileName}</span>
+                                  </div>
+                                )}
+                                <p className="text-xs opacity-70 mt-1">
+                                  {formatTime(msg.timestamp)}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        )}
                         <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>

@@ -411,15 +411,28 @@ class OrderController {
                     VALUES (?, ?, ?, 'pending', ?, 0.00, 0.00, 0.00, ?, 'pending', ?, NOW(), NOW())
                 ");
                 $stmt->execute([$orderNumber, $user['id'], $sellerId, $subtotal, $totalAmount, $shippingAddress]);
-                $orderId = $this->db->lastInsertId();
+                $orderId = (int)$this->db->lastInsertId();
+                if ($orderId <= 0) {
+                    throw new Exception('Failed to create order: missing order id');
+                }
+
+                $stmtCheck = $this->db->prepare("SELECT id FROM orders WHERE id = ? LIMIT 1");
+                $stmtCheck->execute([$orderId]);
+                if (!$stmtCheck->fetch(PDO::FETCH_ASSOC)) {
+                    throw new Exception('Failed to create order: order row not found after insert');
+                }
                 $orderIds[] = $orderId;
                 
                 // Add order items
                 foreach ($sellerItemsList as $item) {
                     $qty = (int)($item['quantity'] ?? 0);
                     $unit = (float)($item['unit_price'] ?? ($item['price'] ?? 0));
+                    $productId = (int)($item['product_id'] ?? 0);
                     if ($qty <= 0) {
                         continue;
+                    }
+                    if ($productId <= 0) {
+                        throw new Exception('Invalid product_id for order item');
                     }
                     $lineTotal = $qty * $unit;
 
@@ -428,20 +441,20 @@ class OrderController {
                         INSERT INTO order_items (order_id, product_id, seller_id, quantity, {$priceCol}, {$totalCol}, created_at)
                         VALUES (?, ?, ?, ?, ?, ?, NOW())
                     ");
-                    $stmt->execute([$orderId, $item['product_id'], $sellerId, $qty, $unit, $lineTotal]);
+                    $stmt->execute([$orderId, $productId, $sellerId, $qty, $unit, $lineTotal]);
                     } else {
                         $stmt = $this->db->prepare("
                             INSERT INTO order_items (order_id, product_id, quantity, {$priceCol}, {$totalCol}, created_at)
                             VALUES (?, ?, ?, ?, ?, NOW())
                         ");
-                        $stmt->execute([$orderId, $item['product_id'], $qty, $unit, $lineTotal]);
+                        $stmt->execute([$orderId, $productId, $qty, $unit, $lineTotal]);
                     }
                     
                     // Update product stock
                     $stmt = $this->db->prepare("
                         UPDATE products SET stock = stock - ? WHERE id = ?
                     ");
-                    $stmt->execute([$qty, $item['product_id']]);
+                    $stmt->execute([$qty, $productId]);
                 }
             }
             

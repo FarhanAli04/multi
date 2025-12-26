@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Search, User, Heart, Menu, X } from "lucide-react"
+import { ShoppingCart, Search, User, Heart, Menu, X, MessageCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 
 export function CustomerNavbar() {
@@ -77,6 +77,15 @@ export function CustomerNavbar() {
             </button>
 
             <Link
+              href="/messaging"
+              className="relative text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Chat"
+              title="Chat"
+            >
+              <MessageCircle size={20} />
+            </Link>
+
+            <Link
               href="/customer/cart"
               className="relative text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Cart"
@@ -127,6 +136,13 @@ export function CustomerNavbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Orders
+              </Link>
+              <Link
+                href="/messaging"
+                className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Chat
               </Link>
               <Link
                 href="/customer/cart"
