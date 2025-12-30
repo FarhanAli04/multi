@@ -102,6 +102,7 @@ export function AdminPanelSidebar() {
       items: [
         { href: "/admin-panel/discussions", icon: MessageSquare, label: "Discussions" },
         { href: "/admin-panel/coupons", icon: Tag, label: "Coupons" },
+        { href: "/admin-panel/promo-codes", icon: Tag, label: "Seller Promo Codes" },
         { href: "/admin-panel/blog", icon: BookOpen, label: "Blog" },
         { href: "/admin-panel/messages", icon: Mail, label: "Messages" },
       ],
@@ -124,6 +125,7 @@ export function AdminPanelSidebar() {
         { href: "/admin-panel/roles", icon: Users2, label: "Roles & Permissions" },
         { href: "/admin-panel/subscribers", icon: Users, label: "Subscribers" },
         { href: "/admin-panel/deposits", icon: CreditCard, label: "Customer Deposits" },
+        { href: "/admin-panel/withdrawals", icon: CreditCard, label: "Withdrawals" },
         { href: "/admin-panel/earnings", icon: CreditCard, label: "Vendor Earnings" },
         { href: "/admin-panel/cache", icon: Database, label: "Clear Cache" },
         { href: "/admin-panel/addons", icon: Zap, label: "Addon Manager" },

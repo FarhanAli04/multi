@@ -118,9 +118,10 @@ $routes = [
     
     // Chat endpoints
     '/api/conversations' => ['controller' => 'ChatController', 'method' => 'conversations', 'http_method' => ['GET', 'POST']],
-    '/api/conversations/{id}' => ['controller' => 'ChatController', 'method' => 'getConversation', 'http_method' => 'GET'],
+    '/api/conversations/{id}' => ['controller' => 'ChatController', 'method' => 'getConversation', 'http_method' => ['GET', 'DELETE']],
     '/api/conversations/{id}/messages' => ['controller' => 'ChatController', 'method' => 'getMessages', 'http_method' => 'GET'],
     '/api/messages' => ['controller' => 'ChatController', 'method' => 'sendMessage', 'http_method' => 'POST'],
+    '/api/messages/{id}' => ['controller' => 'ChatController', 'method' => 'sendMessage', 'http_method' => 'DELETE'],
     '/api/messages/{id}/read' => ['controller' => 'ChatController', 'method' => 'markAsRead', 'http_method' => 'POST'],
     
     // Product endpoints
@@ -144,6 +145,10 @@ $routes = [
     '/api/seller/orders' => ['controller' => 'OrderController', 'method' => 'handleRequest', 'http_method' => 'GET'],
     '/api/seller/orders/{id}/status' => ['controller' => 'OrderController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
 
+    // Seller withdrawals
+    '/api/seller/wallet' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => 'GET'],
+    '/api/seller/withdrawals' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => ['GET', 'POST']],
+
     // Admin product/order/category/vendor management
     '/api/admin/products' => ['controller' => 'ProductController', 'method' => 'handleRequest', 'http_method' => ['GET', 'POST']],
     '/api/admin/products/{id}' => ['controller' => 'ProductController', 'method' => 'handleRequest', 'http_method' => ['PUT', 'DELETE']],
@@ -153,6 +158,10 @@ $routes = [
     '/api/admin/orders/{id}/status' => ['controller' => 'OrderController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
     '/api/admin/vendors' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => 'GET'],
     '/api/admin/vendors/{id}/status' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
+
+    // Admin withdrawal management
+    '/api/admin/withdrawals' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => 'GET'],
+    '/api/admin/withdrawals/{id}/decision' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
     
     // Admin endpoints
     '/api/admin/dashboard/stats' => ['controller' => 'AdminController', 'method' => 'getDashboardStats', 'http_method' => 'GET'],
@@ -160,6 +169,10 @@ $routes = [
     '/api/admin/accounts/frozen' => ['controller' => 'AdminController', 'method' => 'getFrozenAccounts', 'http_method' => 'GET'],
     '/api/admin/users' => ['controller' => 'AdminController', 'method' => 'getUsers', 'http_method' => 'GET'],
     '/api/admin/users/status' => ['controller' => 'AdminController', 'method' => 'updateUserStatus', 'http_method' => 'PUT'],
+
+    // Admin promo code management (seller store creation incentive)
+    '/api/admin/promo-codes' => ['controller' => 'PromoCodeController', 'method' => 'handleRequest', 'http_method' => ['GET', 'POST']],
+    '/api/admin/promo-codes/{id}' => ['controller' => 'PromoCodeController', 'method' => 'handleRequest', 'http_method' => ['PUT', 'DELETE']],
     
     // Users endpoint for finding users to chat with
     '/api/users' => ['controller' => 'UserController', 'method' => 'getUsers', 'http_method' => 'GET'],

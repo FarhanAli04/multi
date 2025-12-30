@@ -175,6 +175,62 @@ class ChatController {
         }
     }
 
+    public function deleteConversation() {
+        $user = $this->auth->authenticate();
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
+
+        $conversationId = $this->getIdFromUrl();
+        if (!$conversationId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Conversation ID is required']);
+            return;
+        }
+
+        if (!$this->isUserInConversation($conversationId, $user['id'])) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Not authorized to delete this conversation']);
+            return;
+        }
+
+        try {
+            $this->db->beginTransaction();
+
+            // Best effort: delete reads, then messages, then participants, then conversation
+            try {
+                $stmt = $this->db->prepare("DELETE mr FROM message_reads mr JOIN messages m ON mr.message_id = m.id WHERE m.conversation_id = ?");
+                $stmt->execute([(int)$conversationId]);
+            } catch (Exception $e) {
+            }
+
+            try {
+                $stmt = $this->db->prepare("DELETE FROM messages WHERE conversation_id = ?");
+                $stmt->execute([(int)$conversationId]);
+            } catch (Exception $e) {
+            }
+
+            try {
+                $stmt = $this->db->prepare("DELETE FROM conversation_participants WHERE conversation_id = ?");
+                $stmt->execute([(int)$conversationId]);
+            } catch (Exception $e) {
+            }
+
+            $stmt = $this->db->prepare("DELETE FROM conversations WHERE id = ?");
+            $stmt->execute([(int)$conversationId]);
+
+            $this->db->commit();
+
+            header('Content-Type: application/json');
+            echo json_encode(['message' => 'Conversation deleted']);
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
     public function getConversations() {
         // Authenticate user
         $user = $this->auth->authenticate();
@@ -515,6 +571,12 @@ class ChatController {
         // Authenticate user
         $user = $this->auth->authenticate();
 
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+            return;
+        }
+
         if (!$this->guardChatSchema()) {
             return;
         }
@@ -606,6 +668,79 @@ class ChatController {
         }
     }
 
+    public function deleteMessage() {
+        $user = $this->auth->authenticate();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+            return;
+        }
+
+        if (!$this->guardChatSchema()) {
+            return;
+        }
+
+        $messageId = $this->getIdFromUrl();
+        if (!$messageId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Message ID is required']);
+            return;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT id, conversation_id, sender_id FROM messages WHERE id = ? LIMIT 1");
+            $stmt->execute([(int)$messageId]);
+            $message = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$message) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Message not found']);
+                return;
+            }
+
+            $conversationId = (int)$message['conversation_id'];
+            $senderId = (int)$message['sender_id'];
+            $isAdmin = strtolower((string)($user['role'] ?? '')) === 'admin';
+
+            if (!$isAdmin && $senderId !== (int)$user['id']) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Not authorized to delete this message']);
+                return;
+            }
+
+            if (!$this->isUserInConversation($conversationId, (int)$user['id'])) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Not authorized to delete this message']);
+                return;
+            }
+
+            $this->db->beginTransaction();
+
+            try {
+                $stmt = $this->db->prepare("DELETE FROM message_reads WHERE message_id = ?");
+                $stmt->execute([(int)$messageId]);
+            } catch (Exception $e) {
+            }
+
+            $stmt = $this->db->prepare("DELETE FROM messages WHERE id = ?");
+            $stmt->execute([(int)$messageId]);
+
+            $this->db->commit();
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'message' => 'Message deleted',
+                'message_id' => (int)$messageId,
+                'conversation_id' => $conversationId,
+            ]);
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
     public function markAsRead() {
         // Authenticate user
         $user = $this->auth->authenticate();
@@ -690,13 +825,24 @@ class ChatController {
             if (preg_match('/\/api\/conversations\/(\d+)\/messages/', $requestUri, $matches)) {
                 $this->getMessages();
             } elseif (preg_match('/\/api\/conversations\/(\d+)/', $requestUri, $matches)) {
-                $this->getConversation();
+                if ($method === 'DELETE') {
+                    $this->deleteConversation();
+                } else {
+                    $this->getConversation();
+                }
             } else {
                 $this->conversations();
             }
         } elseif (strpos($requestUri, '/api/messages') !== false) {
             if (preg_match('/\/api\/messages\/(\d+)\/read/', $requestUri, $matches)) {
                 $this->markAsRead();
+            } elseif (preg_match('/\/api\/messages\/(\d+)/', $requestUri, $matches)) {
+                if ($method === 'DELETE') {
+                    $this->deleteMessage();
+                } else {
+                    http_response_code(405);
+                    echo json_encode(['error' => 'Method not allowed']);
+                }
             } else {
                 $this->sendMessage();
             }

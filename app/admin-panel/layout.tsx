@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { AdminPanelSidebar } from "@/components/admin-panel/sidebar"
 import { AdminPanelHeader } from "@/components/admin-panel/header"
-import { ChatWidget } from "@/components/chat/chat-widget"
 import { RealtimeProvider } from "@/contexts/RealtimeContext"
 import AdminMiddlewareCheck from "./middleware-check"
 import "@/styles/admin-panel.css"
@@ -51,8 +50,6 @@ export default function AdminPanelLayout({
             {children}
           </main>
         </div>
-        
-        <ChatWidget />
       </div>
     </RealtimeProvider>
   )

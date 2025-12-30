@@ -79,7 +79,7 @@ function RegisterPageInner() {
           setError("Mobile number is required")
           return
         }
-        if (!/^\d{4}$/.test(formData.promoCode)) {
+        if (formData.promoCode?.trim() && !/^\d{4}$/.test(formData.promoCode.trim())) {
           setError("Promo code must be exactly 4 digits")
           return
         }
@@ -351,10 +351,12 @@ function RegisterPageInner() {
                   className="input w-full text-center tracking-widest text-lg"
                   maxLength={4}
                   pattern="\d{4}"
-                  required
                   value={formData.promoCode}
                   onChange={handleInputChange}
                 />
+                <p className="text-xs text-muted-foreground mt-2">
+                  If a seller creates a store using a promo code, the store creation will be completely free and no guarantee money will be required.
+                </p>
               </div>
             </>
           )}

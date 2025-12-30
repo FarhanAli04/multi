@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { RealtimeProvider } from "@/contexts/RealtimeContext"
+import { ChatWidget } from "@/components/chat/chat-widget"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -47,6 +48,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <RealtimeProvider>
             {children}
+            <ChatWidget />
             <Analytics />
           </RealtimeProvider>
         </ThemeProvider>

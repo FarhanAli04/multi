@@ -6,6 +6,83 @@ class User extends BaseModel {
         parent::__construct('users');
     }
 
+    private function tableExists($table) {
+        try {
+            $stmt = $this->conn->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1");
+            $stmt->execute([$table]);
+            return (bool)$stmt->fetch(PDO::FETCH_NUM);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function ensureWalletRow($userId) {
+        if (!$this->tableExists('wallets')) {
+            return;
+        }
+
+        try {
+            $stmt = $this->conn->prepare('SELECT user_id FROM wallets WHERE user_id = ? LIMIT 1');
+            $stmt->execute([(int)$userId]);
+            if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+                return;
+            }
+
+            $stmt = $this->conn->prepare('INSERT INTO wallets (user_id, balance, updated_at) VALUES (?, 0.00, NOW())');
+            $stmt->execute([(int)$userId]);
+        } catch (Exception $e) {
+        }
+    }
+
+    private function applySellerPromoCode($userId, $promoCode) {
+        $promoCode = is_string($promoCode) ? trim($promoCode) : '';
+        if ($promoCode === '') {
+            return false;
+        }
+
+        if (!preg_match('/^\d{4}$/', $promoCode)) {
+            return false;
+        }
+
+        if (!$this->tableExists('promo_codes')) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->conn->prepare("SELECT id, is_used, expires_at FROM promo_codes WHERE code = ? LIMIT 1 FOR UPDATE");
+            $stmt->execute([$promoCode]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return false;
+            }
+
+            if ((int)($row['is_used'] ?? 0) === 1) {
+                return false;
+            }
+
+            $expiresAt = $row['expires_at'] ?? null;
+            if ($expiresAt) {
+                $stmt = $this->conn->prepare('SELECT 1 WHERE ? < NOW()');
+                $stmt->execute([(string)$expiresAt]);
+                if ($stmt->fetch(PDO::FETCH_NUM)) {
+                    return false;
+                }
+            }
+
+            $stmt = $this->conn->prepare("UPDATE promo_codes SET is_used = 1, used_by_user_id = ?, used_at = NOW() WHERE id = ? AND is_used = 0");
+            $stmt->execute([(int)$userId, (int)$row['id']]);
+            if ($stmt->rowCount() <= 0) {
+                return false;
+            }
+
+            $stmt = $this->conn->prepare("UPDATE sellers SET promo_code_used = ?, promo_exempt_guarantee = 1, guarantee_required = 0, guarantee_locked_amount = 0.00 WHERE user_id = ?");
+            $stmt->execute([$promoCode, (int)$userId]);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
     // Register a new user
     public function register($data) {
         $inTransaction = false;
@@ -66,7 +143,12 @@ class User extends BaseModel {
             if (!empty($sellerData)) {
                 $this->createSellerProfile($userId, $sellerData);
             }
+
+            $promoCode = $data['promo_code'] ?? ($sellerData['promo_code'] ?? null);
+            $this->applySellerPromoCode($userId, $promoCode);
         }
+
+        $this->ensureWalletRow($userId);
 
             if ($inTransaction) {
                 $this->conn->commit();

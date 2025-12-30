@@ -1,22 +1,19 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
-  MessageCircle, 
+  MessageSquareText, 
   X, 
   Send, 
-  Paperclip, 
   ChevronDown,
   ChevronUp,
-  Phone,
-  Video,
+  Trash2,
   Users
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -27,9 +24,6 @@ interface Message {
   sender: string
   senderId: string
   timestamp: Date
-  type: 'text' | 'file'
-  fileUrl?: string
-  fileName?: string
   isRead: boolean
 }
 
@@ -83,11 +77,46 @@ export function ChatWidget() {
   const selectedConversationIdRef = useRef<number | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
+
+  const deleteMessageById = useCallback(
+    async (messageId: string) => {
+      if (!selectedUser?.conversationId) return
+      const idNum = Number(messageId)
+      if (!idNum) return
+      if (!confirm("Delete this message?")) return
+
+      try {
+        setError("")
+        const res = await fetch(`/api/backend/messages/${idNum}`, { method: "DELETE" })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to delete message")
+        }
+
+        setMessages((prev) => {
+          const next = prev.filter((m) => Number(m.id) !== idNum)
+
+          // Update conversation list preview if we deleted the last message.
+          setChatUsers((users) =>
+            users.map((u) => {
+              if (Number(u.conversationId) !== Number(selectedUser.conversationId)) return u
+              const last = next.length ? next[next.length - 1]?.text : ""
+              return { ...u, lastMessage: last }
+            }),
+          )
+
+          return next
+        })
+      } catch (e: any) {
+        setError(e?.message || "Failed to delete message")
+      }
+    },
+    [selectedUser?.conversationId],
+  )
 
   useEffect(() => {
     scrollToBottom()
@@ -105,10 +134,11 @@ export function ChatWidget() {
         throw new Error(data?.error || "Failed to load current user")
       }
 
-      const role = (data?.user?.role || "customer") as ChatUser["role"]
+      const u = data?.user || data?.data?.user || data?.me || null
+      const role = (u?.role || "customer") as ChatUser["role"]
       setCurrentUser({
-        id: String(data?.user?.id || ""),
-        name: data?.user?.full_name || data?.user?.name || "User",
+        id: String(u?.id ?? u?.user_id ?? u?.userId ?? u?.user?.id ?? ""),
+        name: u?.full_name || u?.name || u?.user?.full_name || u?.user?.name || "User",
         role,
         isOnline: true,
       })
@@ -164,7 +194,6 @@ export function ChatWidget() {
         sender: m.sender_name || "",
         senderId: String(m.sender_id),
         timestamp: m.created_at ? new Date(m.created_at) : new Date(),
-        type: (m.message_type || "text") === "file" ? "file" : "text",
         isRead: Boolean(m.is_read),
       }))
 
@@ -239,7 +268,6 @@ export function ChatWidget() {
             sender: String(data.sender_name || ""),
             senderId: String(data.sender_id),
             timestamp: data.created_at ? new Date(data.created_at) : new Date(),
-            type: (data.message_type || "text") === "file" ? "file" : "text",
             isRead: false,
           }
 
@@ -295,7 +323,6 @@ export function ChatWidget() {
       sender: currentUser.name,
       senderId: currentUser.id,
       timestamp: new Date(),
-      type: 'text',
       isRead: false,
     }
 
@@ -338,23 +365,26 @@ export function ChatWidget() {
     }
   }
 
-  const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file && selectedUser && currentUser) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        text: "",
-        sender: currentUser.name,
-        senderId: currentUser.id,
-        timestamp: new Date(),
-        type: 'file',
-        fileUrl: URL.createObjectURL(file),
-        fileName: file.name,
-        isRead: false
+  const deleteSelectedConversation = useCallback(async () => {
+    if (!selectedUser?.conversationId) return
+    if (!confirm("Delete this conversation? This will remove all messages.")) return
+
+    try {
+      setError("")
+      const res = await fetch(`/api/backend/conversations/${selectedUser.conversationId}`, { method: "DELETE" })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete conversation")
       }
-      setMessages([...messages, newMessage])
+
+      setChatUsers((prev) => prev.filter((u) => Number(u.conversationId) !== Number(selectedUser.conversationId)))
+      setSelectedUser(null)
+      selectedConversationIdRef.current = null
+      setMessages([])
+    } catch (e: any) {
+      setError(e?.message || "Failed to delete conversation")
     }
-  }
+  }, [selectedUser])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -374,14 +404,20 @@ export function ChatWidget() {
       <div className="fixed bottom-4 right-4 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          size="lg"
-          className="relative h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 focus-visible:ring-0 focus-visible:ring-offset-0"
+          size="icon"
+          className={cn(
+            "relative h-12 w-12 rounded-full shadow-lg",
+            "bg-gradient-to-br from-primary to-primary/80",
+            "hover:from-primary/90 hover:to-primary/70",
+            "ring-1 ring-primary/30 hover:ring-primary/40",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          )}
         >
-          <MessageCircle className="h-6 w-6 text-white" />
+          <MessageSquareText className="h-5 w-5 text-white" />
           {totalUnread > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+              className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full flex items-center justify-center text-[10px]"
             >
               {totalUnread}
             </Badge>
@@ -402,7 +438,7 @@ export function ChatWidget() {
           isMinimized ? "py-3" : "pb-2"
         )}>
           <div className="flex items-center space-x-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
+            <MessageSquareText className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">Chat Support</CardTitle>
             {totalUnread > 0 && (
               <Badge variant="destructive" className="ml-2">
@@ -523,14 +559,13 @@ export function ChatWidget() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex space-x-1">
-                          <Button variant="ghost" size="sm">
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Video className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        {selectedUser.conversationId && (
+                          <div className="flex space-x-1">
+                            <Button variant="ghost" size="sm" onClick={deleteSelectedConversation}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -552,20 +587,26 @@ export function ChatWidget() {
                                 msg.senderId === currentUser?.id ? "justify-end" : "justify-start"
                               )}
                             >
-                              <div className={cn(
-                                "max-w-[70%] rounded-lg p-2",
-                                msg.senderId === currentUser?.id
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
-                              )}>
-                                {msg.type === 'text' ? (
-                                  <p className="text-sm">{msg.text}</p>
-                                ) : (
-                                  <div className="flex items-center space-x-2">
-                                    <Paperclip className="h-4 w-4" />
-                                    <span className="text-sm">{msg.fileName}</span>
-                                  </div>
+                              <div
+                                className={cn(
+                                  "relative max-w-[70%] rounded-lg p-2",
+                                  msg.senderId === currentUser?.id
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted"
                                 )}
+                              >
+                                {msg.senderId === currentUser?.id && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute -top-2 -right-2 h-7 w-7 rounded-full p-0 bg-background border border-border shadow-sm hover:bg-muted"
+                                    onClick={() => deleteMessageById(msg.id)}
+                                    aria-label="Delete message"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                )}
+                                <p className="text-sm">{msg.text}</p>
                                 <p className="text-xs opacity-70 mt-1">
                                   {formatTime(msg.timestamp)}
                                 </p>
@@ -579,19 +620,6 @@ export function ChatWidget() {
 
                     <div className="p-3 border-t border-border">
                       <div className="flex items-center space-x-2">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Paperclip className="h-4 w-4" />
-                        </Button>
                         <Input
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}

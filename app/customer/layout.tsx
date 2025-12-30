@@ -1,7 +1,3 @@
-"use client"
-
-import { ChatWidget } from "@/components/chat/chat-widget"
-
 export default function CustomerLayout({
   children,
 }: {
@@ -10,7 +6,6 @@ export default function CustomerLayout({
   return (
     <div className="min-h-screen bg-background">
       {children}
-      <ChatWidget />
     </div>
   )
 }

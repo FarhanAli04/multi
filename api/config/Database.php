@@ -106,12 +106,36 @@ class Database {
 
             $ensureTable('users', "CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, role VARCHAR(20) NOT NULL, full_name VARCHAR(255) NULL, phone VARCHAR(20) NULL, avatar_url VARCHAR(255) DEFAULT NULL, is_online TINYINT(1) NOT NULL DEFAULT 0, last_seen TIMESTAMP NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, email_verified_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('sellers', "CREATE TABLE IF NOT EXISTS sellers (user_id INT PRIMARY KEY, business_name VARCHAR(255) NOT NULL, store_name VARCHAR(255) NOT NULL UNIQUE, cnic_number VARCHAR(20) NULL UNIQUE, cnic_document_url VARCHAR(255) DEFAULT NULL, tax_number VARCHAR(50) DEFAULT NULL, store_address TEXT NULL, bank_name VARCHAR(100) DEFAULT NULL, account_number VARCHAR(50) DEFAULT NULL, account_holder_name VARCHAR(255) DEFAULT NULL, is_approved TINYINT(1) NOT NULL DEFAULT 0, commission_rate DECIMAL(5,2) NOT NULL DEFAULT 10.00) ENGINE=InnoDB");
+            $ensureTable(
+                'promo_codes',
+                "CREATE TABLE IF NOT EXISTS promo_codes (id INT AUTO_INCREMENT PRIMARY KEY, code VARCHAR(20) NOT NULL UNIQUE, is_used TINYINT(1) NOT NULL DEFAULT 0, used_by_user_id INT NULL, used_at TIMESTAMP NULL, expires_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_promo_code (code), INDEX idx_promo_used_by (used_by_user_id), CONSTRAINT fk_promo_used_by_user FOREIGN KEY (used_by_user_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
             $ensureTable('categories', "CREATE TABLE IF NOT EXISTS categories (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT NULL, image_url VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('products', "CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, seller_id INT NULL, category_id INT NULL, name VARCHAR(255) NOT NULL, description TEXT NULL, price DECIMAL(10,2) NOT NULL DEFAULT 0.00, stock INT NOT NULL DEFAULT 0, image_url VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('orders', "CREATE TABLE IF NOT EXISTS orders (id INT AUTO_INCREMENT PRIMARY KEY, order_number VARCHAR(50) NULL, customer_id INT NULL, seller_id INT NULL, status VARCHAR(30) DEFAULT 'pending', subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00, tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, shipping_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, payment_status VARCHAR(30) DEFAULT 'pending', payment_method VARCHAR(50) DEFAULT NULL, shipping_address TEXT NULL, billing_address TEXT NULL, notes TEXT NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('order_items', "CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product_id INT NOT NULL, seller_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00, total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
             $ensureTable('cart', "CREATE TABLE IF NOT EXISTS cart (user_id INT NOT NULL, product_id INT NOT NULL, quantity INT NOT NULL DEFAULT 1, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, product_id)) ENGINE=InnoDB");
             $ensureTable('reviews', "CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, user_id INT NOT NULL, rating TINYINT NOT NULL, comment TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_reviews_product_id (product_id), INDEX idx_reviews_user_id (user_id)) ENGINE=InnoDB");
+
+            $ensureTable(
+                'withdrawals',
+                "CREATE TABLE IF NOT EXISTS withdrawals (id INT AUTO_INCREMENT PRIMARY KEY, seller_id INT NOT NULL, request_email VARCHAR(255) NOT NULL, payment_method VARCHAR(20) NOT NULL, payout_account VARCHAR(255) NOT NULL, account_holder_name VARCHAR(255) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(3) NOT NULL DEFAULT 'USD', status VARCHAR(20) NOT NULL DEFAULT 'pending', admin_id INT NULL, admin_notes TEXT NULL, decided_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_withdrawals_seller (seller_id), INDEX idx_withdrawals_status (status), INDEX idx_withdrawals_method (payment_method), CONSTRAINT fk_withdrawals_seller FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_withdrawals_admin FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'withdrawal_logs',
+                "CREATE TABLE IF NOT EXISTS withdrawal_logs (id INT AUTO_INCREMENT PRIMARY KEY, withdrawal_id INT NOT NULL, actor_role VARCHAR(20) NOT NULL, actor_id INT NULL, action VARCHAR(50) NOT NULL, details LONGTEXT NULL, ip_address VARCHAR(64) NULL, user_agent VARCHAR(255) NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_wlog_withdrawal (withdrawal_id), INDEX idx_wlog_actor (actor_id), CONSTRAINT fk_withdrawal_logs_withdrawal FOREIGN KEY (withdrawal_id) REFERENCES withdrawals(id) ON DELETE CASCADE, CONSTRAINT fk_withdrawal_logs_actor FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'wallet_transactions',
+                "CREATE TABLE IF NOT EXISTS wallet_transactions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, direction VARCHAR(10) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(3) NOT NULL DEFAULT 'USD', reference_type VARCHAR(50) NULL, reference_id INT NULL, description VARCHAR(255) NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_wallet_tx_user (user_id), INDEX idx_wallet_tx_ref (reference_type, reference_id), CONSTRAINT fk_wallet_tx_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'realtime_events',
+                "CREATE TABLE IF NOT EXISTS realtime_events (id INT AUTO_INCREMENT PRIMARY KEY, event_type VARCHAR(50) NOT NULL, target_role VARCHAR(20) NULL, target_user_id INT NULL, payload LONGTEXT NOT NULL, processed TINYINT(1) NOT NULL DEFAULT 0, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, processed_at TIMESTAMP NULL, INDEX idx_realtime_processed (processed, id), INDEX idx_realtime_target_user (target_user_id), INDEX idx_realtime_target_role (target_role), CONSTRAINT fk_realtime_target_user FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
 
             // Chat tables (required by ChatController / websocket_server)
             // Use ensureHealthyTable to also repair the MySQL 1932 "doesn't exist in engine" condition.
@@ -248,8 +272,16 @@ class Database {
             $ensureColumn('sellers', 'commission_rate', 'commission_rate DECIMAL(5,2) NOT NULL DEFAULT 10.00');
             $ensureColumn('sellers', 'store_address', 'store_address TEXT');
 
+            $ensureColumn('sellers', 'promo_code_used', 'promo_code_used VARCHAR(20) NULL');
+            $ensureColumn('sellers', 'promo_exempt_guarantee', 'promo_exempt_guarantee TINYINT(1) NOT NULL DEFAULT 0');
+            $ensureColumn('sellers', 'guarantee_required', 'guarantee_required TINYINT(1) NOT NULL DEFAULT 1');
+            $ensureColumn('sellers', 'guarantee_locked_amount', "guarantee_locked_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+
             $ensureTable('wishlist', "CREATE TABLE IF NOT EXISTS wishlist (user_id INT NOT NULL, product_id INT NOT NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, product_id)) ENGINE=InnoDB");
             $ensureTable('wallets', "CREATE TABLE IF NOT EXISTS wallets (user_id INT PRIMARY KEY, balance DECIMAL(10,2) NOT NULL DEFAULT 0.00, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
+
+            $ensureColumn('wallets', 'balance', 'balance DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+            $ensureColumn('wallets', 'updated_at', 'updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
 
             $stmt = $conn->prepare("SHOW COLUMNS FROM users LIKE 'password'");
             $stmt->execute();

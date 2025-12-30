@@ -150,6 +150,26 @@ export default function MessagingPage() {
     })
   }, [conversations])
 
+  const handleDeleteMessage = useCallback(
+    async (messageId: number) => {
+      if (!messageId) return
+      if (!confirm("Delete this message?")) return
+
+      try {
+        setErrorMessages("")
+        const res = await fetch(`/api/backend/messages/${messageId}`, { method: "DELETE" })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to delete message")
+        }
+        setMessages((prev) => prev.filter((m) => Number(m.id) !== Number(messageId)))
+      } catch (e: any) {
+        setErrorMessages(e?.message || "Failed to delete message")
+      }
+    },
+    [setMessages],
+  )
+
   const uiMessages: MessagingMessage[] = useMemo(() => {
     const myId = Number((me as any)?.id ?? (me as any)?.user_id ?? (me as any)?.userId ?? (me as any)?.user?.id ?? 0)
     const myName = String((me as any)?.full_name ?? (me as any)?.name ?? (me as any)?.user?.full_name ?? (me as any)?.user?.name ?? "")
@@ -180,9 +200,10 @@ export default function MessagingPage() {
         timestamp: ts && !Number.isNaN(ts.getTime()) ? ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
         isOwn,
         senderName: senderName || m.sender_name,
+        onDelete: isOwn ? () => handleDeleteMessage(Number(m.id)) : undefined,
       }
     })
-  }, [me, messages, selectedConversation?.other_user_id, selectedConversation?.other_user_name])
+  }, [handleDeleteMessage, me, messages, selectedConversation?.other_user_id, selectedConversation?.other_user_name])
 
   const handleSelect = useCallback(
     async (id: string) => {
@@ -218,6 +239,26 @@ export default function MessagingPage() {
     },
     [loadMeAndConversations, loadMessages],
   )
+
+  const handleDeleteConversation = useCallback(async () => {
+    if (!selectedConversationId) return
+    if (!confirm("Delete this conversation? This will remove all messages.")) return
+
+    try {
+      setErrorConversations("")
+      const res = await fetch(`/api/backend/conversations/${selectedConversationId}`, { method: "DELETE" })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete conversation")
+      }
+
+      setConversations((prev) => prev.filter((c) => Number(c.conversation_id) !== Number(selectedConversationId)))
+      setSelectedConversationId(null)
+      setMessages([])
+    } catch (e: any) {
+      setErrorConversations(e?.message || "Failed to delete conversation")
+    }
+  }, [selectedConversationId])
 
   const handleSend = useCallback(
     async (content: string) => {
@@ -276,6 +317,7 @@ export default function MessagingPage() {
         error={errorMessages}
         canSend={Boolean(selectedConversationId)}
         onSend={handleSend}
+        onDelete={selectedConversationId ? handleDeleteConversation : undefined}
       />
 
       {isNewChatOpen && (

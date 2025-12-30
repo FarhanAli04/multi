@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
-import { Send, Phone, Video, MoreVertical } from "lucide-react"
+import { Send, Trash2 } from "lucide-react"
 import { MessageBubble } from "./message-bubble"
 
 export type MessagingMessage = {
@@ -10,6 +10,7 @@ export type MessagingMessage = {
   timestamp: string
   isOwn: boolean
   senderName?: string
+  onDelete?: () => void
 }
 
 export function ChatWindow({
@@ -20,6 +21,7 @@ export function ChatWindow({
   error,
   canSend,
   onSend,
+  onDelete,
 }: {
   title?: string
   status?: string
@@ -28,6 +30,7 @@ export function ChatWindow({
   error?: string
   canSend: boolean
   onSend: (content: string) => Promise<void> | void
+  onDelete?: () => void
 }) {
   const [inputValue, setInputValue] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -56,17 +59,18 @@ export function ChatWindow({
           <h3 className="font-semibold text-foreground">{title || "Select a conversation"}</h3>
           <p className="text-xs text-muted-foreground">{status || (title ? "" : "Choose a chat from the left")}</p>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <Phone size={18} className="text-muted-foreground" />
-          </button>
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <Video size={18} className="text-muted-foreground" />
-          </button>
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <MoreVertical size={18} className="text-muted-foreground" />
-          </button>
-        </div>
+        {title && onDelete && (
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+              onClick={onDelete}
+              type="button"
+              aria-label="Delete conversation"
+            >
+              <Trash2 size={18} className="text-muted-foreground" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Messages */}

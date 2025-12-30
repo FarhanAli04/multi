@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
 
       payload.business_name = storeName || username || "Seller Business"
       payload.store_name = storeName || username || `store_${Date.now()}`
-      payload.cnic_number = promoCode || username || `${Date.now()}`
+      payload.cnic_number = username || `${Date.now()}`
+      payload.promo_code = promoCode
     }
 
     const apiResponse = await fetch(`${apiBaseUrl}/api/auth/register`, {

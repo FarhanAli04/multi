@@ -4,6 +4,8 @@ use Ratchet\ConnectionInterface;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Factory as LoopFactory;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -17,15 +19,19 @@ class Chat implements MessageComponentInterface {
     protected $clients;
     protected $userConnections;
     protected $db;
+    protected $loop;
+    protected $lastRealtimeEventId;
     protected $hasUsersIsActive;
     protected $hasUsersIsOnline;
     protected $hasUsersLastSeen;
     protected $hasMessagesContent;
     protected $hasMessagesMessage;
 
-    public function __construct() {
+    public function __construct(LoopInterface $loop = null) {
         $this->clients = new \SplObjectStorage;
         $this->userConnections = [];
+        $this->loop = $loop;
+        $this->lastRealtimeEventId = 0;
         $this->hasUsersIsActive = null;
         $this->hasUsersIsOnline = null;
         $this->hasUsersLastSeen = null;
@@ -46,6 +52,82 @@ class Chat implements MessageComponentInterface {
             );
         } catch (PDOException $e) {
             die("Database connection failed: " . $e->getMessage());
+        }
+
+        if ($this->loop) {
+            $this->loop->addPeriodicTimer(1.0, function () {
+                $this->pollRealtimeEvents();
+            });
+        }
+    }
+
+    protected function pollRealtimeEvents() {
+        try {
+            $stmt = $this->db->prepare("SELECT id, event_type, target_role, target_user_id, payload FROM realtime_events WHERE processed = 0 AND id > ? ORDER BY id ASC LIMIT 50");
+            $stmt->execute([(int)$this->lastRealtimeEventId]);
+            $rows = $stmt->fetchAll();
+            if (!$rows) {
+                return;
+            }
+
+            foreach ($rows as $row) {
+                $id = (int)($row['id'] ?? 0);
+                if ($id > $this->lastRealtimeEventId) {
+                    $this->lastRealtimeEventId = $id;
+                }
+
+                $eventType = (string)($row['event_type'] ?? 'realtime_event');
+                $targetRole = $row['target_role'] !== null ? strtolower((string)$row['target_role']) : null;
+                $targetUserId = $row['target_user_id'] !== null ? (int)$row['target_user_id'] : null;
+                $payloadRaw = (string)($row['payload'] ?? '{}');
+                $payload = json_decode($payloadRaw, true);
+                if (!is_array($payload)) {
+                    $payload = ['raw' => $payloadRaw];
+                }
+
+                $msg = [
+                    'type' => $eventType,
+                    'payload' => $payload,
+                ];
+
+                $this->broadcastRealtime($msg, $targetRole, $targetUserId);
+
+                try {
+                    $upd = $this->db->prepare("UPDATE realtime_events SET processed = 1, processed_at = NOW() WHERE id = ?");
+                    $upd->execute([$id]);
+                } catch (Exception $ignore) {
+                }
+            }
+        } catch (Exception $e) {
+        }
+    }
+
+    protected function broadcastRealtime($message, $targetRole = null, $targetUserId = null) {
+        $targetRole = $targetRole !== null ? strtolower((string)$targetRole) : null;
+        foreach ($this->clients as $client) {
+            $connData = $this->userConnections[$client->resourceId] ?? null;
+            if (!$connData) {
+                continue;
+            }
+
+            $uid = (int)($connData['user_id'] ?? 0);
+            $role = strtolower((string)($connData['user_data']['role'] ?? ''));
+            if ($role === 'vendor') {
+                $role = 'seller';
+            }
+
+            if ($targetUserId !== null && $uid !== (int)$targetUserId) {
+                continue;
+            }
+
+            if ($targetRole !== null && $role !== $targetRole) {
+                continue;
+            }
+
+            try {
+                $client->send(json_encode($message));
+            } catch (Exception $e) {
+            }
         }
     }
 
@@ -471,13 +553,17 @@ class Chat implements MessageComponentInterface {
 
 // Run the WebSocket server
 $port = getenv('WEBSOCKET_PORT') ?: 8080;
+
+$loop = LoopFactory::create();
 $server = IoServer::factory(
     new HttpServer(
         new WsServer(
-            new Chat()
+            new Chat($loop)
         )
     ),
-    $port
+    $port,
+    '0.0.0.0',
+    $loop
 );
 
 echo "WebSocket server running on port {$port}\n";

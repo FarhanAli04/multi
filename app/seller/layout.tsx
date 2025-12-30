@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { ChatWidget } from "@/components/chat/chat-widget"
 
 export default async function SellerLayout({
   children,
@@ -27,7 +26,6 @@ export default async function SellerLayout({
   return (
     <div className="min-h-screen bg-background">
       {children}
-      <ChatWidget />
     </div>
   )
 }
