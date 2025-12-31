@@ -51,13 +51,13 @@ interface PaymentSettings {
 
 export default function SellerSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")
+  const [isLoading, setIsLoading] = useState(true)
+  const [pageError, setPageError] = useState("")
+  const [saveError, setSaveError] = useState("")
+  const [saveSuccess, setSaveSuccess] = useState("")
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const [pageError, setPageError] = useState<string>("")
-  const [saveError, setSaveError] = useState<string>("")
-  const [saveSuccess, setSaveSuccess] = useState<string>("")
 
   const [profile, setProfile] = useState({
     fullName: "",
@@ -265,12 +265,16 @@ export default function SellerSettingsPage() {
     })
   }
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((v) => !v)
+  }
+
   return (
     <div className="flex bg-background">
-      <SellerSidebar />
+      <SellerSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={() => setIsMobileMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col">
-        <SellerHeader />
+        <SellerHeader onMobileMenuToggle={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
 
         <main className="flex-1 p-8">
           <div className="mb-8">

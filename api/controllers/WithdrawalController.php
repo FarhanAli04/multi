@@ -150,7 +150,7 @@ class WithdrawalController {
                 'balance' => $info['balance'],
                 'locked' => $info['locked'],
                 'available' => $info['available'],
-                'currency' => 'USD',
+                'currency' => 'USDT',
                 'promo_exempt_guarantee' => $info['policy']['promo_exempt_guarantee'],
                 'promo_code_used' => $info['policy']['promo_code_used'],
             ],
@@ -229,7 +229,7 @@ class WithdrawalController {
                 return;
             }
 
-            $stmt = $this->db->prepare("INSERT INTO withdrawals (seller_id, request_email, payment_method, payout_account, account_holder_name, amount, currency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'USD', 'pending', NOW(), NOW())");
+            $stmt = $this->db->prepare("INSERT INTO withdrawals (seller_id, request_email, payment_method, payout_account, account_holder_name, amount, currency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'USDT', 'pending', NOW(), NOW())");
             $stmt->execute([(int)$user['id'], $email, $method, $payoutAccount, $accountHolder, $amount]);
             $withdrawalId = (int)$this->db->lastInsertId();
 
@@ -243,7 +243,7 @@ class WithdrawalController {
                 'payout_account' => $payoutAccount,
                 'account_holder_name' => $accountHolder,
                 'amount' => $amount,
-                'currency' => 'USD',
+                'currency' => 'USDT',
             ]);
 
             $this->emitRealtimeEvent('withdrawal_created', ['withdrawal_id' => $withdrawalId], 'admin', null);
@@ -389,7 +389,7 @@ class WithdrawalController {
                     $stmt = $this->db->prepare("UPDATE wallets SET balance = balance - ?, updated_at = NOW() WHERE user_id = ?");
                     $stmt->execute([$amount, $sellerId]);
 
-                    $stmt = $this->db->prepare("INSERT INTO wallet_transactions (user_id, direction, amount, currency, reference_type, reference_id, description, created_at) VALUES (?, 'debit', ?, 'USD', 'withdrawal', ?, 'Withdrawal approved', NOW())");
+                    $stmt = $this->db->prepare("INSERT INTO wallet_transactions (user_id, direction, amount, currency, reference_type, reference_id, description, created_at) VALUES (?, 'debit', ?, 'USDT', 'withdrawal', ?, 'Withdrawal approved', NOW())");
                     $stmt->execute([$sellerId, $amount, $withdrawalId]);
                 }
             }

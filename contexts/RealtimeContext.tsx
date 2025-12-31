@@ -28,7 +28,7 @@ const defaultSettings: WebsiteSettings = {
   tagline: "Your Premier Multi-Vendor Marketplace",
   logo_url: null,
   favicon_url: null,
-  currency: "USD",
+  currency: "USDT",
   timezone: "UTC",
   email: "admin@sar.com",
   phone: "+1 234 567 8900",

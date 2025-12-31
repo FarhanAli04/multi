@@ -119,7 +119,7 @@ class Database {
 
             $ensureTable(
                 'withdrawals',
-                "CREATE TABLE IF NOT EXISTS withdrawals (id INT AUTO_INCREMENT PRIMARY KEY, seller_id INT NOT NULL, request_email VARCHAR(255) NOT NULL, payment_method VARCHAR(20) NOT NULL, payout_account VARCHAR(255) NOT NULL, account_holder_name VARCHAR(255) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(3) NOT NULL DEFAULT 'USD', status VARCHAR(20) NOT NULL DEFAULT 'pending', admin_id INT NULL, admin_notes TEXT NULL, decided_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_withdrawals_seller (seller_id), INDEX idx_withdrawals_status (status), INDEX idx_withdrawals_method (payment_method), CONSTRAINT fk_withdrawals_seller FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_withdrawals_admin FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+                "CREATE TABLE IF NOT EXISTS withdrawals (id INT AUTO_INCREMENT PRIMARY KEY, seller_id INT NOT NULL, request_email VARCHAR(255) NOT NULL, payment_method VARCHAR(20) NOT NULL, payout_account VARCHAR(255) NOT NULL, account_holder_name VARCHAR(255) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(4) NOT NULL DEFAULT 'USDT', status VARCHAR(20) NOT NULL DEFAULT 'pending', admin_id INT NULL, admin_notes TEXT NULL, decided_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_withdrawals_seller (seller_id), INDEX idx_withdrawals_status (status), INDEX idx_withdrawals_method (payment_method), CONSTRAINT fk_withdrawals_seller FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_withdrawals_admin FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
             );
 
             $ensureTable(
@@ -129,12 +129,27 @@ class Database {
 
             $ensureTable(
                 'wallet_transactions',
-                "CREATE TABLE IF NOT EXISTS wallet_transactions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, direction VARCHAR(10) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(3) NOT NULL DEFAULT 'USD', reference_type VARCHAR(50) NULL, reference_id INT NULL, description VARCHAR(255) NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_wallet_tx_user (user_id), INDEX idx_wallet_tx_ref (reference_type, reference_id), CONSTRAINT fk_wallet_tx_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB"
+                "CREATE TABLE IF NOT EXISTS wallet_transactions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, direction VARCHAR(10) NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(4) NOT NULL DEFAULT 'USDT', reference_type VARCHAR(50) NULL, reference_id INT NULL, description VARCHAR(255) NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_wallet_tx_user (user_id), INDEX idx_wallet_tx_ref (reference_type, reference_id), CONSTRAINT fk_wallet_tx_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB"
             );
 
             $ensureTable(
                 'realtime_events',
                 "CREATE TABLE IF NOT EXISTS realtime_events (id INT AUTO_INCREMENT PRIMARY KEY, event_type VARCHAR(50) NOT NULL, target_role VARCHAR(20) NULL, target_user_id INT NULL, payload LONGTEXT NOT NULL, processed TINYINT(1) NOT NULL DEFAULT 0, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, processed_at TIMESTAMP NULL, INDEX idx_realtime_processed (processed, id), INDEX idx_realtime_target_user (target_user_id), INDEX idx_realtime_target_role (target_role), CONSTRAINT fk_realtime_target_user FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'newsletter_subscribers',
+                "CREATE TABLE IF NOT EXISTS newsletter_subscribers (id INT AUTO_INCREMENT PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, status VARCHAR(20) NOT NULL DEFAULT 'subscribed', subscribed_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, unsubscribed_at TIMESTAMP NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_newsletter_status (status)) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'customer_deposits',
+                "CREATE TABLE IF NOT EXISTS customer_deposits (id INT AUTO_INCREMENT PRIMARY KEY, customer_id INT NOT NULL, amount DECIMAL(10,2) NOT NULL, currency VARCHAR(4) NOT NULL DEFAULT 'USDT', method VARCHAR(50) NULL, status VARCHAR(20) NOT NULL DEFAULT 'pending', created_by_admin_id INT NULL, created_ip VARCHAR(64) NULL, internal_note TEXT NULL, approved_by_admin_id INT NULL, approved_at TIMESTAMP NULL, approved_ip VARCHAR(64) NULL, credited_at TIMESTAMP NULL, instant_credit TINYINT(1) NOT NULL DEFAULT 0, instant_reason TEXT NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_deposits_customer (customer_id), INDEX idx_deposits_status (status), CONSTRAINT fk_deposits_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_deposits_created_by FOREIGN KEY (created_by_admin_id) REFERENCES users(id) ON DELETE SET NULL, CONSTRAINT fk_deposits_approved_by FOREIGN KEY (approved_by_admin_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
+            );
+
+            $ensureTable(
+                'deposit_logs',
+                "CREATE TABLE IF NOT EXISTS deposit_logs (id INT AUTO_INCREMENT PRIMARY KEY, deposit_id INT NOT NULL, action VARCHAR(50) NOT NULL, actor_admin_id INT NULL, ip_address VARCHAR(64) NULL, user_agent VARCHAR(255) NULL, details LONGTEXT NULL, created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_dlog_deposit (deposit_id), INDEX idx_dlog_actor (actor_admin_id), CONSTRAINT fk_deposit_logs_deposit FOREIGN KEY (deposit_id) REFERENCES customer_deposits(id) ON DELETE CASCADE, CONSTRAINT fk_deposit_logs_actor FOREIGN KEY (actor_admin_id) REFERENCES users(id) ON DELETE SET NULL) ENGINE=InnoDB"
             );
 
             // Chat tables (required by ChatController / websocket_server)
@@ -183,6 +198,19 @@ class Database {
             $ensureColumn('users', 'updated_at', 'updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
 
             $ensureColumn('users', 'last_seen', 'last_seen TIMESTAMP NULL');
+
+            $ensureColumn('users', 'is_super_admin', 'is_super_admin TINYINT(1) NOT NULL DEFAULT 0');
+
+            $ensureColumn('customer_deposits', 'status', "status VARCHAR(20) NOT NULL DEFAULT 'pending'");
+            $ensureColumn('customer_deposits', 'created_by_admin_id', 'created_by_admin_id INT NULL');
+            $ensureColumn('customer_deposits', 'created_ip', 'created_ip VARCHAR(64) NULL');
+            $ensureColumn('customer_deposits', 'internal_note', 'internal_note TEXT NULL');
+            $ensureColumn('customer_deposits', 'approved_by_admin_id', 'approved_by_admin_id INT NULL');
+            $ensureColumn('customer_deposits', 'approved_at', 'approved_at TIMESTAMP NULL');
+            $ensureColumn('customer_deposits', 'approved_ip', 'approved_ip VARCHAR(64) NULL');
+            $ensureColumn('customer_deposits', 'credited_at', 'credited_at TIMESTAMP NULL');
+            $ensureColumn('customer_deposits', 'instant_credit', 'instant_credit TINYINT(1) NOT NULL DEFAULT 0');
+            $ensureColumn('customer_deposits', 'instant_reason', 'instant_reason TEXT NULL');
 
             // Chat message schema compatibility: legacy installs used `message`, newer uses `content`.
             $ensureColumn('messages', 'content', 'content TEXT NULL');

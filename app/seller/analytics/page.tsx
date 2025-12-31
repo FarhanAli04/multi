@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { formatCurrency } from "@/lib/utils"
 
 interface AnalyticsData {
   revenue: number
@@ -55,14 +56,6 @@ type SellerProduct = {
   name?: string
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-PK", {
-    style: "currency",
-    currency: "PKR",
-    minimumFractionDigits: 0,
-  }).format(amount)
-}
-
 function rangeDaysFromKey(key: string) {
   if (key === "24hours") return 1
   if (key === "7days") return 7
@@ -95,6 +88,12 @@ function timeAgo(dateIso?: string) {
 export default function SellerAnalyticsPage() {
   const [timeRange, setTimeRange] = useState("7days")
   const [selectedMetric, setSelectedMetric] = useState("revenue")
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((v) => !v)
+  }
 
   const [orders, setOrders] = useState<SellerOrder[]>([])
   const [products, setProducts] = useState<SellerProduct[]>([])
@@ -302,10 +301,10 @@ export default function SellerAnalyticsPage() {
 
   return (
     <div className="flex bg-background">
-      <SellerSidebar />
+      <SellerSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={() => setIsMobileMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col">
-        <SellerHeader />
+        <SellerHeader onMobileMenuToggle={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
 
         <main className="flex-1 p-8">
           <div className="mb-8 flex justify-between items-center">

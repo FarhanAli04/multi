@@ -33,6 +33,26 @@ interface Coupon {
   createdBy: string;
 }
 
+const EMPTY_COUPON_DRAFT: Coupon = {
+  id: 0,
+  code: "",
+  type: "Percentage",
+  value: "",
+  minPurchase: "0.00 USDT",
+  maxUsage: 100,
+  used: 0,
+  startDate: "",
+  endDate: "",
+  status: "Active",
+  description: "",
+  applicableProducts: [],
+  applicableCategories: ["All"],
+  maxDiscountAmount: undefined,
+  usagePerCustomer: 1,
+  createdAt: "",
+  createdBy: "Admin",
+}
+
 export default function CouponsManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -49,16 +69,16 @@ export default function CouponsManagement() {
       code: "SAVE20",
       type: "Percentage",
       value: "20%",
-      minPurchase: "$50.00",
+      minPurchase: "50.00 USDT",
       maxUsage: 500,
       used: 234,
       startDate: "Jan 1, 2024",
       endDate: "Dec 31, 2024",
       status: "Active",
-      description: "Save 20% on orders above $50",
+      description: "Save 20% on orders above 50 USDT",
       applicableProducts: [],
       applicableCategories: ["Electronics", "Fashion"],
-      maxDiscountAmount: "$100.00",
+      maxDiscountAmount: "100.00 USDT",
       usagePerCustomer: 1,
       createdAt: "Dec 15, 2023",
       createdBy: "Admin"
@@ -67,14 +87,14 @@ export default function CouponsManagement() {
       id: 2,
       code: "FLAT500",
       type: "Fixed Amount",
-      value: "$5.00",
-      minPurchase: "$100.00",
+      value: "5.00 USDT",
+      minPurchase: "100.00 USDT",
       maxUsage: 1000,
       used: 687,
       startDate: "Jan 1, 2024",
       endDate: "Dec 31, 2024",
       status: "Active",
-      description: "Get $5 off on orders above $100",
+      description: "Get 5 USDT off on orders above 100 USDT",
       applicableProducts: [],
       applicableCategories: ["All"],
       usagePerCustomer: 3,
@@ -86,7 +106,7 @@ export default function CouponsManagement() {
       code: "NEWYEAR50",
       type: "Percentage",
       value: "50%",
-      minPurchase: "$200.00",
+      minPurchase: "200.00 USDT",
       maxUsage: 100,
       used: 98,
       startDate: "Jan 1, 2024",
@@ -95,7 +115,7 @@ export default function CouponsManagement() {
       description: "New Year special - 50% off",
       applicableProducts: [],
       applicableCategories: ["Fashion", "Home"],
-      maxDiscountAmount: "$200.00",
+      maxDiscountAmount: "200.00 USDT",
       usagePerCustomer: 1,
       createdAt: "Dec 25, 2023",
       createdBy: "Admin"
@@ -169,7 +189,7 @@ export default function CouponsManagement() {
       code: editingCoupon?.code || "NEWCODE",
       type: editingCoupon?.type || "Percentage",
       value: editingCoupon?.value || "10%",
-      minPurchase: editingCoupon?.minPurchase || "$0.00",
+      minPurchase: editingCoupon?.minPurchase || "0.00 USDT",
       maxUsage: editingCoupon?.maxUsage || 100,
       used: 0,
       startDate: editingCoupon?.startDate || new Date().toLocaleDateString(),
@@ -242,7 +262,18 @@ export default function CouponsManagement() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Button
+            onClick={() => {
+              setEditingCoupon({
+                ...EMPTY_COUPON_DRAFT,
+                id: Math.max(...coupons.map((c) => c.id)) + 1,
+                startDate: new Date().toLocaleDateString(),
+                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                createdAt: new Date().toLocaleDateString(),
+              })
+              setIsAddDialogOpen(true)
+            }}
+          >
             <Plus size={18} className="mr-2" />
             Create Coupon
           </Button>
@@ -700,12 +731,12 @@ export default function CouponsManagement() {
                 <Input
                   id="new-code"
                   value={editingCoupon?.code || ""}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, code: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), code: e.target.value }))}
                 />
               </div>
               <div>
                 <Label htmlFor="new-type">Type</Label>
-                <Select value={editingCoupon?.type || "Percentage"} onValueChange={(value: "Percentage" | "Fixed Amount") => setEditingCoupon({...editingCoupon, type: value})}>
+                <Select value={editingCoupon?.type || "Percentage"} onValueChange={(value: "Percentage" | "Fixed Amount") => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), type: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -720,7 +751,7 @@ export default function CouponsManagement() {
                 <Input
                   id="new-value"
                   value={editingCoupon?.value || ""}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, value: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), value: e.target.value }))}
                 />
               </div>
               <div>
@@ -728,7 +759,7 @@ export default function CouponsManagement() {
                 <Input
                   id="new-minPurchase"
                   value={editingCoupon?.minPurchase || ""}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, minPurchase: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), minPurchase: e.target.value }))}
                 />
               </div>
               <div>
@@ -737,7 +768,7 @@ export default function CouponsManagement() {
                   id="new-maxUsage"
                   type="number"
                   value={editingCoupon?.maxUsage || 100}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, maxUsage: parseInt(e.target.value)})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), maxUsage: parseInt(e.target.value) }))}
                 />
               </div>
               <div>
@@ -746,7 +777,7 @@ export default function CouponsManagement() {
                   id="new-usagePerCustomer"
                   type="number"
                   value={editingCoupon?.usagePerCustomer || 1}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, usagePerCustomer: parseInt(e.target.value)})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), usagePerCustomer: parseInt(e.target.value) }))}
                 />
               </div>
               <div>
@@ -754,7 +785,7 @@ export default function CouponsManagement() {
                 <Input
                   id="new-startDate"
                   value={editingCoupon?.startDate || new Date().toLocaleDateString()}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, startDate: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), startDate: e.target.value }))}
                 />
               </div>
               <div>
@@ -762,7 +793,7 @@ export default function CouponsManagement() {
                 <Input
                   id="new-endDate"
                   value={editingCoupon?.endDate || new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString()}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, endDate: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), endDate: e.target.value }))}
                 />
               </div>
               <div className="col-span-2">
@@ -770,7 +801,7 @@ export default function CouponsManagement() {
                 <Textarea
                   id="new-description"
                   value={editingCoupon?.description || ""}
-                  onChange={(e) => setEditingCoupon({...editingCoupon, description: e.target.value})}
+                  onChange={(e) => setEditingCoupon((prev) => ({ ...(prev ?? EMPTY_COUPON_DRAFT), description: e.target.value }))}
                 />
               </div>
             </div>

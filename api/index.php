@@ -162,6 +162,13 @@ $routes = [
     // Admin withdrawal management
     '/api/admin/withdrawals' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => 'GET'],
     '/api/admin/withdrawals/{id}/decision' => ['controller' => 'WithdrawalController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
+
+    // Admin advanced: earnings, deposits, subscribers
+    '/api/admin/earnings' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => 'GET'],
+    '/api/admin/deposits' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => ['GET', 'POST']],
+    '/api/admin/deposits/{id}/approve' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => 'PUT'],
+    '/api/admin/subscribers' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => ['GET', 'POST']],
+    '/api/admin/subscribers/{id}' => ['controller' => 'AdminController', 'method' => 'handleRequest', 'http_method' => ['PUT', 'DELETE']],
     
     // Admin endpoints
     '/api/admin/dashboard/stats' => ['controller' => 'AdminController', 'method' => 'getDashboardStats', 'http_method' => 'GET'],

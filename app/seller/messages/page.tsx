@@ -48,7 +48,12 @@ export default function SellerMessagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [replyText, setReplyText] = useState("")
   const [showReplyBox, setShowReplyBox] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((v) => !v)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -183,10 +188,10 @@ export default function SellerMessagesPage() {
 
   return (
     <div className="flex bg-background">
-      <SellerSidebar />
+      <SellerSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={() => setIsMobileMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col">
-        <SellerHeader />
+        <SellerHeader onMobileMenuToggle={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
 
         <main className="flex-1 p-8">
           <div className="mb-8 flex justify-between items-center">

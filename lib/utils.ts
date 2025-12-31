@@ -7,11 +7,18 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: number, options: Intl.NumberFormatOptions = {}) {
   const value = Number(amount || 0)
-  return new Intl.NumberFormat("en-PK", {
-    style: "currency",
-    currency: "PKR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    ...options,
+  const minimumFractionDigits =
+    typeof options.minimumFractionDigits === "number" ? options.minimumFractionDigits : 2
+  const maximumFractionDigits =
+    typeof options.maximumFractionDigits === "number" ? options.maximumFractionDigits : 2
+
+  const { minimumFractionDigits: _min, maximumFractionDigits: _max, style: _style, currency: _currency, ...rest } = options
+
+  const formatted = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits,
+    maximumFractionDigits,
+    ...rest,
   }).format(value)
+
+  return `${formatted} USDT`
 }

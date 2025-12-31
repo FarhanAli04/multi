@@ -29,7 +29,7 @@ export default function GeneralSettings() {
   const [settings, setSettings] = useState<GeneralSettings>({
     websiteName: "",
     tagline: "",
-    currency: "USD",
+    currency: "USDT",
     timezone: "UTC",
     email: "",
     phone: "",
@@ -48,7 +48,7 @@ export default function GeneralSettings() {
         ...prev,
         websiteName: realtimeSettings.website_name || "",
         tagline: realtimeSettings.tagline || "",
-        currency: realtimeSettings.currency || "USD",
+        currency: realtimeSettings.currency || "USDT",
         timezone: realtimeSettings.timezone || "UTC",
         email: realtimeSettings.email || "",
         phone: realtimeSettings.phone || "",
@@ -211,10 +211,7 @@ export default function GeneralSettings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="PKR">PKR (Rs)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                  <SelectItem value="USDT">USDT</SelectItem>
                 </SelectContent>
               </Select>
             </div>

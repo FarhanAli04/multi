@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { formatCurrency } from "@/lib/utils"
 
 type AdminWithdrawal = {
   id: number
@@ -22,14 +23,6 @@ type AdminWithdrawal = {
   seller_email?: string | null
   seller_name?: string | null
   seller_store_name?: string | null
-}
-
-function formatMoney(amount: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(amount)
 }
 
 function statusBadgeClass(status: string) {
@@ -80,7 +73,7 @@ export default function AdminWithdrawalsPage() {
       payout_account: String(x.payout_account || ""),
       account_holder_name: String(x.account_holder_name || ""),
       amount: Number(x.amount || 0) || 0,
-      currency: String(x.currency || "USD"),
+      currency: String(x.currency || "USDT"),
       status: String(x.status || "pending"),
       admin_notes: x.admin_notes ?? null,
       decided_at: x.decided_at ?? null,
@@ -277,7 +270,7 @@ export default function AdminWithdrawalsPage() {
                       <div className="max-w-[320px] break-all text-sm text-muted-foreground">{w.payout_account}</div>
                       <div className="text-xs text-muted-foreground">{w.account_holder_name}</div>
                     </td>
-                    <td className="admin-panel-table-cell text-primary font-semibold">{formatMoney(w.amount)}</td>
+                    <td className="admin-panel-table-cell text-primary font-semibold">{formatCurrency(w.amount)}</td>
                     <td className="admin-panel-table-cell">
                       <Badge className={statusBadgeClass(w.status)}>{w.status}</Badge>
                     </td>

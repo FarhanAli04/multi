@@ -8,6 +8,8 @@ class AdminController {
     private $productColumns;
     private $validatedProductColumns;
     private $userColumns;
+    private $realtimeTableChecked;
+    private $hasRealtimeEvents;
 
     public function __construct() {
         $this->db = new Database();
@@ -15,6 +17,580 @@ class AdminController {
         $this->productColumns = null;
         $this->validatedProductColumns = [];
         $this->userColumns = null;
+        $this->realtimeTableChecked = false;
+        $this->hasRealtimeEvents = false;
+    }
+
+    private function getRequestPath() {
+        return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    }
+
+    private function getJsonBody() {
+        $raw = file_get_contents('php://input');
+        if (!$raw) return [];
+        $data = json_decode($raw, true);
+        return is_array($data) ? $data : [];
+    }
+
+    private function ensureRealtimeEventsSupport() {
+        if ($this->realtimeTableChecked) return;
+        $this->realtimeTableChecked = true;
+
+        try {
+            $stmt = $this->db->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'realtime_events' LIMIT 1");
+            $stmt->execute();
+            $this->hasRealtimeEvents = (bool)$stmt->fetch(PDO::FETCH_NUM);
+        } catch (Exception $e) {
+            $this->hasRealtimeEvents = false;
+        }
+    }
+
+    public function approveDeposit($depositId) {
+        $admin = $this->auth->authenticate('admin');
+        $depositId = (int)$depositId;
+        if ($depositId <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid deposit id']);
+            return;
+        }
+
+        $data = $this->getJsonBody();
+        $approvalNote = isset($data['note']) ? trim((string)$data['note']) : null;
+
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("SELECT * FROM customer_deposits WHERE id = ? LIMIT 1 FOR UPDATE");
+            $stmt->execute([$depositId]);
+            $d = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$d) {
+                $this->db->rollBack();
+                http_response_code(404);
+                echo json_encode(['error' => 'Deposit not found']);
+                return;
+            }
+
+            $status = strtolower((string)($d['status'] ?? ''));
+            if ($status === 'completed') {
+                // Idempotent approve
+                $this->db->commit();
+                echo json_encode(['success' => true, 'already_completed' => true]);
+                return;
+            }
+
+            if ($status !== 'pending') {
+                $this->db->rollBack();
+                http_response_code(400);
+                echo json_encode(['error' => 'Only pending deposits can be approved']);
+                return;
+            }
+
+            $customerId = (int)($d['customer_id'] ?? 0);
+            $amount = (float)($d['amount'] ?? 0);
+            if ($customerId <= 0 || $amount <= 0) {
+                $this->db->rollBack();
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid deposit record']);
+                return;
+            }
+
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+
+            $this->ensureWalletRow($customerId);
+
+            $stmt = $this->db->prepare("SELECT id FROM wallet_transactions WHERE user_id = ? AND reference_type = 'deposit' AND reference_id = ? AND direction = 'credit' LIMIT 1");
+            $stmt->execute([$customerId, $depositId]);
+            $existingCredit = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$existingCredit) {
+                $stmt = $this->db->prepare("UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?");
+                $stmt->execute([$amount, $customerId]);
+
+                $stmt = $this->db->prepare("INSERT INTO wallet_transactions (user_id, direction, amount, currency, reference_type, reference_id, description, created_at) VALUES (?, 'credit', ?, 'USDT', 'deposit', ?, 'Deposit approved', NOW())");
+                $stmt->execute([$customerId, $amount, $depositId]);
+            }
+
+            $stmt = $this->db->prepare("UPDATE customer_deposits SET status = 'completed', approved_by_admin_id = ?, approved_at = NOW(), approved_ip = ?, credited_at = COALESCE(credited_at, NOW()), updated_at = NOW() WHERE id = ?");
+            $stmt->execute([(int)$admin['id'], $ip, $depositId]);
+
+            $this->logDepositAction($depositId, 'approved', (int)$admin['id'], [
+                'note' => $approvalNote,
+            ]);
+
+            $this->emitRealtimeEvent('deposit_updated', ['deposit_id' => $depositId, 'status' => 'completed'], 'admin', null);
+            $this->emitRealtimeEvent('deposit_updated', ['deposit_id' => $depositId, 'status' => 'completed'], null, $customerId);
+
+            $this->db->commit();
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            try {
+                $this->db->rollBack();
+            } catch (Exception $ignore) {
+            }
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function createSubscriber() {
+        $admin = $this->auth->authenticate('admin');
+        $data = $this->getJsonBody();
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        $status = strtolower(trim((string)($data['status'] ?? 'subscribed')));
+
+        if (!preg_match('/^[^\s@]+@[^\s@]+\.[^\s@]+$/', $email)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Valid email is required']);
+            return;
+        }
+        if (!in_array($status, ['subscribed', 'unsubscribed'], true)) {
+            $status = 'subscribed';
+        }
+
+        try {
+            $subAt = $status === 'subscribed' ? date('Y-m-d H:i:s') : null;
+            $unsubAt = $status === 'unsubscribed' ? date('Y-m-d H:i:s') : null;
+
+            $stmt = $this->db->prepare("INSERT INTO newsletter_subscribers (email, status, subscribed_at, unsubscribed_at, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$email, $status, $subAt, $unsubAt]);
+            $id = (int)$this->db->lastInsertId();
+
+            $this->emitRealtimeEvent('subscriber_created', ['subscriber_id' => $id], 'admin', null);
+            http_response_code(201);
+            echo json_encode(['success' => true, 'subscriber_id' => $id]);
+        } catch (PDOException $e) {
+            // Duplicate email -> treat as update
+            if ($e->getCode() === '23000') {
+                try {
+                    $stmt = $this->db->prepare("UPDATE newsletter_subscribers SET status = ?, subscribed_at = COALESCE(subscribed_at, NOW()), unsubscribed_at = CASE WHEN ? = 'unsubscribed' THEN NOW() ELSE NULL END, updated_at = NOW() WHERE email = ?");
+                    $stmt->execute([$status, $status, $email]);
+                    $stmt = $this->db->prepare("SELECT id FROM newsletter_subscribers WHERE email = ? LIMIT 1");
+                    $stmt->execute([$email]);
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $id = (int)($row['id'] ?? 0);
+                    $this->emitRealtimeEvent('subscriber_updated', ['subscriber_id' => $id, 'status' => $status], 'admin', null);
+                    echo json_encode(['success' => true, 'subscriber_id' => $id, 'updated' => true]);
+                    return;
+                } catch (Exception $ignore) {
+                }
+            }
+
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    private function emitRealtimeEvent($eventType, $payload, $targetRole = null, $targetUserId = null) {
+        $this->ensureRealtimeEventsSupport();
+        if (!$this->hasRealtimeEvents) return;
+
+        try {
+            $stmt = $this->db->prepare("INSERT INTO realtime_events (event_type, target_role, target_user_id, payload, processed, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+            $stmt->execute([(string)$eventType, $targetRole !== null ? (string)$targetRole : null, $targetUserId !== null ? (int)$targetUserId : null, json_encode($payload)]);
+        } catch (Exception $e) {
+        }
+    }
+
+    private function ensureWalletRow($userId) {
+        try {
+            $stmt = $this->db->prepare("SELECT user_id FROM wallets WHERE user_id = ? LIMIT 1");
+            $stmt->execute([(int)$userId]);
+            if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+                return;
+            }
+            $stmt = $this->db->prepare("INSERT INTO wallets (user_id, balance, updated_at) VALUES (?, 0.00, NOW())");
+            $stmt->execute([(int)$userId]);
+        } catch (Exception $e) {
+        }
+    }
+
+    private function logDepositAction($depositId, $action, $adminId, $details = null) {
+        try {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $payload = null;
+            if ($details !== null) {
+                $payload = is_string($details) ? $details : json_encode($details);
+            }
+            $stmt = $this->db->prepare("INSERT INTO deposit_logs (deposit_id, action, actor_admin_id, ip_address, user_agent, details, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([(int)$depositId, (string)$action, $adminId !== null ? (int)$adminId : null, $ip, $ua, $payload]);
+        } catch (Exception $e) {
+        }
+    }
+
+    public function getEarnings() {
+        $user = $this->auth->authenticate('admin');
+
+        $search = trim((string)($_GET['search'] ?? ''));
+        $limit = min((int)($_GET['limit'] ?? 50), 200);
+        $offset = (int)($_GET['offset'] ?? 0);
+
+        try {
+            $sql = "
+                SELECT
+                    u.id as seller_id,
+                    u.email,
+                    u.full_name,
+                    u.created_at,
+                    COALESCE(s.store_name, s.business_name, '') as store_name,
+                    COALESCE(s.commission_rate, 10.00) as commission_rate,
+                    COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN o.total_amount ELSE 0 END), 0) as total_sales,
+                    (SELECT COALESCE(SUM(w.amount), 0) FROM withdrawals w WHERE w.seller_id = u.id AND LOWER(w.status) = 'pending') as pending_withdrawals,
+                    (SELECT COALESCE(SUM(wt.amount), 0) FROM wallet_transactions wt WHERE wt.user_id = u.id AND wt.reference_type = 'withdrawal' AND wt.direction = 'debit') as total_withdrawn,
+                    (SELECT COALESCE(balance, 0) FROM wallets wa WHERE wa.user_id = u.id LIMIT 1) as wallet_balance
+                FROM users u
+                LEFT JOIN sellers s ON s.user_id = u.id
+                LEFT JOIN orders o ON o.seller_id = u.id
+                WHERE u.role = 'seller'
+            ";
+
+            $params = [];
+            if ($search !== '') {
+                $sql .= " AND (u.email LIKE ? OR u.full_name LIKE ? OR s.store_name LIKE ? OR s.business_name LIKE ?)";
+                $q = "%{$search}%";
+                $params[] = $q;
+                $params[] = $q;
+                $params[] = $q;
+                $params[] = $q;
+            }
+
+            $sql .= " GROUP BY u.id ORDER BY total_sales DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $vendors = [];
+            $summarySales = 0.0;
+            $summaryAdminEarnings = 0.0;
+            $summaryPending = 0.0;
+
+            foreach ($rows as $r) {
+                $sales = (float)($r['total_sales'] ?? 0);
+                $commission = (float)($r['commission_rate'] ?? 10.0);
+                $adminEarnings = round($sales * ($commission / 100.0), 2);
+                $pending = (float)($r['pending_withdrawals'] ?? 0);
+
+                $summarySales += $sales;
+                $summaryAdminEarnings += $adminEarnings;
+                $summaryPending += $pending;
+
+                $vendors[] = [
+                    'seller_id' => (int)$r['seller_id'],
+                    'store_name' => (string)($r['store_name'] ?? ''),
+                    'owner_name' => (string)($r['full_name'] ?? ''),
+                    'email' => (string)($r['email'] ?? ''),
+                    'commission_rate' => $commission,
+                    'total_sales' => $sales,
+                    'admin_earnings' => $adminEarnings,
+                    'pending_withdrawals' => $pending,
+                    'total_withdrawn' => (float)($r['total_withdrawn'] ?? 0),
+                    'wallet_balance' => (float)($r['wallet_balance'] ?? 0),
+                    'created_at' => $r['created_at'] ?? null,
+                ];
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'summary' => [
+                    'platform_sales' => round($summarySales, 2),
+                    'admin_commission_earned' => round($summaryAdminEarnings, 2),
+                    'pending_withdrawals' => round($summaryPending, 2),
+                ],
+                'vendors' => $vendors,
+            ]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function listDeposits() {
+        $user = $this->auth->authenticate('admin');
+
+        $limit = min((int)($_GET['limit'] ?? 50), 200);
+        $offset = (int)($_GET['offset'] ?? 0);
+        $status = strtolower(trim((string)($_GET['status'] ?? '')));
+        $search = trim((string)($_GET['search'] ?? ''));
+
+        try {
+            $sql = "
+                SELECT
+                    d.id,
+                    d.customer_id,
+                    d.amount,
+                    d.currency,
+                    d.method,
+                    d.status,
+                    d.internal_note,
+                    d.created_by_admin_id,
+                    d.created_ip,
+                    d.approved_by_admin_id,
+                    d.approved_at,
+                    d.approved_ip,
+                    d.credited_at,
+                    d.instant_credit,
+                    d.instant_reason,
+                    d.created_at,
+                    u.email as customer_email,
+                    u.full_name as customer_name,
+                    cu.email as created_by_email,
+                    au.email as approved_by_email
+                FROM customer_deposits d
+                JOIN users u ON u.id = d.customer_id
+                LEFT JOIN users cu ON cu.id = d.created_by_admin_id
+                LEFT JOIN users au ON au.id = d.approved_by_admin_id
+                WHERE 1=1
+            ";
+            $params = [];
+
+            if ($status !== '' && $status !== 'all') {
+                $sql .= " AND LOWER(d.status) = ?";
+                $params[] = $status;
+            }
+
+            if ($search !== '') {
+                $sql .= " AND (u.email LIKE ? OR u.full_name LIKE ? OR CAST(d.id AS CHAR) LIKE ?)";
+                $q = "%{$search}%";
+                $params[] = $q;
+                $params[] = $q;
+                $params[] = $q;
+            }
+
+            $sql .= " ORDER BY d.created_at DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            header('Content-Type: application/json');
+            echo json_encode(['deposits' => $rows]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function createDeposit() {
+        $admin = $this->auth->authenticate('admin');
+        $data = $this->getJsonBody();
+
+        $customerId = (int)($data['customer_id'] ?? 0);
+        $amount = $data['amount'] ?? null;
+        $method = isset($data['method']) ? strtolower(trim((string)$data['method'])) : null;
+        $internalNote = isset($data['internal_note']) ? trim((string)$data['internal_note']) : '';
+        $status = strtolower(trim((string)($data['status'] ?? 'pending')));
+        $instantCredit = !empty($data['instant_credit']);
+        $instantReason = isset($data['instant_reason']) ? trim((string)$data['instant_reason']) : '';
+
+        $allowedMethods = ['manual', 'bank', 'crypto', 'adjustment'];
+        if ($method !== null && $method !== '' && !in_array($method, $allowedMethods, true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid payment method']);
+            return;
+        }
+
+        if ($internalNote === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'internal_note is required']);
+            return;
+        }
+
+        if ($customerId <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'customer_id is required']);
+            return;
+        }
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Valid amount is required']);
+            return;
+        }
+        if (!in_array($status, ['pending', 'failed', 'completed'], true)) {
+            $status = 'pending';
+        }
+
+        // Force safety: only instant_credit can create a completed deposit.
+        if ($status === 'completed' && !$instantCredit) {
+            $status = 'pending';
+        }
+
+        if ($instantCredit) {
+            $isSuper = (int)($admin['is_super_admin'] ?? 0) === 1;
+            if (!$isSuper) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Instant credit requires super admin']);
+                return;
+            }
+            if ($instantReason === '') {
+                http_response_code(400);
+                echo json_encode(['error' => 'instant_reason is required']);
+                return;
+            }
+            $status = 'completed';
+        }
+
+        $amount = round((float)$amount, 2);
+
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND role = 'customer' LIMIT 1");
+            $stmt->execute([$customerId]);
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->db->rollBack();
+                http_response_code(404);
+                echo json_encode(['error' => 'Customer not found']);
+                return;
+            }
+
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+
+            $stmt = $this->db->prepare("INSERT INTO customer_deposits (customer_id, amount, currency, method, status, created_by_admin_id, created_ip, internal_note, instant_credit, instant_reason, created_at, updated_at) VALUES (?, ?, 'USDT', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$customerId, $amount, $method, $status, (int)$admin['id'], $ip, $internalNote, $instantCredit ? 1 : 0, $instantCredit ? $instantReason : null]);
+            $depositId = (int)$this->db->lastInsertId();
+
+            $this->logDepositAction($depositId, 'created', (int)$admin['id'], [
+                'customer_id' => $customerId,
+                'amount' => $amount,
+                'currency' => 'USDT',
+                'method' => $method,
+                'status' => $status,
+                'internal_note' => $internalNote,
+                'instant_credit' => $instantCredit,
+                'instant_reason' => $instantCredit ? $instantReason : null,
+            ]);
+
+            if ($instantCredit) {
+                // Atomically approve + credit.
+                $this->ensureWalletRow($customerId);
+
+                $stmt = $this->db->prepare("SELECT id FROM wallet_transactions WHERE user_id = ? AND reference_type = 'deposit' AND reference_id = ? AND direction = 'credit' LIMIT 1");
+                $stmt->execute([$customerId, $depositId]);
+                $existingCredit = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$existingCredit) {
+                    $stmt = $this->db->prepare("UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?");
+                    $stmt->execute([$amount, $customerId]);
+
+                    $stmt = $this->db->prepare("INSERT INTO wallet_transactions (user_id, direction, amount, currency, reference_type, reference_id, description, created_at) VALUES (?, 'credit', ?, 'USDT', 'deposit', ?, 'Deposit credited', NOW())");
+                    $stmt->execute([$customerId, $amount, $depositId]);
+                }
+
+                $stmt = $this->db->prepare("UPDATE customer_deposits SET approved_by_admin_id = ?, approved_at = NOW(), approved_ip = ?, credited_at = NOW(), updated_at = NOW() WHERE id = ?");
+                $stmt->execute([(int)$admin['id'], $ip, $depositId]);
+
+                $this->logDepositAction($depositId, 'instant_credited', (int)$admin['id'], [
+                    'reason' => $instantReason,
+                ]);
+            }
+
+            $this->emitRealtimeEvent('deposit_created', ['deposit_id' => $depositId], 'admin', null);
+            $this->emitRealtimeEvent('deposit_created', ['deposit_id' => $depositId], null, $customerId);
+
+            $this->db->commit();
+            http_response_code(201);
+            echo json_encode(['success' => true, 'deposit_id' => $depositId]);
+        } catch (Exception $e) {
+            try {
+                $this->db->rollBack();
+            } catch (Exception $ignore) {
+            }
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function listSubscribers() {
+        $admin = $this->auth->authenticate('admin');
+
+        $limit = min((int)($_GET['limit'] ?? 50), 200);
+        $offset = (int)($_GET['offset'] ?? 0);
+        $status = strtolower(trim((string)($_GET['status'] ?? '')));
+        $search = trim((string)($_GET['search'] ?? ''));
+
+        try {
+            $sql = "SELECT id, email, status, subscribed_at, unsubscribed_at, created_at, updated_at FROM newsletter_subscribers WHERE 1=1";
+            $params = [];
+
+            if ($status !== '' && $status !== 'all') {
+                $sql .= " AND LOWER(status) = ?";
+                $params[] = $status;
+            }
+
+            if ($search !== '') {
+                $sql .= " AND email LIKE ?";
+                $params[] = "%{$search}%";
+            }
+
+            $sql .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            header('Content-Type: application/json');
+            echo json_encode(['subscribers' => $rows]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function updateSubscriber($id) {
+        $admin = $this->auth->authenticate('admin');
+        $id = (int)$id;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid subscriber id']);
+            return;
+        }
+
+        $data = $this->getJsonBody();
+        $status = strtolower(trim((string)($data['status'] ?? '')));
+        if (!in_array($status, ['subscribed', 'unsubscribed'], true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'status must be subscribed or unsubscribed']);
+            return;
+        }
+
+        try {
+            $unsubAt = $status === 'unsubscribed' ? 'NOW()' : 'NULL';
+            $subAt = $status === 'subscribed' ? 'NOW()' : 'subscribed_at';
+            $stmt = $this->db->prepare("UPDATE newsletter_subscribers SET status = ?, unsubscribed_at = {$unsubAt}, subscribed_at = {$subAt}, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$status, $id]);
+
+            $this->emitRealtimeEvent('subscriber_updated', ['subscriber_id' => $id, 'status' => $status], 'admin', null);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function deleteSubscriber($id) {
+        $admin = $this->auth->authenticate('admin');
+        $id = (int)$id;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid subscriber id']);
+            return;
+        }
+
+        try {
+            $stmt = $this->db->prepare('DELETE FROM newsletter_subscribers WHERE id = ?');
+            $stmt->execute([$id]);
+
+            $this->emitRealtimeEvent('subscriber_deleted', ['subscriber_id' => $id], 'admin', null);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        }
     }
 
     private function getUserColumns() {
@@ -575,6 +1151,7 @@ class AdminController {
     public function handleRequest() {
         $method = $_SERVER['REQUEST_METHOD'];
         $requestUri = $_SERVER['REQUEST_URI'];
+        $path = $this->getRequestPath();
         
         if ($method === 'GET') {
             if (strpos($requestUri, '/api/admin/dashboard/stats') !== false) {
@@ -587,7 +1164,14 @@ class AdminController {
                 $this->getVendors();
             } elseif (strpos($requestUri, '/api/admin/users') !== false) {
                 $this->getUsers();
+            } elseif (strpos($requestUri, '/api/admin/earnings') !== false) {
+                $this->getEarnings();
+            } elseif (strpos($requestUri, '/api/admin/deposits') !== false) {
+                $this->listDeposits();
+            } elseif (strpos($requestUri, '/api/admin/subscribers') !== false) {
+                $this->listSubscribers();
             }
+            return;
         } elseif ($method === 'PUT') {
             if (strpos($requestUri, '/api/admin/vendors') !== false && strpos($requestUri, '/status') !== false) {
                 $this->updateVendorStatus();
@@ -595,6 +1179,31 @@ class AdminController {
             }
             if (strpos($requestUri, '/api/admin/users/status') !== false) {
                 $this->updateUserStatus();
+                return;
+            }
+
+            if (preg_match('#^/api/admin/deposits/(\d+)/approve$#', $path, $m)) {
+                $this->approveDeposit($m[1]);
+                return;
+            }
+
+            if (preg_match('#^/api/admin/subscribers/(\d+)$#', $path, $m)) {
+                $this->updateSubscriber($m[1]);
+                return;
+            }
+        } elseif ($method === 'DELETE') {
+            if (preg_match('#^/api/admin/subscribers/(\d+)$#', $path, $m)) {
+                $this->deleteSubscriber($m[1]);
+                return;
+            }
+        } elseif ($method === 'POST') {
+            if (strpos($requestUri, '/api/admin/deposits') !== false) {
+                $this->createDeposit();
+                return;
+            }
+            if (strpos($requestUri, '/api/admin/subscribers') !== false) {
+                $this->createSubscriber();
+                return;
             }
         }
     }

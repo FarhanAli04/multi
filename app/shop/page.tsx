@@ -117,8 +117,8 @@ export default function ShopPage() {
                 <div className="space-y-3">
                   <input type="range" min="0" max="10000" className="w-full" />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Rs 0</span>
-                    <span>Rs 10,000</span>
+                    <span>0 USDT</span>
+                    <span>10,000 USDT</span>
                   </div>
                 </div>
               </div>

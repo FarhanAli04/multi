@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { formatCurrency } from "@/lib/utils"
 
 interface AdminOrder {
   orderId: number
@@ -64,7 +65,7 @@ export default function OrdersManagement() {
         id: `#ORD-${String(o.id).padStart(3, "0")}`,
         customer: o.customer_name || "",
         vendor: o.store_name || o.seller_name || "",
-        amount: `$${Number(o.total_amount ?? 0).toFixed(2)}`,
+        amount: formatCurrency(Number(o.total_amount ?? 0)),
         status: mapStatus(o.status),
         items: Number(o.item_count ?? 0),
         date: o.created_at ? new Date(o.created_at).toLocaleDateString() : "",

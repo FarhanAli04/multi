@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
+import { formatCurrency } from "@/lib/utils"
 
 interface Vendor {
   id: number;
@@ -52,6 +53,11 @@ export default function VendorsManagement() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
+  const parseAmount = (v: string) => {
+    const n = Number(String(v || "").replace(/[^0-9.-]+/g, ""))
+    return Number.isFinite(n) ? n : 0
+  }
+
   const loadVendors = async () => {
     try {
       setIsLoading(true)
@@ -75,7 +81,7 @@ export default function VendorsManagement() {
           address: v.address || "",
           products: Number(v.products ?? 0),
           orders: Number(v.orders ?? 0),
-          earnings: `$${earningsNumber.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          earnings: formatCurrency(earningsNumber),
           verified: Boolean(v.verified),
           status: (v.status || "Pending") as Vendor["status"],
           rating: 0,
@@ -112,7 +118,7 @@ export default function VendorsManagement() {
   }).sort((a, b) => {
     switch(sortBy) {
       case "name": return a.name.localeCompare(b.name)
-      case "earnings": return parseFloat(b.earnings.replace('$', '').replace(',', '')) - parseFloat(a.earnings.replace('$', '').replace(',', ''))
+      case "earnings": return parseAmount(b.earnings) - parseAmount(a.earnings)
       case "orders": return b.orders - a.orders
       case "rating": return b.rating - a.rating
       case "joinDate": return new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
@@ -209,7 +215,7 @@ export default function VendorsManagement() {
   const totalVendors = vendors.length
   const activeVendors = vendors.filter(v => v.status === "Active").length
   const pendingVendors = vendors.filter(v => v.status === "Pending").length
-  const totalEarnings = vendors.reduce((sum, v) => sum + parseFloat(v.earnings.replace('$', '').replace(',', '')), 0)
+  const totalEarnings = vendors.reduce((sum, v) => sum + parseAmount(v.earnings), 0)
   const totalProducts = vendors.reduce((sum, v) => sum + v.products, 0)
   const totalOrders = vendors.reduce((sum, v) => sum + v.orders, 0)
 
@@ -274,7 +280,7 @@ export default function VendorsManagement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalEarnings)}</div>
             <p className="text-xs text-muted-foreground">
               Vendor earnings
             </p>

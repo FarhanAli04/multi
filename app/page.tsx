@@ -201,7 +201,7 @@ export default function Home() {
             { value: "10K+", label: "Products Listed", icon: <ShoppingCart size={24} /> },
             { value: "500+", label: "Active Sellers", icon: <Users size={24} /> },
             { value: "50K+", label: "Happy Customers", icon: <Star size={24} /> },
-            { value: "Rs 5Cr+", label: "Monthly Sales", icon: <TrendingUp size={24} /> },
+            { value: "50K+ USDT", label: "Monthly Sales", icon: <TrendingUp size={24} /> },
           ].map((stat, i) => (
             <div key={i} className="card text-center">
               <div className="text-primary mb-3 flex justify-center">{stat.icon}</div>

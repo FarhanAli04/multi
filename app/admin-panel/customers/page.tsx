@@ -8,16 +8,29 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
+type Customer = {
+  id: number
+  name: string
+  email: string
+  phone: string
+  orders: number
+  spent: string
+  joined: string
+  status: string
+  address: string
+  lastOrder: string
+}
+
 export default function CustomersManagement() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [customers, setCustomers] = useState([
+  const [customers, setCustomers] = useState<Customer[]>([
     {
       id: 1,
       name: "John Doe",
       email: "john@example.com",
       phone: "+1 234 567 8900",
       orders: 15,
-      spent: "$2,450.50",
+      spent: "2,450.50 USDT",
       joined: "Jan 15, 2024",
       status: "Active",
       address: "123 Main St, City, State",
@@ -29,7 +42,7 @@ export default function CustomersManagement() {
       email: "jane@example.com",
       phone: "+1 234 567 8901",
       orders: 8,
-      spent: "$890.25",
+      spent: "890.25 USDT",
       joined: "Feb 20, 2024",
       status: "Active",
       address: "456 Oak Ave, City, State",
@@ -41,14 +54,14 @@ export default function CustomersManagement() {
       email: "mike@example.com",
       phone: "+1 234 567 8902",
       orders: 3,
-      spent: "$245.75",
+      spent: "245.75 USDT",
       joined: "Mar 10, 2024",
       status: "Blocked",
       address: "789 Pine Rd, City, State",
       lastOrder: "Dec 15, 2024"
     },
   ])
-  const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
 
   const filteredCustomers = customers.filter(customer =>
@@ -57,7 +70,7 @@ export default function CustomersManagement() {
     customer.phone.includes(searchTerm)
   )
 
-  const handleView = (customer: any) => {
+  const handleView = (customer: Customer) => {
     setSelectedCustomer(customer)
     setIsViewDialogOpen(true)
   }
@@ -76,7 +89,7 @@ export default function CustomersManagement() {
     }
   }
 
-  const handleSendEmail = (customer: any) => {
+  const handleSendEmail = (customer: Customer) => {
     window.location.href = `mailto:${customer.email}`
   }
 

@@ -66,6 +66,7 @@ export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null)
+  const [showInbox, setShowInbox] = useState(true)
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [chatUsers, setChatUsers] = useState<ChatUser[]>([])
@@ -379,6 +380,7 @@ export function ChatWidget() {
 
       setChatUsers((prev) => prev.filter((u) => Number(u.conversationId) !== Number(selectedUser.conversationId)))
       setSelectedUser(null)
+      setShowInbox(true)
       selectedConversationIdRef.current = null
       setMessages([])
     } catch (e: any) {
@@ -474,7 +476,8 @@ export function ChatWidget() {
                 {/* Users List */}
                 <div className={cn(
                   "border-r border-border",
-                  selectedUser ? "w-2/5" : "w-full"
+                  selectedUser ? "w-2/5" : "w-full",
+                  selectedUser && !showInbox ? "hidden sm:block" : "block"
                 )}>
                   <ScrollArea className="h-full">
                     <div className="p-2 space-y-1">
@@ -499,6 +502,7 @@ export function ChatWidget() {
                             key={user.id}
                             onClick={() => {
                               setSelectedUser(user)
+                              setShowInbox(false)
                               if (user.conversationId) {
                                 loadMessages(user.conversationId)
                               }
@@ -544,7 +548,7 @@ export function ChatWidget() {
 
                 {/* Chat Area */}
                 {selectedUser && (
-                  <div className="flex-1 flex flex-col">
+                  <div className={cn("flex-1 flex flex-col", showInbox ? "hidden sm:flex" : "flex")}> 
                     <div className="p-3 border-b border-border">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
@@ -561,6 +565,14 @@ export function ChatWidget() {
                         </div>
                         {selectedUser.conversationId && (
                           <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowInbox((v) => !v)}
+                              aria-label={showInbox ? "Show chat" : "Show inbox"}
+                            >
+                              {showInbox ? <MessageSquareText className="h-4 w-4" /> : <Users className="h-4 w-4" />}
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={deleteSelectedConversation}>
                               <Trash2 className="h-4 w-4" />
                             </Button>

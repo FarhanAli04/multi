@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { TrendingUp, Wallet, DollarSign, Download, RefreshCw, Search, Filter, Eye, CheckCircle, Clock, AlertCircle, Calendar, BarChart3, PieChart, Activity, CreditCard, ArrowUpRight, ArrowDownRight, MoreVertical, FileText, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { formatCurrency } from "@/lib/utils"
 
 interface VendorEarning {
   id: number;
@@ -44,77 +45,136 @@ export default function EarningsManagement() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [globalCommission, setGlobalCommission] = useState(10)
   const [autoApproveWithdrawals, setAutoApproveWithdrawals] = useState(false)
-  const [vendors, setVendors] = useState<VendorEarning[]>([
-    {
-      id: 1,
-      name: "Tech Store",
-      totalSales: "$45,230",
-      commission: 10,
-      adminEarnings: "$4,523",
-      pendingWithdrawal: "$12,450",
-      status: "Active",
-      lastWithdrawal: "Dec 15, 2024",
-      totalWithdrawn: "$32,450",
-      monthlySales: [3200, 3800, 4100, 3900, 4200, 4500, 4800, 5100, 4900, 5200, 5500, 5800],
-      paymentMethod: "Bank Transfer",
-      bankAccount: "****1234",
-      email: "tech@example.com",
-      phone: "+1 234 567 8900",
-      joinDate: "Jan 15, 2024",
-      performance: {
-        avgOrderValue: "$125.50",
-        totalOrders: 360,
-        conversionRate: 3.2,
-        refundRate: 2.1
+  const [vendors, setVendors] = useState<VendorEarning[]>([])
+  const [summary, setSummary] = useState({ platform_sales: 0, admin_commission_earned: 0, pending_withdrawals: 0 })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const wsRef = useRef<WebSocket | null>(null)
+
+  const parseAmount = (v: string) => {
+    const n = Number(String(v || "").replace(/[^0-9.-]+/g, ""))
+    return Number.isFinite(n) ? n : 0
+  }
+
+  const load = async (signal?: AbortSignal) => {
+    const qs = new URLSearchParams()
+    if (searchTerm.trim()) qs.set("search", searchTerm.trim())
+    qs.set("limit", "200")
+
+    const res = await fetch(`/api/backend/admin/earnings?${qs.toString()}`, { signal })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to load earnings")
+    }
+
+    const s = data?.summary || {}
+    setSummary({
+      platform_sales: Number(s.platform_sales || 0) || 0,
+      admin_commission_earned: Number(s.admin_commission_earned || 0) || 0,
+      pending_withdrawals: Number(s.pending_withdrawals || 0) || 0,
+    })
+
+    const list = Array.isArray(data?.vendors) ? data.vendors : []
+    const mapped: VendorEarning[] = list.map((x: any) => {
+      const storeName = String(x.store_name || x.email || "Vendor")
+      const totalSalesNum = Number(x.total_sales || 0) || 0
+      const adminEarnNum = Number(x.admin_earnings || 0) || 0
+      const pendingNum = Number(x.pending_withdrawals || 0) || 0
+
+      return {
+        id: Number(x.seller_id),
+        name: storeName,
+        totalSales: formatCurrency(totalSalesNum),
+        commission: Number(x.commission_rate || 0) || 0,
+        adminEarnings: formatCurrency(adminEarnNum),
+        pendingWithdrawal: formatCurrency(pendingNum),
+        status: "Active",
+        lastWithdrawal: "",
+        totalWithdrawn: formatCurrency(Number(x.total_withdrawn || 0)),
+        monthlySales: [],
+        paymentMethod: "",
+        bankAccount: "",
+        email: String(x.email || ""),
+        phone: "",
+        joinDate: String(x.created_at || ""),
+        performance: {
+          avgOrderValue: "",
+          totalOrders: 0,
+          conversionRate: 0,
+          refundRate: 0,
+        },
       }
-    },
-    {
-      id: 2,
-      name: "Fashion Hub",
-      totalSales: "$32,100",
-      commission: 12,
-      adminEarnings: "$3,852",
-      pendingWithdrawal: "$8,920",
-      status: "Active",
-      lastWithdrawal: "Dec 10, 2024",
-      totalWithdrawn: "$23,450", 
-      monthlySales: [2100, 2300, 2500, 2400, 2600, 2800, 2900, 3100, 3000, 3200, 3400, 3500],
-      paymentMethod: "PayPal",
-      bankAccount: "****5678",
-      email: "fashion@example.com", 
-      phone: "+1 234 567 8901",
-      joinDate: "Feb 20, 2024",
-      performance: {
-        avgOrderValue: "$89.25",
-        totalOrders: 359,
-        conversionRate: 2.8,
-        refundRate: 3.5
+    })
+    setVendors(mapped)
+  }
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    const run = async () => {
+      try {
+        setIsLoading(true)
+        setError("")
+        await load(ctrl.signal)
+      } catch (e: any) {
+        const msg = String(e?.message || "")
+        if (e?.name === "AbortError" || e?.code === "ERR_ABORTED" || /aborted/i.test(msg)) return
+        setError(e?.message || "Failed to load earnings")
+      } finally {
+        setIsLoading(false)
       }
-    },
-    {
-      id: 3,
-      name: "Electronics Pro",
-      totalSales: "$28,550",
-      commission: 10,
-      adminEarnings: "$2,855",
-      pendingWithdrawal: "$5,234",
-      status: "Pending",
-      lastWithdrawal: "Nov 28, 2024",
-      totalWithdrawn: "$18,200",
-      monthlySales: [1800, 2000, 2200, 2100, 2300, 2400, 2500, 2600, 2400, 2700, 2800, 2900],
-      paymentMethod: "Stripe",
-      bankAccount: "****9012",
-      email: "electronics@example.com",
-      phone: "+1 234 567 8902",
-      joinDate: "Mar 10, 2024",
-      performance: {
-        avgOrderValue: "$79.50",
-        totalOrders: 359,
-        conversionRate: 2.5,
-        refundRate: 4.2
+    }
+    run()
+    return () => ctrl.abort()
+  }, [searchTerm])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const connectWs = async () => {
+      if (wsRef.current) return
+      try {
+        const tokenRes = await fetch("/api/ws-token")
+        const tokenData = await tokenRes.json().catch(() => null)
+        if (!tokenRes.ok || !tokenData?.token) return
+
+        const baseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080"
+        const wsUrl = `${baseUrl}?token=${encodeURIComponent(tokenData.token)}`
+        const ws = new WebSocket(wsUrl)
+        wsRef.current = ws
+
+        ws.onmessage = async (ev) => {
+          if (cancelled) return
+          let msg: any = null
+          try {
+            msg = JSON.parse(ev.data || "{}")
+          } catch {
+            msg = null
+          }
+          if (!msg || typeof msg !== "object") return
+          if (msg.type === "withdrawal_created" || msg.type === "withdrawal_updated") {
+            try {
+              await load()
+            } catch {
+            }
+          }
+        }
+
+        ws.onclose = () => {
+          wsRef.current = null
+        }
+      } catch {
       }
-    },
-  ])
+    }
+
+    connectWs()
+    return () => {
+      cancelled = true
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
+    }
+  }, [])
 
   const filteredVendors = vendors.filter(vendor => {
     const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -123,9 +183,9 @@ export default function EarningsManagement() {
     return matchesSearch && matchesStatus
   }).sort((a, b) => {
     switch(sortBy) {
-      case "sales": return parseFloat(b.totalSales.replace('$', '').replace(',', '')) - parseFloat(a.totalSales.replace('$', '').replace(',', ''))
-      case "earnings": return parseFloat(b.adminEarnings.replace('$', '').replace(',', '')) - parseFloat(a.adminEarnings.replace('$', '').replace(',', ''))
-      case "pending": return parseFloat(b.pendingWithdrawal.replace('$', '').replace(',', '')) - parseFloat(a.pendingWithdrawal.replace('$', '').replace(',', ''))
+      case "sales": return parseAmount(b.totalSales) - parseAmount(a.totalSales)
+      case "earnings": return parseAmount(b.adminEarnings) - parseAmount(a.adminEarnings)
+      case "pending": return parseAmount(b.pendingWithdrawal) - parseAmount(a.pendingWithdrawal)
       case "commission": return b.commission - a.commission
       default: return 0
     }
@@ -140,9 +200,8 @@ export default function EarningsManagement() {
     if (confirm("Approve this withdrawal request?")) {
       setVendors(vendors.map(vendor => 
         vendor.id === vendorId 
-          ? { ...vendor, pendingWithdrawal: "$0", totalWithdrawn: 
-              `$${(parseFloat(vendor.totalWithdrawn.replace('$', '').replace(',', '')) + 
-                   parseFloat(vendor.pendingWithdrawal.replace('$', '').replace(',', ''))).toFixed(2)}` }
+          ? { ...vendor, pendingWithdrawal: formatCurrency(0), totalWithdrawn: 
+              formatCurrency(parseAmount(vendor.totalWithdrawn) + parseAmount(vendor.pendingWithdrawal)) }
           : vendor
       ))
       alert("Withdrawal approved and processed!")
@@ -152,7 +211,7 @@ export default function EarningsManagement() {
   const handleRejectWithdrawal = (vendorId: number) => {
     if (confirm("Reject this withdrawal request?")) {
       setVendors(vendors.map(vendor => 
-        vendor.id === vendorId ? { ...vendor, pendingWithdrawal: "$0" } : vendor
+        vendor.id === vendorId ? { ...vendor, pendingWithdrawal: formatCurrency(0) } : vendor
       ))
       alert("Withdrawal rejected!")
     }
@@ -190,10 +249,10 @@ export default function EarningsManagement() {
     }
   }
 
-  const totalSales = vendors.reduce((sum, v) => sum + parseFloat(v.totalSales.replace('$', '').replace(',', '')), 0)
-  const totalAdminEarnings = vendors.reduce((sum, v) => sum + parseFloat(v.adminEarnings.replace('$', '').replace(',', '')), 0)
-  const totalPendingWithdrawals = vendors.reduce((sum, v) => sum + parseFloat(v.pendingWithdrawal.replace('$', '').replace(',', '')), 0)
-  const totalWithdrawn = vendors.reduce((sum, v) => sum + parseFloat(v.totalWithdrawn.replace('$', '').replace(',', '')), 0)
+  const totalSales = vendors.reduce((sum, v) => sum + parseAmount(v.totalSales), 0)
+  const totalAdminEarnings = vendors.reduce((sum, v) => sum + parseAmount(v.adminEarnings), 0)
+  const totalPendingWithdrawals = vendors.reduce((sum, v) => sum + parseAmount(v.pendingWithdrawal), 0)
+  const totalWithdrawn = vendors.reduce((sum, v) => sum + parseAmount(v.totalWithdrawn), 0)
 
   return (
     <div className="space-y-6">
@@ -202,13 +261,15 @@ export default function EarningsManagement() {
         <p className="text-muted-foreground mt-1">Manage commission and vendor payments</p>
       </div>
 
+      {error ? <div className="rounded-lg border border-border bg-muted p-4 text-sm text-destructive">{error}</div> : null}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="admin-panel-table p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Total Platform Sales</p>
-              <h3 className="text-2xl font-bold">$105,880</h3>
+              <h3 className="text-2xl font-bold">{formatCurrency(Number(summary.platform_sales || 0))}</h3>
             </div>
             <TrendingUp size={32} className="text-primary" />
           </div>
@@ -217,7 +278,7 @@ export default function EarningsManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Admin Commission Earned</p>
-              <h3 className="text-2xl font-bold">$11,230</h3>
+              <h3 className="text-2xl font-bold">{formatCurrency(Number(summary.admin_commission_earned || 0))}</h3>
             </div>
             <Wallet size={32} className="text-green-600" />
           </div>
@@ -226,7 +287,7 @@ export default function EarningsManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Pending Withdrawals</p>
-              <h3 className="text-2xl font-bold">$26,604</h3>
+              <h3 className="text-2xl font-bold">{formatCurrency(Number(summary.pending_withdrawals || 0))}</h3>
             </div>
             <DollarSign size={32} className="text-orange-600" />
           </div>
@@ -262,7 +323,15 @@ export default function EarningsManagement() {
               </tr>
             </thead>
             <tbody>
-              {vendors.map((vendor) => (
+              {isLoading ? (
+                <tr>
+                  <td className="admin-panel-table-cell" colSpan={5}>Loading...</td>
+                </tr>
+              ) : filteredVendors.length === 0 ? (
+                <tr>
+                  <td className="admin-panel-table-cell" colSpan={5}>No vendors found.</td>
+                </tr>
+              ) : filteredVendors.map((vendor) => (
                 <tr key={vendor.id} className="admin-panel-table-row">
                   <td className="admin-panel-table-cell font-semibold">{vendor.name}</td>
                   <td className="admin-panel-table-cell">{vendor.totalSales}</td>

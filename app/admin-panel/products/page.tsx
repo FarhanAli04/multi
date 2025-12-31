@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { formatCurrency } from "@/lib/utils"
 
 interface Product {
   id: number;
@@ -65,7 +66,7 @@ export default function ProductsManagement() {
           name: p.name || "",
           sku: p.sku || `SKU-${p.id}`,
           vendor: vendorName,
-          price: `$${priceNumber.toFixed(2)}`,
+          price: formatCurrency(priceNumber),
           stock: Number(p.stock ?? 0),
           rating: Number(p.rating ?? 0),
           status,

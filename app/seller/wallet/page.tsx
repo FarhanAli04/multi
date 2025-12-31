@@ -4,14 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { SellerSidebar } from "@/components/seller/sidebar"
 import { SellerHeader } from "@/components/seller/header"
 import { ArrowUp, ArrowDown, Download, Send } from "lucide-react"
-
-function formatMoney(amount: number) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(amount)
-}
+import { formatCurrency } from "@/lib/utils"
 
 type SellerWallet = {
   balance: number
@@ -79,7 +72,7 @@ export default function SellerWalletPage() {
           balance: Number(w.balance || 0) || 0,
           locked: Number(w.locked || 0) || 0,
           available: Number(w.available || 0) || 0,
-          currency: String(w.currency || "USD"),
+          currency: String(w.currency || "USDT"),
           promo_exempt_guarantee: Boolean(w.promo_exempt_guarantee),
           promo_code_used: w.promo_code_used ? String(w.promo_code_used) : null,
         }
@@ -93,7 +86,7 @@ export default function SellerWalletPage() {
       payout_account: String(x.payout_account || ""),
       account_holder_name: String(x.account_holder_name || ""),
       amount: Number(x.amount || 0) || 0,
-      currency: String(x.currency || "USD"),
+      currency: String(x.currency || "USDT"),
       status: String(x.status || "pending"),
       admin_notes: x.admin_notes ?? null,
       decided_at: x.decided_at ?? null,
@@ -260,16 +253,16 @@ export default function SellerWalletPage() {
           <div className="card bg-gradient-to-br from-primary to-primary-dark text-primary-foreground mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-sm opacity-90">Available Balance</p>
-                <p className="text-4xl font-bold mt-2">{formatMoney(wallet?.available || 0)}</p>
+                <p className="text-sm opacity-90">Available Balance (USDT)</p>
+                <p className="text-4xl font-bold mt-2">{formatCurrency(wallet?.available || 0)}</p>
               </div>
               <div>
-                <p className="text-sm opacity-90">Wallet Balance</p>
-                <p className="text-4xl font-bold mt-2">{formatMoney(wallet?.balance || 0)}</p>
+                <p className="text-sm opacity-90">Wallet Balance (USDT)</p>
+                <p className="text-4xl font-bold mt-2">{formatCurrency(wallet?.balance || 0)}</p>
               </div>
               <div>
-                <p className="text-sm opacity-90">Locked (Guarantee)</p>
-                <p className="text-4xl font-bold mt-2">{formatMoney(wallet?.locked || 0)}</p>
+                <p className="text-sm opacity-90">Locked (Guarantee) (USDT)</p>
+                <p className="text-4xl font-bold mt-2">{formatCurrency(wallet?.locked || 0)}</p>
               </div>
             </div>
 
@@ -353,7 +346,7 @@ export default function SellerWalletPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Withdrawal Amount (USD only)</label>
+                <label className="block text-sm font-medium mb-2">Withdrawal Amount (USDT only)</label>
                 <input
                   className="input w-full"
                   value={withdrawForm.amount}
@@ -383,7 +376,7 @@ export default function SellerWalletPage() {
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-4 text-muted-foreground">Payment Method</th>
                     <th className="text-left py-3 px-4 text-muted-foreground">Account / Wallet</th>
-                    <th className="text-left py-3 px-4 text-muted-foreground">Amount (USD)</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground">Amount (USDT)</th>
                     <th className="text-left py-3 px-4 text-muted-foreground">Date</th>
                     <th className="text-left py-3 px-4 text-muted-foreground">Status</th>
                   </tr>
@@ -415,7 +408,7 @@ export default function SellerWalletPage() {
                           </div>
                         </td>
                         <td className="py-3 px-4 text-muted-foreground break-all">{w.payout_account}</td>
-                        <td className="py-3 px-4 font-semibold">{formatMoney(Number(w.amount || 0) || 0)}</td>
+                        <td className="py-3 px-4 font-semibold">{formatCurrency(Number(w.amount || 0) || 0)}</td>
                         <td className="py-3 px-4 text-muted-foreground">
                           {w.created_at ? String(w.created_at).slice(0, 10) : ""}
                         </td>

@@ -452,7 +452,7 @@ export default function SellerProductsPage() {
                   
                   <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                      Price (PKR) <span className="text-red-500">*</span>
+                      Price (USDT) <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="number"
@@ -586,7 +586,7 @@ export default function SellerProductsPage() {
                   
                   <div>
                     <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700">
-                      Price (PKR) <span className="text-red-500">*</span>
+                      Price (USDT) <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="number"

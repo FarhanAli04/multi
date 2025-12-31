@@ -159,7 +159,7 @@ class SettingsController {
             id INT AUTO_INCREMENT PRIMARY KEY,
             website_name VARCHAR(255) DEFAULT 'Syed Asad Raza',
             tagline TEXT DEFAULT 'Your Premier Multi-Vendor Marketplace',
-            currency VARCHAR(10) DEFAULT 'USD',
+            currency VARCHAR(10) DEFAULT 'USDT',
             timezone VARCHAR(50) DEFAULT 'UTC',
             email VARCHAR(255) DEFAULT 'admin@sar.com',
             phone VARCHAR(50) DEFAULT '+1 234 567 8900',
@@ -184,7 +184,7 @@ class SettingsController {
         return [
             'website_name' => 'Syed Asad Raza',
             'tagline' => 'Your Premier Multi-Vendor Marketplace',
-            'currency' => 'USD',
+            'currency' => 'USDT',
             'timezone' => 'UTC',
             'email' => 'admin@sar.com',
             'phone' => '+1 234 567 8900',
