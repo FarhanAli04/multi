@@ -94,16 +94,22 @@ export default function SellerProductsPage() {
       if (!res.ok) {
         throw new Error(data?.error || "Failed to load products")
       }
-      const mapped = (data?.products || []).map((p: any) => ({
+      const mapped = (data?.products || []).map((p: any) => {
+        // Use is_active if available, otherwise fall back to status field
+        const isActive = p.is_active !== undefined ? 
+          Number(p.is_active) === 1 : 
+          (p.status === "Active" || p.status === "active")
+        
+        return {
         id: Number(p.id),
         name: p.name,
         price: Number(p.price),
         stock: Number(p.stock),
         category: p.category || "",
-        status: p.status as Product["status"],
+        status: isActive ? "Active" : "Inactive",
         createdAt: p.created_at ? new Date(p.created_at).toISOString().slice(0, 10) : "",
         image_url: p.image_url,
-      }))
+      }})
       setProducts(mapped)
     } catch (e: any) {
       setError(e?.message || "Failed to load products")
@@ -251,7 +257,9 @@ export default function SellerProductsPage() {
         stock: Number(editForm.stock),
         category: editForm.category,
       }
-      if (editForm.status === "Inactive") {
+      if (editForm.status === "Active") {
+        payload.is_active = true
+      } else if (editForm.status === "Inactive") {
         payload.is_active = false
       }
       const res = await fetch(`/api/backend/seller/products/${selectedProduct.id}`, {

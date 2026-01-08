@@ -55,16 +55,12 @@ export function SellerSidebar({ isMobileMenuOpen, onMobileMenuClose }: SellerSid
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src={settings.logo_url || "/sell1mall-logo.png"}
-              alt={settings.website_name || "Sell1Mall"}
+              src="/sell1mall-logo.png"
+              alt="Sell1Mall"
               className="w-64 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
-              }}
             />
             <div className="min-w-0">
               <h1 className="text-xl font-bold text-primary truncate">{settings.website_name || "Sell1Mall"}</h1>
-              <p className="text-sm text-muted-foreground mt-1">Seller Dashboard</p>
             </div>
           </div>
           <button
@@ -79,16 +75,12 @@ export function SellerSidebar({ isMobileMenuOpen, onMobileMenuClose }: SellerSid
         <div className="hidden lg:block p-6 border-b border-border">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src={settings.logo_url || "/sell1mall-logo.png"}
-              alt={settings.website_name || "Sell1Mall"}
+              src="/sell1mall-logo.png"
+              alt="Sell1Mall"
               className="w-64 object-contain"
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
-              }}
             />
             <div className="min-w-0">
               <h1 className="text-xl font-bold text-primary truncate">{settings.website_name || "Sell1Mall"}</h1>
-              <p className="text-sm text-muted-foreground mt-1">Seller Dashboard</p>
             </div>
           </div>
         </div>

@@ -376,15 +376,19 @@ class ProductController {
     }
 
     private function normalizeProductStatus($product) {
+        // First check if is_active is explicitly set to 0
         if (isset($product['is_active']) && (int)$product['is_active'] === 0) {
             return 'Inactive';
         }
+        // Then check if is_published is explicitly set to 0
         if (isset($product['is_published']) && (int)$product['is_published'] === 0) {
             return 'Inactive';
         }
-        if (isset($product['status']) && strtolower((string)$product['status']) !== 'active') {
+        // Check status field only if is_active is not set
+        if (!isset($product['is_active']) && isset($product['status']) && strtolower((string)$product['status']) !== 'active') {
             return 'Inactive';
         }
+        // Check stock only if product is marked as active
         $stock = (int)($product['stock'] ?? ($product['quantity'] ?? 0));
         if ($stock <= 0) {
             return 'Out of Stock';
@@ -471,6 +475,7 @@ class ProductController {
                 'stock' => (int)($row['stock'] ?? ($row['quantity'] ?? 0)),
                 'category' => $row['category_name'] ?? '',
                 'status' => $this->normalizeProductStatus($row),
+                'is_active' => isset($row['is_active']) ? (int)$row['is_active'] : 1,
                 'created_at' => $row['created_at'],
                 'image_url' => $row['image_url'] ?? null,
                 'description' => $row['description'] ?? ''
