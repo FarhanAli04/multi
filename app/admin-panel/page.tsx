@@ -15,8 +15,10 @@ import {
 import { Users, Store, ShoppingCart, DollarSign, AlertCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { formatCurrency } from "@/lib/utils"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 export default function AdminPanelDashboard() {
+  const { settings } = useRealtime()
   const [stats, setStats] = useState<any>(null)
   const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -151,7 +153,7 @@ export default function AdminPanelDashboard() {
     <div className="space-y-6 md:space-y-8">
       <div>
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-2 text-sm md:text-base">Welcome to the Syed Asad Raza Admin Panel</p>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base">Welcome to the {settings.website_name || "Sell1Mall"} Admin Panel</p>
       </div>
 
       {isLoading && <div className="text-muted-foreground">Loading dashboard...</div>}

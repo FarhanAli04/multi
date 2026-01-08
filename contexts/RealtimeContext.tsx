@@ -7,6 +7,7 @@ interface WebsiteSettings {
   tagline: string
   logo_url: string | null
   favicon_url: string | null
+  homepage_settings?: any
   currency: string
   timezone: string
   email: string
@@ -24,13 +25,14 @@ interface RealtimeContextType {
 }
 
 const defaultSettings: WebsiteSettings = {
-  website_name: "Syed Asad Raza",
+  website_name: "Sell1Mall",
   tagline: "Your Premier Multi-Vendor Marketplace",
   logo_url: null,
   favicon_url: null,
+  homepage_settings: {},
   currency: "USDT",
   timezone: "UTC",
-  email: "admin@sar.com",
+  email: "admin@sell1mall.com",
   phone: "+1 234 567 8900",
   address: "123 Business Street, City, Country",
   refund_policy: "",

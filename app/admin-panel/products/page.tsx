@@ -10,6 +10,29 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatCurrency } from "@/lib/utils"
 
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+
+  if (raw.startsWith("//")) return `https:${raw}`
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+  if (raw.startsWith("uploads/")) return `/${raw}`
+  if (raw.startsWith("/uploads/")) return raw
+
+  return raw
+}
+
 interface Product {
   id: number;
   name: string;
@@ -338,8 +361,21 @@ export default function ProductsManagement() {
                   <tr key={product.id} className="border-b border-border hover:bg-muted/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center">
-                          <Package size={20} className="text-muted-foreground" />
+                        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                          {product.image ? (
+                            <img
+                              src={resolvePublicImageUrl(product.image) || "/placeholder.svg"}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const el = e.currentTarget
+                                if (el.src.endsWith("/placeholder.svg")) return
+                                el.src = "/placeholder.svg"
+                              }}
+                            />
+                          ) : (
+                            <Package size={20} className="text-muted-foreground" />
+                          )}
                         </div>
                         <div>
                           <p className="font-semibold">{product.name}</p>

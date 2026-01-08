@@ -8,6 +8,32 @@ import { Input } from "@/components/ui/input"
 import { Search, Plus, MoreVertical, Edit, Trash2, Eye } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+  if (raw.startsWith("//")) return `https:${raw}`
+
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+
+  const normalized = raw.startsWith("uploads/") ? `/${raw}` : raw
+  if (normalized.startsWith("/uploads/")) {
+    return normalized
+  }
+
+  return normalized
+}
+
 interface Product {
   id: number
   name: string
@@ -16,6 +42,7 @@ interface Product {
   category: string
   status: "Active" | "Inactive" | "Out of Stock"
   createdAt: string
+  image_url?: string
 }
 
 export default function SellerProductsPage() {
@@ -43,6 +70,8 @@ export default function SellerProductsPage() {
     image_url: "",
     is_active: true,
   })
+  const [addImageFile, setAddImageFile] = useState<File | null>(null)
+  const [addImagePreview, setAddImagePreview] = useState("")
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -53,6 +82,8 @@ export default function SellerProductsPage() {
     description: "",
     image_url: "",
   })
+  const [editImageFile, setEditImageFile] = useState<File | null>(null)
+  const [editImagePreview, setEditImagePreview] = useState("")
 
   const loadProducts = async () => {
     try {
@@ -71,6 +102,7 @@ export default function SellerProductsPage() {
         category: p.category || "",
         status: p.status as Product["status"],
         createdAt: p.created_at ? new Date(p.created_at).toISOString().slice(0, 10) : "",
+        image_url: p.image_url,
       }))
       setProducts(mapped)
     } catch (e: any) {
@@ -123,6 +155,8 @@ export default function SellerProductsPage() {
       description: "",
       image_url: "",
     })
+    setEditImageFile(null)
+    setEditImagePreview("")
     setShowEditModal(true)
   }
 
@@ -161,13 +195,28 @@ export default function SellerProductsPage() {
     try {
       setIsLoading(true)
       setError("")
+      let imageUrl = addForm.image_url
+      if (addImageFile) {
+        const formData = new FormData()
+        formData.append("type", "product")
+        formData.append("file", addImageFile)
+        const uploadRes = await fetch("/api/backend/settings/upload", {
+          method: "POST",
+          body: formData,
+        })
+        const uploadData = await uploadRes.json().catch(() => null)
+        if (!uploadRes.ok || !uploadData?.success || !uploadData?.url) {
+          throw new Error(uploadData?.message || uploadData?.error || "Failed to upload image")
+        }
+        imageUrl = String(uploadData.url)
+      }
       const payload: any = {
         name: addForm.name,
         price: Number(addForm.price),
         stock: Number(addForm.stock),
         category: addForm.category,
         description: addForm.description,
-        image_url: addForm.image_url,
+        image_url: imageUrl,
         is_active: addForm.is_active,
       }
       const res = await fetch("/api/backend/seller/products", {
@@ -181,6 +230,8 @@ export default function SellerProductsPage() {
       }
       setShowAddModal(false)
       setAddForm({ name: "", price: "", stock: "", category: "", description: "", image_url: "", is_active: true })
+      setAddImageFile(null)
+      setAddImagePreview("")
       await loadProducts()
     } catch (e: any) {
       setError(e?.message || "Failed to add product")
@@ -284,7 +335,7 @@ export default function SellerProductsPage() {
                   </label>
                   <select
                     id="status"
-                    className="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="input w-full"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
@@ -301,7 +352,7 @@ export default function SellerProductsPage() {
                   </label>
                   <select
                     id="category"
-                    className="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="input w-full"
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
                   >
@@ -350,8 +401,21 @@ export default function SellerProductsPage() {
                         <tr key={product.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
-                                <span className="text-gray-500 text-xs">IMG</span>
+                              <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden bg-gray-100 border border-gray-300">
+                                {product.image_url ? (
+                                  <img
+                                    src={resolvePublicImageUrl(product.image_url) || "/placeholder.svg"}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                      const el = e.currentTarget
+                                      if (el.src.endsWith("/placeholder.svg")) return
+                                      el.src = "/placeholder.svg"
+                                    }}
+                                  />
+                                ) : (
+                                  <span className="text-gray-500 text-xs">IMG</span>
+                                )}
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">{product.name}</div>
@@ -487,7 +551,7 @@ export default function SellerProductsPage() {
                     </label>
                     <select
                       id="category"
-                      className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="input mt-1 block w-full"
                       value={addForm.category}
                       onChange={(e) => setAddForm((p) => ({ ...p, category: e.target.value }))}
                     >
@@ -508,7 +572,7 @@ export default function SellerProductsPage() {
                   <textarea
                     id="description"
                     rows={3}
-                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                    className="input mt-1 block w-full resize-none"
                     placeholder="Enter product description"
                     value={addForm.description}
                     onChange={(e) => setAddForm((p) => ({ ...p, description: e.target.value }))}
@@ -516,19 +580,43 @@ export default function SellerProductsPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Product Images</label>
-                  <div className="mt-1 flex items-center">
-                    <span className="inline-block h-12 w-12 rounded-md overflow-hidden bg-gray-100">
-                      <svg className="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </span>
-                    <button
-                      type="button"
-                      className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                  <div className="mt-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="add-product-image"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setAddImageFile(file)
+                          const reader = new FileReader()
+                          reader.onload = () => setAddImagePreview(reader.result as string)
+                          reader.readAsDataURL(file)
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="add-product-image"
+                      className="flex items-center gap-3 cursor-pointer"
                     >
-                      Upload
-                    </button>
+                      <span className="inline-block h-16 w-16 rounded-md overflow-hidden bg-gray-100 border border-gray-300 flex items-center justify-center">
+                        {addImagePreview ? (
+                          <img src={addImagePreview} alt="Preview" className="h-full w-full object-cover" />
+                        ) : (
+                          <svg className="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        {addImageFile ? addImageFile.name : "Choose Image"}
+                      </button>
+                    </label>
                   </div>
                 </div>
               </div>
@@ -619,7 +707,7 @@ export default function SellerProductsPage() {
                     </label>
                     <select
                       id="edit-category"
-                      className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="input mt-1 block w-full"
                       value={editForm.category}
                       onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))}
                     >
@@ -637,7 +725,7 @@ export default function SellerProductsPage() {
                     </label>
                     <select
                       id="edit-status"
-                      className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="input mt-1 block w-full"
                       value={editForm.status}
                       onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as Product["status"] }))}
                     >
@@ -655,7 +743,7 @@ export default function SellerProductsPage() {
                   <textarea
                     id="edit-description"
                     rows={3}
-                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                    className="input mt-1 block w-full resize-none"
                     placeholder="Enter product description"
                     value={editForm.description}
                     onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}

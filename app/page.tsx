@@ -5,10 +5,39 @@ import { ShoppingCart, Users, TrendingUp, Zap, ArrowRight, Star, Shield, Truck, 
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRealtime } from "@/contexts/RealtimeContext"
 import { useState } from "react"
+import Image from "next/image"
+import heroBanner from "../public/Home.jpg"
+
+
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+
+  if (raw.startsWith("//")) return `https:${raw}`
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+  if (raw.startsWith("uploads/")) return `/${raw}`
+  if (raw.startsWith("/uploads/")) return raw
+
+  return raw
+}
 
 export default function Home() {
   const { settings } = useRealtime()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const heroBannerUrl = resolvePublicImageUrl((settings as any)?.homepage_settings?.hero_banner_url)
+  const logoUrl = resolvePublicImageUrl((settings as any)?.logo_url)
   
   return (
     <div className="min-h-screen bg-background">
@@ -18,9 +47,16 @@ export default function Home() {
           <div className="h-16 flex items-center justify-between gap-3 min-w-0">
             <Link
               href="/"
-              className="text-xl sm:text-2xl font-bold text-primary truncate min-w-0 max-w-[55vw] sm:max-w-none"
+              className="inline-flex items-center text-xl sm:text-2xl font-bold text-primary truncate min-w-0 max-w-[55vw] sm:max-w-none"
             >
-              {settings.website_name || "Your Store"}
+              <img
+                src={logoUrl || "/sell1mall-logo.png"}
+                alt={settings.website_name || "Sell1Mall"}
+                className="w-64 object-contain"
+                onError={(e) => {
+                  ;(e.currentTarget as HTMLImageElement).src = "/placeholder.svg"
+                }}
+              />
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-4">
@@ -140,10 +176,18 @@ export default function Home() {
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl blur-3xl"></div>
-            <img
-              src="/e-commerce-marketplace-dashboard.jpg"
-              alt="SAR Store Platform"
+            <Image
+              src={heroBannerUrl || heroBanner}
+              alt={`${settings.website_name || "Sell1Mall"} Platform`}
               className="relative w-full h-full object-cover rounded-2xl shadow-xl"
+              width={800}
+              height={600}
+              priority
+              onError={(e) => {
+                const el = e.currentTarget as HTMLImageElement
+                if (el.src.endsWith("/placeholder.svg")) return
+                el.src = "/placeholder.svg"
+              }}
             />
           </div>
         </div>
@@ -153,7 +197,7 @@ export default function Home() {
       <section className="bg-card border-y border-border py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 space-y-4">
-            <h2>Why Choose SAR Store?</h2>
+            <h2>Why Choose {settings.website_name || "Sell1Mall"}?</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need to shop smart and sell successfully
             </p>

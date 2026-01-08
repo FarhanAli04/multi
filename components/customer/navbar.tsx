@@ -2,9 +2,37 @@
 
 import Link from "next/link"
 import { ShoppingCart, Search, User, Heart, Menu, X, MessageCircle } from "lucide-react"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useRealtime } from "@/contexts/RealtimeContext"
+
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+
+  if (raw.startsWith("//")) return `https:${raw}`
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+  if (raw.startsWith("uploads/")) return `/${raw}`
+  if (raw.startsWith("/uploads/")) return raw
+
+  return raw
+}
 
 export function CustomerNavbar() {
+  const { settings } = useRealtime()
+  const pathname = usePathname()
+  const isHome = pathname === "/"
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState<number>(0)
 
@@ -52,8 +80,15 @@ export function CustomerNavbar() {
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-primary truncate">
-              SAR Store
+            <Link href="/" className="inline-flex items-center gap-2 text-xl sm:text-2xl font-bold text-primary truncate">
+              <img
+                src={resolvePublicImageUrl(settings.logo_url) || "/sell1mall-logo.png"}
+                alt={settings.website_name || "Sell1Mall"}
+                className="h-7 w-7 object-contain"
+                onError={(e) => {
+                  ;(e.currentTarget as HTMLImageElement).src = "/placeholder.svg"
+                }}
+              />
             </Link>
           </div>
 

@@ -20,6 +20,74 @@ class SettingsController {
         }
     }
 
+    public function uploadAsset() {
+        try {
+            $type = isset($_POST['type']) ? strtolower(trim((string)$_POST['type'])) : '';
+            if (!$type) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'type is required']);
+                return;
+            }
+
+            if (!isset($_FILES['file']) || !is_array($_FILES['file'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'file is required']);
+                return;
+            }
+
+            $file = $_FILES['file'];
+            if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Upload failed']);
+                return;
+            }
+
+            $allowedTypes = ['logo', 'favicon', 'homepage_banner', 'product'];
+            if (!in_array($type, $allowedTypes, true)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid type']);
+                return;
+            }
+
+            $originalName = (string)($file['name'] ?? '');
+            $tmpName = (string)($file['tmp_name'] ?? '');
+            $mime = (string)($file['type'] ?? '');
+
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            if (!$ext) $ext = 'png';
+
+            $allowedExt = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'ico'];
+            if (!in_array($ext, $allowedExt, true)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Unsupported file type']);
+                return;
+            }
+
+            $uploadDir = __DIR__ . '/../uploads/settings';
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0775, true);
+            }
+
+            $safeType = preg_replace('/[^a-z0-9_\-]+/i', '_', $type);
+            $unique = bin2hex(random_bytes(8));
+            $filename = $safeType . '_' . $unique . '.' . $ext;
+            $targetPath = $uploadDir . '/' . $filename;
+
+            if (!move_uploaded_file($tmpName, $targetPath)) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to save uploaded file']);
+                return;
+            }
+
+            $url = '/uploads/settings/' . $filename;
+
+            echo json_encode(['success' => true, 'url' => $url, 'type' => $type, 'mime' => $mime]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error uploading file: ' . $e->getMessage()]);
+        }
+    }
+
     private function decodeJsonField(&$settings, $field, $default) {
         if (!array_key_exists($field, $settings) || $settings[$field] === null || $settings[$field] === '') {
             $settings[$field] = $default;
@@ -41,6 +109,7 @@ class SettingsController {
             $this->ensureColumnExists($conn, 'font_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'seo_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'menu_settings', 'LONGTEXT NULL');
+            $this->ensureColumnExists($conn, 'homepage_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'cache_settings', 'LONGTEXT NULL');
             
             $stmt = $conn->prepare("SELECT * FROM website_settings LIMIT 1");
@@ -57,6 +126,7 @@ class SettingsController {
             $this->decodeJsonField($settings, 'font_settings', []);
             $this->decodeJsonField($settings, 'seo_settings', []);
             $this->decodeJsonField($settings, 'menu_settings', []);
+            $this->decodeJsonField($settings, 'homepage_settings', []);
             $this->decodeJsonField($settings, 'cache_settings', []);
             
             header('Content-Type: application/json');
@@ -94,13 +164,14 @@ class SettingsController {
             $this->ensureColumnExists($conn, 'font_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'seo_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'menu_settings', 'LONGTEXT NULL');
+            $this->ensureColumnExists($conn, 'homepage_settings', 'LONGTEXT NULL');
             $this->ensureColumnExists($conn, 'cache_settings', 'LONGTEXT NULL');
             
             $allowed_fields = [
                 'website_name', 'tagline', 'currency', 'timezone', 
                 'email', 'phone', 'address', 'refund_policy', 
                 'return_policy', 'terms_conditions', 'logo_url', 'favicon_url',
-                'font_settings', 'seo_settings', 'menu_settings', 'cache_settings'
+                'font_settings', 'seo_settings', 'menu_settings', 'cache_settings', 'homepage_settings'
             ];
             
             $update_fields = [];
@@ -135,6 +206,7 @@ class SettingsController {
             $this->decodeJsonField($updated_settings, 'font_settings', []);
             $this->decodeJsonField($updated_settings, 'seo_settings', []);
             $this->decodeJsonField($updated_settings, 'menu_settings', []);
+            $this->decodeJsonField($updated_settings, 'homepage_settings', []);
             $this->decodeJsonField($updated_settings, 'cache_settings', []);
             
             header('Content-Type: application/json');
@@ -157,11 +229,11 @@ class SettingsController {
     private function createSettingsTableIfNotExists($conn) {
         $sql = "CREATE TABLE IF NOT EXISTS website_settings (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            website_name VARCHAR(255) DEFAULT 'Syed Asad Raza',
+            website_name VARCHAR(255) DEFAULT 'Sell1Mall',
             tagline TEXT DEFAULT 'Your Premier Multi-Vendor Marketplace',
             currency VARCHAR(10) DEFAULT 'USDT',
             timezone VARCHAR(50) DEFAULT 'UTC',
-            email VARCHAR(255) DEFAULT 'admin@sar.com',
+            email VARCHAR(255) DEFAULT 'admin@sell1mall.com',
             phone VARCHAR(50) DEFAULT '+1 234 567 8900',
             address TEXT DEFAULT '123 Business Street, City, Country',
             refund_policy TEXT,
@@ -172,6 +244,7 @@ class SettingsController {
             font_settings LONGTEXT,
             seo_settings LONGTEXT,
             menu_settings LONGTEXT,
+            homepage_settings LONGTEXT,
             cache_settings LONGTEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -182,11 +255,11 @@ class SettingsController {
 
     private function getDefaultSettings() {
         return [
-            'website_name' => 'Syed Asad Raza',
+            'website_name' => 'Sell1Mall',
             'tagline' => 'Your Premier Multi-Vendor Marketplace',
             'currency' => 'USDT',
             'timezone' => 'UTC',
-            'email' => 'admin@sar.com',
+            'email' => 'admin@sell1mall.com',
             'phone' => '+1 234 567 8900',
             'address' => '123 Business Street, City, Country',
             'refund_policy' => '',
@@ -197,14 +270,15 @@ class SettingsController {
             'font_settings' => [],
             'seo_settings' => [],
             'menu_settings' => [],
+            'homepage_settings' => [],
             'cache_settings' => []
         ];
     }
 
     private function insertDefaultSettings($conn) {
         $defaults = $this->getDefaultSettings();
-        $sql = "INSERT INTO website_settings (website_name, tagline, currency, timezone, email, phone, address, font_settings, seo_settings, menu_settings, cache_settings) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO website_settings (website_name, tagline, currency, timezone, email, phone, address, font_settings, seo_settings, menu_settings, homepage_settings, cache_settings) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             $defaults['website_name'],
@@ -217,6 +291,7 @@ class SettingsController {
             json_encode($defaults['font_settings']),
             json_encode($defaults['seo_settings']),
             json_encode($defaults['menu_settings']),
+            json_encode($defaults['homepage_settings']),
             json_encode($defaults['cache_settings'])
         ]);
     }

@@ -5,6 +5,30 @@ import { Truck, Wallet, AlertCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { useRealtime } from "@/contexts/RealtimeContext"
+
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+
+  if (raw.startsWith("//")) return `https:${raw}`
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+  if (raw.startsWith("uploads/")) return `/${raw}`
+  if (raw.startsWith("/uploads/")) return raw
+
+  return raw
+}
 
 type CartItem = {
   product_id: number
@@ -16,6 +40,7 @@ type CartItem = {
 }
 
 export default function CheckoutPage() {
+  const { settings } = useRealtime()
   const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "online">("online")
   const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -241,6 +266,30 @@ export default function CheckoutPage() {
             <div className="card sticky top-20">
               <h3 className="text-lg font-bold mb-6">Order Summary</h3>
 
+              {cartItems.length > 0 ? (
+                <div className="space-y-4 mb-6">
+                  {cartItems.map((item) => (
+                    <div key={item.product_id} className="flex items-center gap-3">
+                      <img
+                        src={resolvePublicImageUrl(item.image_url) || "/placeholder.svg"}
+                        alt={item.name || "Product"}
+                        className="w-12 h-12 rounded-md object-cover bg-muted"
+                        onError={(e) => {
+                          const el = e.currentTarget
+                          if (el.src.endsWith("/placeholder.svg")) return
+                          el.src = "/placeholder.svg"
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{item.name || "Product"}</div>
+                        <div className="text-xs text-muted-foreground">Qty: {Number(item.quantity || 0)}</div>
+                      </div>
+                      <div className="text-sm font-medium">{formatCurrency((Number(item.price || 0) || 0) * (Number(item.quantity || 0) || 0))}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               <div className="space-y-3 pb-6 border-b border-border">
                 <div className="flex justify-between text-sm">
                   <span>{isLoading ? "Loading..." : `${itemCount} item(s)`}</span>
@@ -279,7 +328,7 @@ export default function CheckoutPage() {
 
               <div className="mt-4 p-4 bg-muted rounded-lg text-center">
                 <p className="text-xs text-muted-foreground mb-2">Your order is secure & encrypted</p>
-                <p className="text-xs font-medium text-foreground">Syed Asad Raza</p>
+                <p className="text-xs font-medium text-foreground">{settings.website_name || "Sell1Mall"}</p>
               </div>
             </div>
           </div>

@@ -32,6 +32,7 @@ async function proxy(request: NextRequest, context: RouteContext) {
 
   const headers = new Headers(request.headers)
   headers.delete("host")
+  headers.delete("content-length")
 
   const cookieStore = await cookies()
   const authToken = cookieStore.get("auth_token")?.value
@@ -42,9 +43,15 @@ async function proxy(request: NextRequest, context: RouteContext) {
     headers.set("Authorization", `Bearer ${tokenToUse}`)
   }
 
-  let body: string | undefined
+  let body: BodyInit | undefined
   if (request.method !== "GET" && request.method !== "HEAD") {
-    body = await request.text()
+    const contentType = request.headers.get("content-type") || ""
+    if (/multipart\/form-data/i.test(contentType)) {
+      const ab = await request.arrayBuffer()
+      body = new Uint8Array(ab)
+    } else {
+      body = await request.text()
+    }
   }
 
   let response: Response

@@ -63,6 +63,22 @@ export default function GeneralSettings() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
 
+  const uploadAsset = async (type: "logo" | "favicon", file: File) => {
+    const formData = new FormData()
+    formData.append("type", type)
+    formData.append("file", file)
+
+    const res = await fetch("/api/backend/settings/upload", {
+      method: "POST",
+      body: formData,
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok || !data?.success || !data?.url) {
+      throw new Error(data?.message || data?.error || "Failed to upload file")
+    }
+    return String(data.url)
+  }
+
   const handleInputChange = (field: keyof GeneralSettings, value: string) => {
     setSettings(prev => ({ ...prev, [field]: value }))
   }
@@ -76,7 +92,7 @@ export default function GeneralSettings() {
     setSaveMessage("")
     
     // Update real-time settings with database field names
-    const realtimeUpdate = {
+    const realtimeUpdate: any = {
       website_name: settings.websiteName,
       tagline: settings.tagline,
       currency: settings.currency,
@@ -88,14 +104,29 @@ export default function GeneralSettings() {
       return_policy: settings.returnPolicy,
       terms_conditions: settings.termsConditions
     }
-    
-    // Send real-time update
-    updateSettings(realtimeUpdate)
-    
-    setIsSaving(false)
-    setSaveMessage(`Settings saved successfully! ${isConnected ? "(Real-time updates enabled)" : "(Real-time disconnected)"}`)
-    
-    // Clear message after 3 seconds
+
+    try {
+      if (settings.logo) {
+        realtimeUpdate.logo_url = await uploadAsset("logo", settings.logo)
+      }
+      if (settings.favicon) {
+        realtimeUpdate.favicon_url = await uploadAsset("favicon", settings.favicon)
+      }
+
+      // Send real-time update
+      updateSettings(realtimeUpdate)
+
+      setSaveMessage(`Settings saved successfully! ${isConnected ? "(Real-time updates enabled)" : "(Real-time disconnected)"}`)
+      setSettings((prev) => ({
+        ...prev,
+        logo: null,
+        favicon: null,
+      }))
+    } catch (e: any) {
+      setSaveMessage(e?.message || "Failed to save settings")
+    } finally {
+      setIsSaving(false)
+    }
     setTimeout(() => setSaveMessage(""), 3000)
   }
 
@@ -150,7 +181,11 @@ export default function GeneralSettings() {
                 <label htmlFor="logo-upload" className="cursor-pointer">
                   <Upload size={32} className="mx-auto text-muted-foreground mb-2" />
                   <p className="text-sm">
-                    {settings.logo ? settings.logo.name : "Click to upload logo"}
+                    {settings.logo
+                      ? settings.logo.name
+                      : realtimeSettings.logo_url
+                        ? "Current logo is set"
+                        : "Click to upload logo"}
                   </p>
                 </label>
               </div>
@@ -169,7 +204,11 @@ export default function GeneralSettings() {
                 <label htmlFor="favicon-upload" className="cursor-pointer">
                   <Upload size={32} className="mx-auto text-muted-foreground mb-2" />
                   <p className="text-sm">
-                    {settings.favicon ? settings.favicon.name : "Click to upload favicon"}
+                    {settings.favicon
+                      ? settings.favicon.name
+                      : realtimeSettings.favicon_url
+                        ? "Current favicon is set"
+                        : "Click to upload favicon"}
                   </p>
                 </label>
               </div>

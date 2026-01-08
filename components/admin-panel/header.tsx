@@ -91,7 +91,7 @@ export function AdminPanelHeader() {
       icon: <AlertTriangle className="h-4 w-4 text-yellow-600" />
     }
   ])
-  const [adminEmail, setAdminEmail] = useState("admin@sarstore.com")
+  const [adminEmail, setAdminEmail] = useState("admin@sell1mall.com")
   const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
 

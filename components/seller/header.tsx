@@ -2,6 +2,7 @@
 
 import { Bell, User, Menu, X } from "lucide-react"
 import { useState } from "react"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 interface SellerHeaderProps {
   onMobileMenuToggle: () => void
@@ -9,6 +10,7 @@ interface SellerHeaderProps {
 }
 
 export function SellerHeader({ onMobileMenuToggle, isMobileMenuOpen }: SellerHeaderProps) {
+  const { settings } = useRealtime()
   return (
     <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
       <div className="flex items-center gap-4">
@@ -21,7 +23,7 @@ export function SellerHeader({ onMobileMenuToggle, isMobileMenuOpen }: SellerHea
         </button>
         
         <div>
-          <h2 className="text-lg font-semibold text-foreground truncate">Welcome to Your Store</h2>
+          <h2 className="text-lg font-semibold text-foreground truncate">Welcome to {settings.website_name || "Sell1Mall"}</h2>
         </div>
       </div>
 

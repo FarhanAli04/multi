@@ -26,6 +26,7 @@ import {
   ChevronRight
 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 interface MenuItem {
   href: string;
@@ -35,6 +36,7 @@ interface MenuItem {
 }
 
 export function AdminPanelSidebar() {
+  const { settings } = useRealtime()
   const pathname = usePathname()
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
@@ -157,7 +159,17 @@ export function AdminPanelSidebar() {
         className={`admin-panel-sidebar ${sidebarOpen ? 'open' : ''}`}
       >
         <div className="admin-panel-sidebar-header">
-          <h1 className="admin-panel-title">SAR Admin</h1>
+          <div className="flex items-center gap-3">
+            <img
+              src={settings.logo_url || "/sell1mall-logo.png"}
+              alt={settings.website_name || "Sell1Mall"}
+              className="w-64 object-contain"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
+              }}
+            />
+            <h1 className="admin-panel-title">{settings.website_name || "Sell1Mall"}</h1>
+          </div>
           <p className="admin-panel-subtitle">Admin Dashboard</p>
         </div>
 

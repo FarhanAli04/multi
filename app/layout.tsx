@@ -10,8 +10,8 @@ import { ChatWidget } from "@/components/chat/chat-widget"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Syed Asad Raza - Multi-Vendor Marketplace",
-  description: "Professional e-commerce platform for vendors and customers",
+  title: "Sell1Mall - Multi-Vendor Marketplace",
+  description: "Multi-vendor e-commerce platform for vendors and customers",
   generator: "v0.app",
   icons: {
     icon: [

@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
 import { Mail, Lock, Eye, EyeOff, User, Phone, Store, FileText, AlertCircle, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 function RegisterPageInner() {
+  const { settings } = useRealtime()
   const searchParams = useSearchParams()
   const roleParam = searchParams.get("role") || "customer"
   const [role, setRole] = useState<"customer" | "seller">(roleParam as "customer" | "seller")
@@ -141,7 +143,7 @@ function RegisterPageInner() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-primary mb-4 inline-block">
-            SAR Store
+            {settings.website_name || "Sell1Mall"}
           </Link>
           <h1 className="text-2xl font-bold">Create Account</h1>
           <p className="text-muted-foreground mt-2">

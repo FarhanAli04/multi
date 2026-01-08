@@ -4,8 +4,10 @@ import type React from "react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 export default function AdminLoginPage() {
+  const { settings } = useRealtime()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -56,7 +58,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-primary mb-4 inline-block">
-            SAR Store
+            {settings.website_name || "Sell1Mall"}
           </Link>
           <h1 className="text-2xl font-bold">Admin Panel Login</h1>
           <p className="text-muted-foreground mt-2">Restricted access for administrators only</p>

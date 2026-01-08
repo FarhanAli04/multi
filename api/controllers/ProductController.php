@@ -243,7 +243,10 @@ class ProductController {
         }
 
         $search = $_GET['search'] ?? '';
-        $category = $_GET['category'] ?? '';
+        $categoryParam = trim((string)($_GET['category'] ?? ''));
+        $categories = array_values(array_filter(array_unique(array_map('trim', explode(',', $categoryParam))), function ($v) {
+            return $v !== '';
+        }));
         $minPrice = $_GET['min_price'] ?? 0;
         $maxPrice = $_GET['max_price'] ?? 999999;
         $rating = $_GET['rating'] ?? 0;
@@ -253,7 +256,7 @@ class ProductController {
         $offset = $_GET['offset'] ?? 0;
 
         try {
-            $products = $this->runWithIsActiveFallback(function () use ($search, $category, $minPrice, $maxPrice, $rating, $sortBy, $order, $limit, $offset) {
+            $products = $this->runWithIsActiveFallback(function () use ($search, $categories, $minPrice, $maxPrice, $rating, $sortBy, $order, $limit, $offset) {
                 $activeProduct = $this->activeProductCondition('p');
                 $inStock = $this->inStockCondition('p');
                 $stockSelect = $this->stockSelectExpr('p');
@@ -264,8 +267,13 @@ class ProductController {
                 if ($this->hasProductColumn('category_id')) {
                     $categoryJoin = 'LEFT JOIN categories c ON p.category_id = c.id';
                     $categorySelect = 'c.name as category_name';
-                    if (!empty($category)) {
-                        $categoryWhere = ' AND c.name = ?';
+                    if (!empty($categories)) {
+                        if (count($categories) > 1) {
+                            $placeholders = implode(',', array_fill(0, count($categories), '?'));
+                            $categoryWhere = " AND c.name IN ({$placeholders})";
+                        } else {
+                            $categoryWhere = ' AND c.name = ?';
+                        }
                     }
                 }
 
@@ -295,9 +303,11 @@ class ProductController {
                     $params[] = $searchParam;
                 }
 
-                if (!empty($category) && $categoryWhere !== '') {
+                if (!empty($categories) && $categoryWhere !== '') {
                     $sql .= $categoryWhere;
-                    $params[] = $category;
+                    foreach ($categories as $catName) {
+                        $params[] = $catName;
+                    }
                 }
 
                 if ($minPrice > 0) {
@@ -838,19 +848,8 @@ class ProductController {
     }
 
     private function deleteAdminProduct($user, $productId) {
-        if ($this->hasProductColumn('is_active')) {
-            $stmt = $this->db->prepare("UPDATE products SET is_active = 0" . ($this->hasProductColumn('updated_at') ? ", updated_at = NOW()" : "") . " WHERE id = ?");
-            $stmt->execute([(int)$productId]);
-        } elseif ($this->hasProductColumn('status')) {
-            $stmt = $this->db->prepare("UPDATE products SET status = ?" . ($this->hasProductColumn('updated_at') ? ", updated_at = NOW()" : "") . " WHERE id = ?");
-            $stmt->execute(['inactive', (int)$productId]);
-        } elseif ($this->hasProductColumn('is_published')) {
-            $stmt = $this->db->prepare("UPDATE products SET is_published = 0" . ($this->hasProductColumn('updated_at') ? ", updated_at = NOW()" : "") . " WHERE id = ?");
-            $stmt->execute([(int)$productId]);
-        } else {
-            $stmt = $this->db->prepare("DELETE FROM products WHERE id = ?");
-            $stmt->execute([(int)$productId]);
-        }
+        $stmt = $this->db->prepare("DELETE FROM products WHERE id = ?");
+        $stmt->execute([(int)$productId]);
         echo json_encode(['success' => true]);
     }
 

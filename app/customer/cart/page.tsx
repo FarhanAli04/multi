@@ -6,6 +6,29 @@ import { Trash2, Plus, Minus } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
+function resolvePublicImageUrl(src: string | undefined) {
+  const raw = String(src || "").trim()
+  if (!raw) return ""
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return raw
+  }
+
+  if (raw.startsWith("//")) return `https:${raw}`
+  if (raw.startsWith("/api/uploads/")) return raw.replace("/api/uploads/", "/uploads/")
+  if (raw.startsWith("api/uploads/")) return `/${raw.replace("api/uploads/", "uploads/")}`
+  if (raw.startsWith("uploads/")) return `/${raw}`
+  if (raw.startsWith("/uploads/")) return raw
+
+  return raw
+}
+
 type CartItem = {
   product_id: number
   quantity: number
@@ -116,9 +139,14 @@ export default function CartPage() {
                     className="flex gap-6 pb-6 border-b border-border last:pb-0 last:border-b-0"
                   >
                   <img
-                    src={item.image_url || "/placeholder.svg"}
+                    src={resolvePublicImageUrl(item.image_url) || "/placeholder.svg"}
                     alt={item.name || "Product"}
                     className="w-24 h-24 object-cover rounded-lg bg-muted"
+                    onError={(e) => {
+                      const el = e.currentTarget
+                      if (el.src.endsWith("/placeholder.svg")) return
+                      el.src = "/placeholder.svg"
+                    }}
                   />
 
                   <div className="flex-1">

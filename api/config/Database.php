@@ -422,6 +422,14 @@ class Database {
                     }
 
                     if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM products LIKE 'image_url'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+
+                    if (!$shouldEnsureSchema) {
                         $stmt = $this->conn->prepare("SHOW TABLES LIKE 'conversation_participants'");
                         $stmt->execute();
                         if (!$stmt->fetch(PDO::FETCH_NUM)) {
@@ -484,6 +492,14 @@ class Database {
 
                     if (!$shouldEnsureSchema) {
                         $stmt = $this->conn->prepare("SHOW COLUMNS FROM messages LIKE 'content'");
+                        $stmt->execute();
+                        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $shouldEnsureSchema = true;
+                        }
+                    }
+
+                    if (!$shouldEnsureSchema) {
+                        $stmt = $this->conn->prepare("SHOW COLUMNS FROM products LIKE 'image_url'");
                         $stmt->execute();
                         if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
                             $shouldEnsureSchema = true;

@@ -6,8 +6,10 @@ import Link from "next/link"
 import { Suspense, useEffect, useState } from "react"
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 function LoginPageInner() {
+  const { settings } = useRealtime()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -106,7 +108,7 @@ function LoginPageInner() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-primary mb-4 inline-block">
-            SAR Store
+            {settings.website_name || "Sell1Mall"}
           </Link>
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">

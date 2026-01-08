@@ -13,6 +13,7 @@ import {
   LogOut,
   X,
 } from "lucide-react"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 interface SellerSidebarProps {
   isMobileMenuOpen: boolean
@@ -20,6 +21,7 @@ interface SellerSidebarProps {
 }
 
 export function SellerSidebar({ isMobileMenuOpen, onMobileMenuClose }: SellerSidebarProps) {
+  const { settings } = useRealtime()
   const pathname = usePathname()
 
   const menuItems = [
@@ -51,9 +53,19 @@ export function SellerSidebar({ isMobileMenuOpen, onMobileMenuClose }: SellerSid
       `}>
         {/* Mobile close button */}
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
-          <div>
-            <h1 className="text-xl font-bold text-primary">Seller Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">Your Business</p>
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src={settings.logo_url || "/sell1mall-logo.png"}
+              alt={settings.website_name || "Sell1Mall"}
+              className="w-64 object-contain"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
+              }}
+            />
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-primary truncate">{settings.website_name || "Sell1Mall"}</h1>
+              <p className="text-sm text-muted-foreground mt-1">Seller Dashboard</p>
+            </div>
           </div>
           <button
             onClick={onMobileMenuClose}
@@ -65,8 +77,20 @@ export function SellerSidebar({ isMobileMenuOpen, onMobileMenuClose }: SellerSid
 
         {/* Desktop header */}
         <div className="hidden lg:block p-6 border-b border-border">
-          <h1 className="text-xl font-bold text-primary">Seller Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Your Business</p>
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src={settings.logo_url || "/sell1mall-logo.png"}
+              alt={settings.website_name || "Sell1Mall"}
+              className="w-64 object-contain"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
+              }}
+            />
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-primary truncate">{settings.website_name || "Sell1Mall"}</h1>
+              <p className="text-sm text-muted-foreground mt-1">Seller Dashboard</p>
+            </div>
+          </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

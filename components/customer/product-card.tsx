@@ -5,6 +5,32 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { formatCurrency } from "@/lib/utils"
 
+function resolvePublicImageUrl(src: string) {
+  const value = (src || "").trim()
+  if (!value) return "/placeholder.svg"
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const u = new URL(value)
+      if (u.pathname.startsWith("/uploads/")) return u.pathname
+      if (u.pathname.startsWith("/api/uploads/")) return u.pathname.replace("/api/uploads/", "/uploads/")
+    } catch {
+    }
+    return value
+  }
+  if (value.startsWith("//")) return `https:${value}`
+
+  if (value.startsWith("/api/uploads/")) return value.replace("/api/uploads/", "/uploads/")
+  if (value.startsWith("api/uploads/")) return `/${value.replace("api/uploads/", "uploads/")}`
+
+  if (value.startsWith("uploads/")) return `/${value}`
+
+  if (value.startsWith("/uploads/")) {
+    return value
+  }
+
+  return value
+}
+
 export interface ProductCardProps {
   id: string
   name: string
@@ -21,6 +47,8 @@ export function ProductCard({ id, name, price, originalPrice, image, rating, rev
   const router = useRouter()
   const [isAdding, setIsAdding] = useState(false)
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
+
+  const resolvedImage = resolvePublicImageUrl(image)
 
   const addToCart = async () => {
     if (isAdding) return
@@ -57,9 +85,14 @@ export function ProductCard({ id, name, price, originalPrice, image, rating, rev
     <div className="card hover:shadow-lg transition-shadow">
       <div className="relative mb-4 overflow-hidden rounded-lg bg-muted h-48">
         <img
-          src={image || "/placeholder.svg"}
+          src={resolvedImage}
           alt={name}
           className="w-full h-full object-cover hover:scale-105 transition-transform"
+          onError={(e) => {
+            const el = e.currentTarget
+            if (el.src.endsWith("/placeholder.svg")) return
+            el.src = "/placeholder.svg"
+          }}
         />
         {discount > 0 && (
           <div className="absolute top-2 right-2 bg-danger text-white px-2 py-1 rounded text-sm font-bold">

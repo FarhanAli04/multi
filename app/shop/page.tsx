@@ -1,172 +1,265 @@
+
 "use client"
 
 import { CustomerNavbar } from "@/components/customer/navbar"
 import { ProductCard } from "@/components/customer/product-card"
+import { Input } from "@/components/ui/input"
 import { useEffect, useMemo, useState } from "react"
 
+type ApiProduct = {
+  id: number | string
+  name?: string
+  price?: number | string
+  original_price?: number | string
+  image_url?: string
+  avg_rating?: number | string
+  review_count?: number | string
+  seller_name?: string
+  store_name?: string
+  stock?: number | string
+}
+
+const PAGE_SIZE = 20
+
 export default function ShopPage() {
-  const [products, setProducts] = useState<
-    {
-      id: string
-      name: string
-      price: number
-      originalPrice?: number
-      image: string
-      rating: number
-      reviews: number
-      seller: string
-      stock: number
-    }[]
-  >([])
+  const [products, setProducts] = useState<ApiProduct[]>([])
   const [categories, setCategories] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const [search, setSearch] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [minPrice, setMinPrice] = useState(0)
+  const [maxPrice, setMaxPrice] = useState(10000)
+  const [minRating, setMinRating] = useState(0)
+  const [sort, setSort] = useState<"created_at" | "price" | "rating" | "sales">("created_at")
+  const [order, setOrder] = useState<"ASC" | "DESC">("DESC")
+  const [page, setPage] = useState(1)
+
+  const categoryOptions = useMemo<string[]>(() => {
+    if (categories.length > 0) return categories
+    return ["Electronics", "Accessories", "Clothing", "Home & Kitchen"]
+  }, [categories])
+
+  const buildProductsUrl = () => {
+    const params = new URLSearchParams()
+    if (search.trim()) params.set("search", search.trim())
+    if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","))
+    if (minPrice > 0) params.set("min_price", String(minPrice))
+    if (maxPrice < 999999) params.set("max_price", String(maxPrice))
+    if (minRating > 0) params.set("rating", String(minRating))
+    params.set("sort", sort)
+    params.set("order", order)
+    params.set("limit", String(PAGE_SIZE))
+    params.set("offset", String((page - 1) * PAGE_SIZE))
+    return `/api/backend/products?${params.toString()}`
+  }
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const res = await fetch(buildProductsUrl())
+      const data = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(data?.error || "Failed to load products")
+      setProducts(Array.isArray(data?.products) ? data.products : [])
+    } catch (e: any) {
+      setError(e?.message || "Failed to load products")
+      setProducts([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/backend/categories")
+      const data = await res.json().catch(() => null)
+      if (!res.ok) return
+      const names = (data?.categories || []).map((c: any) => c.name).filter(Boolean)
+      setCategories(names)
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false
-
-    const load = async () => {
-      try {
-        setIsLoading(true)
-        setError("")
-
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch("/api/backend/products"),
-          fetch("/api/backend/categories"),
-        ])
-
-        const productsJson = await productsRes.json().catch(() => null)
-        const categoriesJson = await categoriesRes.json().catch(() => null)
-
-        if (!productsRes.ok) {
-          throw new Error(productsJson?.error || "Failed to load products")
-        }
-
-        if (!categoriesRes.ok) {
-          throw new Error(categoriesJson?.error || "Failed to load categories")
-        }
-
-        const mappedProducts = (productsJson?.products || []).map((p: any) => ({
-          id: String(p.id),
-          name: p.name,
-          price: Number(p.price),
-          originalPrice: p.original_price ? Number(p.original_price) : undefined,
-          image: p.image_url || "/placeholder.svg",
-          rating: Number(p.avg_rating || 0),
-          reviews: Number(p.review_count || 0),
-          seller: p.store_name || p.seller_name || "",
-          stock: Number(p.stock ?? p.quantity ?? 0),
-        }))
-
-        const mappedCategories = (categoriesJson?.categories || []).map((c: any) => c.name).filter(Boolean)
-
-        if (!cancelled) {
-          setProducts(mappedProducts)
-          setCategories(mappedCategories)
-        }
-      } catch (e: any) {
-        if (!cancelled) {
-          setError(e?.message || "Failed to load shop")
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
+    loadCategories()
   }, [])
 
-  const categoryList = useMemo(() => {
-    if (categories.length > 0) return categories
-    return ["Electronics", "Accessories", "Clothing", "Home & Garden"]
-  }, [categories])
+  useEffect(() => {
+    loadProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, selectedCategories, minPrice, maxPrice, minRating, sort, order, page])
+
+  const toggleCategory = (cat: string) => {
+    setPage(1)
+    setSelectedCategories((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]))
+  }
+
+  const toggleRating = (ratingValue: number) => {
+    setPage(1)
+    setMinRating((prev) => (prev === ratingValue ? 0 : ratingValue))
+  }
+
+  const canPrev = page > 1
+  const canNext = products.length === PAGE_SIZE
 
   return (
     <>
       <CustomerNavbar />
-
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Shop Our Products</h1>
-          <p className="text-muted-foreground">Browse thousands of products from trusted sellers</p>
-        </div>
-
-        <div className="flex gap-8">
-          {/* Sidebar Filters */}
-          <aside className="w-64 flex-shrink-0">
-            <div className="card space-y-6">
-              <div>
-                <h3 className="font-semibold mb-4">Categories</h3>
-                <div className="space-y-2">
-                  {categoryList.map((cat) => (
-                    <label key={cat} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4" />
-                      <span className="text-sm">{cat}</span>
-                    </label>
-                  ))}
+      <main className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="w-full lg:w-72 flex-shrink-0">
+              <div className="card p-6">
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-foreground mb-2" htmlFor="shop-search">
+                    Search
+                  </label>
+                  <Input
+                    id="shop-search"
+                    placeholder="Search products..."
+                    value={search}
+                    onChange={(e) => {
+                      setPage(1)
+                      setSearch(e.target.value)
+                    }}
+                  />
                 </div>
-              </div>
 
-              <div className="border-t border-border pt-6">
-                <h3 className="font-semibold mb-4">Price Range</h3>
-                <div className="space-y-3">
-                  <input type="range" min="0" max="10000" className="w-full" />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>0 USDT</span>
-                    <span>10,000 USDT</span>
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-foreground mb-2">Categories</div>
+                  <div className="space-y-2">
+                    {categoryOptions.map((cat) => (
+                      <label key={cat} className="flex items-center gap-2 text-sm text-foreground">
+                        <input type="checkbox" checked={selectedCategories.includes(cat)} onChange={() => toggleCategory(cat)} />
+                        <span>{cat}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="border-t border-border pt-6">
-                <h3 className="font-semibold mb-4">Rating</h3>
-                <div className="space-y-2">
-                  {["4★ & up", "3★ & up", "2★ & up", "1★ & up"].map((rating) => (
-                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4" />
-                      <span className="text-sm">{rating}</span>
-                    </label>
-                  ))}
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-foreground mb-2">Price</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={minPrice}
+                      onChange={(e) => {
+                        setPage(1)
+                        setMinPrice(Number(e.target.value))
+                      }}
+                      placeholder="Min"
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      value={maxPrice}
+                      onChange={(e) => {
+                        setPage(1)
+                        setMaxPrice(Number(e.target.value))
+                      }}
+                      placeholder="Max"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-foreground mb-2">Rating</div>
+                  <div className="space-y-2">
+                    {[4, 3, 2, 1].map((r) => (
+                      <label key={r} className="flex items-center gap-2 text-sm text-foreground">
+                        <input type="checkbox" checked={minRating === r} onChange={() => toggleRating(r)} />
+                        <span>{r}+</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-medium text-foreground mb-2">Sort</div>
+                  <select
+                    className="input w-full"
+                    value={`${sort}:${order}`}
+                    onChange={(e) => {
+                      setPage(1)
+                      const [s, o] = String(e.target.value).split(":")
+                      setSort((s || "created_at") as any)
+                      setOrder(((o || "DESC").toUpperCase() === "ASC" ? "ASC" : "DESC") as any)
+                    }}
+                  >
+                    <option value="created_at:DESC">Newest</option>
+                    <option value="price:ASC">Price: Low to High</option>
+                    <option value="price:DESC">Price: High to Low</option>
+                    <option value="rating:DESC">Top Rated</option>
+                    <option value="sales:DESC">Best Sellers</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
 
-          {/* Products Grid */}
-          <div className="flex-1">
-            {/* Sort Options */}
-            <div className="mb-6 flex justify-between items-center">
-              <span className="text-muted-foreground">{products.length} products</span>
-              <select className="input py-2">
-                <option>Newest</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Best Sellers</option>
-                <option>Top Rated</option>
-              </select>
-            </div>
+            <section className="flex-1">
+              {isLoading ? (
+                <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : error ? (
+                <div className="text-sm text-red-600">{error}</div>
+              ) : products.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No products found.</div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((p) => {
+                      const id = String(p.id ?? "")
+                      const name = String(p.name ?? "")
+                      const price = Number(p.price ?? 0)
+                      const originalPrice = Number(p.original_price ?? 0)
+                      const image = String(p.image_url ?? "")
+                      const rating = Number(p.avg_rating ?? 0)
+                      const reviews = Number(p.review_count ?? 0)
+                      const seller = String(p.store_name || p.seller_name || "")
+                      const stock = Number(p.stock ?? 0)
 
-            {/* Product Grid */}
-            {isLoading && (
-              <div className="text-muted-foreground">Loading products...</div>
-            )}
+                      return (
+                        <ProductCard
+                          key={id}
+                          id={id}
+                          name={name}
+                          price={price}
+                          originalPrice={originalPrice > 0 ? originalPrice : undefined}
+                          image={image}
+                          rating={Number.isFinite(rating) ? rating : 0}
+                          reviews={Number.isFinite(reviews) ? reviews : 0}
+                          seller={seller}
+                          stock={Number.isFinite(stock) ? stock : 0}
+                        />
+                      )
+                    })}
+                  </div>
 
-            {!isLoading && error && (
-              <div className="text-red-600">{error}</div>
-            )}
-
-            {!isLoading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <ProductCard key={product.id} {...product} />
-                ))}
-              </div>
-            )}
+                  <div className="mt-8 flex items-center justify-between">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={!canPrev}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-muted-foreground">Page {page}</span>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={!canNext}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </>
+              )}
+            </section>
           </div>
         </div>
       </main>

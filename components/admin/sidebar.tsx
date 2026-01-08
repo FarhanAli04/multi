@@ -4,8 +4,10 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import { LayoutDashboard, Users, Store, Package, ShoppingCart, MessageSquare, Settings, LogOut, Menu, X } from "lucide-react"
+import { useRealtime } from "@/contexts/RealtimeContext"
 
 export function AdminSidebar() {
+  const { settings } = useRealtime()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -68,8 +70,20 @@ export function AdminSidebar() {
         }`}
       >
         <div className="p-6 border-b border-border">
-          <h1 className="text-xl font-bold text-primary">SAR Admin</h1>
-          <p className="text-sm text-muted-foreground mt-1">Syed Asad Raza</p>
+          <div className="flex items-center gap-3">
+            <img
+              src={settings.logo_url || "/sell1mall-logo.png"}
+              alt={settings.website_name || "Sell1Mall"}
+              className="w-64 object-contain"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).src = "/placeholder-logo.png"
+              }}
+            />
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-primary truncate">{settings.website_name || "Sell1Mall"}</h1>
+              <p className="text-sm text-muted-foreground mt-1">Admin</p>
+            </div>
+          </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

@@ -187,7 +187,21 @@ $routes = [
     // Settings endpoints
     '/api/settings' => ['controller' => 'SettingsController', 'method' => 'getSettings', 'http_method' => 'GET'],
     '/api/settings/update' => ['controller' => 'SettingsController', 'method' => 'updateSettings', 'http_method' => 'POST'],
+    '/api/settings/upload' => ['controller' => 'SettingsController', 'method' => 'uploadAsset', 'http_method' => 'POST'],
 ];
+
+// Handle static files in uploads directory
+if (preg_match('#^/(?:api/)?uploads/(.+)$#', $requestUri, $matches)) {
+    $filePath = __DIR__ . '/uploads/' . $matches[1];
+    if (file_exists($filePath) && is_file($filePath)) {
+        $mime = mime_content_type($filePath);
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: public, max-age=31536000');
+        readfile($filePath);
+        exit;
+    }
+}
 
 // Find matching route
 $matchedRoute = null;
