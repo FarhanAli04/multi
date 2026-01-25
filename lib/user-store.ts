@@ -1,4 +1,4 @@
-// Shared user store for authentication demo
+ // Shared user store for authentication demo
 import { writeFileSync, readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 

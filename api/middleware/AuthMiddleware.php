@@ -75,7 +75,11 @@ class AuthMiddleware {
 
     // Validate JWT token
     private function validateToken($token) {
-        $secretKey = $_ENV['JWT_SECRET'] ?? 'your-secret-key';
+        $secretKey = $_ENV['JWT_SECRET'] ?? '';
+        $secretKeyTrim = is_string($secretKey) ? trim($secretKey) : '';
+        if ($secretKeyTrim === '' || $secretKeyTrim === 'your-secret-key' || stripos($secretKeyTrim, 'change-this-in-production') !== false) {
+            throw new Exception('Server JWT configuration error');
+        }
 
         $parts = explode('.', $token);
         if (count($parts) !== 3) {
@@ -123,9 +127,19 @@ class AuthMiddleware {
 
     // Generate JWT token
     public static function generateToken($userId, $role) {
-        $secretKey = $_ENV['JWT_SECRET'] ?? 'your-secret-key';
+        $secretKey = $_ENV['JWT_SECRET'] ?? '';
+        $secretKeyTrim = is_string($secretKey) ? trim($secretKey) : '';
+        if ($secretKeyTrim === '' || $secretKeyTrim === 'your-secret-key' || stripos($secretKeyTrim, 'change-this-in-production') !== false) {
+            throw new Exception('Server JWT configuration error');
+        }
         $issuedAt = time();
-        $expire = $issuedAt + (60 * 60 * 24 * 7); // Token valid for 7 days
+
+        $ttl = $_ENV['JWT_EXPIRE'] ?? null;
+        $ttlInt = is_numeric($ttl) ? (int)$ttl : 0;
+        if ($ttlInt <= 0) {
+            $ttlInt = (60 * 60 * 24 * 7);
+        }
+        $expire = $issuedAt + $ttlInt;
         
         $payload = [
             'iss' => 'multi-vendor-chat',
@@ -167,17 +181,17 @@ class AuthMiddleware {
 
     // Send unauthorized response
     private function sendUnauthorized($message = 'Unauthorized') {
-        header('HTTP/1.1 401 Unauthorized');
+        http_response_code(401);
         header('Content-Type: application/json');
-        echo json_encode(['error' => $message]);
+        echo json_encode(['success' => false, 'error' => $message]);
         exit;
     }
 
     // Send forbidden response
     private function sendForbidden($message = 'Forbidden') {
-        header('HTTP/1.1 403 Forbidden');
+        http_response_code(403);
         header('Content-Type: application/json');
-        echo json_encode(['error' => $message]);
+        echo json_encode(['success' => false, 'error' => $message]);
         exit;
     }
 }

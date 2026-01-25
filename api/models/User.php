@@ -197,6 +197,41 @@ class User extends BaseModel {
         return false;
     }
 
+    // Authenticate admin user
+    public function authenticateAdmin($email, $password) {
+        $query = 'SELECT * FROM users WHERE email = :email AND role = :role LIMIT 1';
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindValue(':role', 'admin');
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            $hash = $user['password_hash'] ?? '';
+
+            if ($hash && password_verify($password, $hash)) {
+                unset($user['password_hash']);
+                return $user;
+            }
+
+            // Legacy/plain migration: if stored hash is not bcrypt and equals password, upgrade.
+            if (!$hash || strpos($hash, '$2y$') !== 0) {
+                if ($hash === $password) {
+                    $newHash = password_hash($password, PASSWORD_BCRYPT);
+                    $update = $this->conn->prepare('UPDATE users SET password_hash = :hash, updated_at = NOW() WHERE id = :id');
+                    $update->bindParam(':hash', $newHash);
+                    $update->bindParam(':id', $user['id']);
+                    $update->execute();
+
+                    unset($user['password_hash']);
+                    return $user;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // Check if email exists
     public function emailExists($email) {
         $query = 'SELECT id FROM users WHERE email = :email LIMIT 1';

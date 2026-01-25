@@ -1,6 +1,48 @@
 <?php
+// Load environment variables (create a .env file in the api directory)
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim((string)$line);
+        if ($line === '' || strpos($line, '#') === 0) {
+            continue;
+        }
+
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+
+            $value = (string)$value;
+            $value = trim($value);
+            $isQuoted = (strlen($value) >= 2) && (($value[0] === '"' && substr($value, -1) === '"') || ($value[0] === "'" && substr($value, -1) === "'"));
+            if (!$isQuoted) {
+                $hashPos = strpos($value, ' #');
+                if ($hashPos === false) {
+                    $hashPos = strpos($value, "\t#");
+                }
+                if ($hashPos !== false) {
+                    $value = substr($value, 0, $hashPos);
+                    $value = rtrim($value);
+                }
+            }
+
+            $value = trim($value, "'\"");
+            putenv("$key=$value");
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+        }
+    }
+}
+
 // Set CORS headers
-header('Access-Control-Allow-Origin: *');
+$_origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$_allowedOrigin = $_ENV['FRONTEND_URL'] ?? '*';
+if ($_allowedOrigin !== '*' && $_origin !== '' && $_origin === $_allowedOrigin) {
+    header('Access-Control-Allow-Origin: ' . $_origin);
+} else {
+    header('Access-Control-Allow-Origin: ' . $_allowedOrigin);
+}
 header('Content-Type: application/json');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -11,28 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Load environment variables (create a .env file in the api directory)
-$envFile = __DIR__ . '/.env';
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
-            list($key, $value) = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value, "'\"");
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
-            $_SERVER[$key] = $value;
-        }
-    }
-}
-
 // Set error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
+$__debug = false;
+$__debugEnv = $_ENV['APP_DEBUG'] ?? ($_SERVER['APP_DEBUG'] ?? null);
+if (is_string($__debugEnv)) {
+    $__debug = in_array(strtolower(trim($__debugEnv)), ['1', 'true', 'yes', 'on'], true);
+}
+
 set_exception_handler(function ($e) {
+    error_log('Unhandled exception: ' . $e->getMessage());
     if (!headers_sent()) {
         http_response_code(500);
         header('Content-Type: application/json');
@@ -40,7 +73,6 @@ set_exception_handler(function ($e) {
     echo json_encode([
         'success' => false,
         'error' => 'Server error',
-        'message' => $e->getMessage(),
     ]);
     exit;
 });
@@ -50,6 +82,8 @@ set_error_handler(function ($severity, $message, $file, $line) {
         return false;
     }
 
+    error_log("PHP error: {$message} in {$file}:{$line}");
+
     if (!headers_sent()) {
         http_response_code(500);
         header('Content-Type: application/json');
@@ -58,9 +92,6 @@ set_error_handler(function ($severity, $message, $file, $line) {
     echo json_encode([
         'success' => false,
         'error' => 'Server error',
-        'message' => $message,
-        'file' => $file,
-        'line' => $line,
     ]);
     exit;
 });
@@ -81,12 +112,14 @@ register_shutdown_function(function () {
         header('Content-Type: application/json');
     }
 
+    $msg = $err['message'] ?? 'Fatal error';
+    $file = $err['file'] ?? null;
+    $line = $err['line'] ?? null;
+    error_log('Fatal error: ' . $msg . ($file ? " in {$file}:{$line}" : ''));
+
     echo json_encode([
         'success' => false,
         'error' => 'Server error',
-        'message' => $err['message'] ?? 'Fatal error',
-        'file' => $err['file'] ?? null,
-        'line' => $err['line'] ?? null,
     ]);
 });
 
@@ -103,6 +136,13 @@ if ($apiPos !== false) {
     $requestUri = substr($requestUri, $apiPos);
 }
 
+if ($requestUri !== '/') {
+    $requestUri = rtrim($requestUri, '/');
+    if ($requestUri === '') {
+        $requestUri = '/';
+    }
+}
+
 // Health check endpoint (useful for verifying Apache rewrite / routing)
 if ($requestUri === '/api/health') {
     echo json_encode(['success' => true, 'message' => 'API is running']);
@@ -113,6 +153,7 @@ if ($requestUri === '/api/health') {
 $routes = [
     '/api/auth/register' => ['controller' => 'AuthController', 'method' => 'register', 'http_method' => 'POST', 'endpoint' => 'register'],
     '/api/auth/login' => ['controller' => 'AuthController', 'method' => 'login', 'http_method' => 'POST', 'endpoint' => 'login'],
+    '/api/auth/admin-login' => ['controller' => 'AuthController', 'method' => 'adminLogin', 'http_method' => 'POST', 'endpoint' => 'admin-login'],
     '/api/auth/profile' => ['controller' => 'AuthController', 'method' => 'profile', 'http_method' => ['GET', 'PUT'], 'endpoint' => 'profile'],
     '/api/auth/me' => ['controller' => 'AuthController', 'method' => 'me', 'http_method' => 'GET', 'endpoint' => 'me'],
     
@@ -205,32 +246,46 @@ if (preg_match('#^/(?:api/)?uploads/(.+)$#', $requestUri, $matches)) {
 
 // Find matching route
 $matchedRoute = null;
+$methodNotAllowed = false;
+$allowedMethods = [];
 foreach ($routes as $route => $config) {
-    $httpMethods = (array) $config['http_method'];
-    if (!in_array($requestMethod, $httpMethods)) {
-        continue;
-    }
-
     // Support placeholders like /api/products/{id}
     if (strpos($route, '{') !== false) {
         $pattern = preg_replace('/\{[^\/]+\}/', '(\\d+)', $route);
         $regex = '#^' . $pattern . '$#';
-        if (preg_match($regex, $requestUri)) {
-            $matchedRoute = $config;
-            break;
-        }
+        $pathMatched = (bool)preg_match($regex, $requestUri);
     } else {
-        if ($requestUri === $route) {
-            $matchedRoute = $config;
-            break;
-        }
+        $pathMatched = ($requestUri === $route);
     }
+
+    if (!$pathMatched) {
+        continue;
+    }
+
+    $httpMethods = (array) $config['http_method'];
+    $allowedMethods = array_values(array_unique(array_merge($allowedMethods, $httpMethods)));
+    if (!in_array($requestMethod, $httpMethods, true)) {
+        $methodNotAllowed = true;
+        continue;
+    }
+
+    $matchedRoute = $config;
+    break;
 }
 
 // Handle 404 if no route matched
 if (!$matchedRoute) {
-    header('HTTP/1.1 404 Not Found');
-    echo json_encode(['error' => 'Endpoint not found']);
+    if ($methodNotAllowed) {
+        http_response_code(405);
+        if (!empty($allowedMethods)) {
+            header('Allow: ' . implode(', ', $allowedMethods));
+        }
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        exit;
+    }
+
+    http_response_code(404);
+    echo json_encode(['success' => false, 'error' => 'Endpoint not found']);
     exit;
 }
 
@@ -250,27 +305,15 @@ $methodName = $matchedRoute['method'];
 
 $controller = new $controllerName();
 
-// For this example, we'll just handle auth routes directly
-if ($controllerName === 'AuthController') {
-    if (!isset($_GET['endpoint']) || $_GET['endpoint'] === '') {
-        if (isset($matchedRoute['endpoint'])) {
-            $_GET['endpoint'] = $matchedRoute['endpoint'];
-        }
-    }
-    $controller->handleRequest();
+if (method_exists($controller, $methodName) && is_callable([$controller, $methodName])) {
+    $controller->$methodName();
     exit;
 }
 
-// For most controllers, delegate URL parsing to their handleRequest() when present.
 if (method_exists($controller, 'handleRequest')) {
     $controller->handleRequest();
     exit;
 }
 
-// Call the method if it exists
-if (method_exists($controller, $methodName)) {
-    $controller->$methodName();
-} else {
-    header('HTTP/1.1 500 Internal Server Error');
-    echo json_encode(['error' => 'Method not implemented']);
-}
+http_response_code(500);
+echo json_encode(['success' => false, 'error' => 'Method not implemented']);

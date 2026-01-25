@@ -9,13 +9,32 @@ class AuthController {
     public function __construct() {
         $this->userModel = new User();
         $this->auth = new AuthMiddleware();
-        
-        // Enable CORS
-        header('Access-Control-Allow-Origin: *');
+
+        $headers = function_exists('headers_list') ? headers_list() : [];
+        $hasCors = false;
+        if (is_array($headers)) {
+            foreach ($headers as $h) {
+                if (stripos((string)$h, 'Access-Control-Allow-Origin:') === 0) {
+                    $hasCors = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$hasCors) {
+            $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+            $allowedOrigin = $_ENV['FRONTEND_URL'] ?? '*';
+            if ($allowedOrigin !== '*' && $origin !== '' && $origin === $allowedOrigin) {
+                header('Access-Control-Allow-Origin: ' . $origin);
+            } else {
+                header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+            }
+            header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        }
+
         header('Content-Type: application/json');
-        header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-        
+
         // Handle preflight requests
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             http_response_code(200);
@@ -27,6 +46,16 @@ class AuthController {
     public function handleRequest() {
         $method = $_SERVER['REQUEST_METHOD'];
         $endpoint = isset($_GET['endpoint']) ? $_GET['endpoint'] : '';
+        if ($endpoint === '') {
+            $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+            $path = is_string($path) ? rtrim($path, '/') : '';
+            if ($path !== '') {
+                $pos = strpos($path, '/api/auth/');
+                if ($pos !== false) {
+                    $endpoint = substr($path, $pos + strlen('/api/auth/'));
+                }
+            }
+        }
         
         try {
             switch ($endpoint) {
@@ -41,6 +70,14 @@ class AuthController {
                 case 'login':
                     if ($method === 'POST') {
                         $this->login();
+                    } else {
+                        $this->methodNotAllowed();
+                    }
+                    break;
+                    
+                case 'admin-login':
+                    if ($method === 'POST') {
+                        $this->adminLogin();
                     } else {
                         $this->methodNotAllowed();
                     }
@@ -71,12 +108,17 @@ class AuthController {
                     break;
             }
         } catch (Exception $e) {
-            $this->sendError($e->getMessage());
+            $msg = $e->getMessage();
+            $status = 400;
+            if (stripos($msg, 'invalid email or password') !== false) {
+                $status = 401;
+            }
+            $this->sendError($msg, $status);
         }
     }
 
     // Register a new user
-    private function register() {
+    public function register() {
         $data = $this->getRequestData();
         
         // Validate required fields
@@ -105,7 +147,16 @@ class AuthController {
         }
         
         // Create user
-        $userId = $this->userModel->register($data);
+        try {
+            $userId = $this->userModel->register($data);
+        } catch (Exception $e) {
+            $msg = $e->getMessage();
+            $status = 400;
+            if (stripos($msg, 'already exists') !== false) {
+                $status = 409;
+            }
+            $this->sendError($msg, $status);
+        }
         
         // Get the created user
         $user = $this->userModel->getUserWithRoleData($userId);
@@ -122,8 +173,37 @@ class AuthController {
         ]);
     }
 
+    // Admin login
+    public function adminLogin() {
+        $data = $this->getRequestData();
+        
+        // Validate required fields
+        $this->validateFields($data, ['email', 'password']);
+        
+        // Authenticate admin user
+        $user = $this->userModel->authenticateAdmin($data['email'], $data['password']);
+        
+        if (!$user) {
+            $this->sendError('Invalid admin credentials', 401);
+        }
+        
+        // Generate JWT token
+        $token = AuthMiddleware::generateToken($user['id'], $user['role']);
+        
+        // Get full user data with role-specific information
+        $userData = $this->userModel->getUserWithRoleData($user['id']);
+        
+        // Return success response
+        $this->sendResponse([
+            'success' => true,
+            'message' => 'Admin login successful',
+            'user' => $userData,
+            'token' => $token
+        ]);
+    }
+
     // User login
-    private function login() {
+    public function login() {
         $data = $this->getRequestData();
         
         // Validate required fields
@@ -133,7 +213,7 @@ class AuthController {
         $user = $this->userModel->authenticate($data['email'], $data['password']);
         
         if (!$user) {
-            throw new Exception('Invalid email or password');
+            $this->sendError('Invalid email or password', 401);
         }
         
         // Generate JWT token
@@ -149,6 +229,19 @@ class AuthController {
             'user' => $userData,
             'token' => $token
         ]);
+    }
+
+    public function profile() {
+        $method = $_SERVER['REQUEST_METHOD'];
+        $user = $this->auth->authenticate();
+
+        if ($method === 'GET') {
+            $this->getProfile($user);
+        } elseif ($method === 'PUT') {
+            $this->updateProfile($user);
+        } else {
+            $this->methodNotAllowed();
+        }
     }
 
     // Get user profile

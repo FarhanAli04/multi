@@ -84,7 +84,7 @@ export function CustomerNavbar() {
               <img
                 src={resolvePublicImageUrl(settings.logo_url) || "/sell1mall-logo.png"}
                 alt={settings.website_name || "Sell1Mall"}
-                className="h-7 w-7 object-contain"
+                className="w-64 object-contain"
                 onError={(e) => {
                   ;(e.currentTarget as HTMLImageElement).src = "/placeholder.svg"
                 }}
